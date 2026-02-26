@@ -1,0 +1,34 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.5.2 Chrome/142.0.7444.265 Electron/39.6.1 Safari/537.36" version="29.5.2">
+  <diagram name="dashboard" id="TmHxkDqMJiaNLVdrn068">
+    <mxGraphModel dx="689" dy="400" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="gLTRWekvQ6bvALw8akEB-4" parent="1" style="rounded=0;whiteSpace=wrap;html=1;" value="" vertex="1">
+          <mxGeometry height="280" width="370" x="200" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="gLTRWekvQ6bvALw8akEB-5" parent="1" style="dashed=0;align=center;fontSize=12;shape=rect;fillColor=#0050ef;strokeColor=#001DBC;shadow=0;hachureGap=4;pointerEvents=0;fontFamily=Helvetica;fontColor=#ffffff;" value="" vertex="1">
+          <mxGeometry height="58" width="370" x="200" y="702" as="geometry" />
+        </mxCell>
+        <mxCell id="gLTRWekvQ6bvALw8akEB-10" parent="gLTRWekvQ6bvALw8akEB-5" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Home" vertex="1">
+          <mxGeometry height="30" width="60" x="20" y="14" as="geometry" />
+        </mxCell>
+        <mxCell id="gLTRWekvQ6bvALw8akEB-11" parent="gLTRWekvQ6bvALw8akEB-5" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Entry" vertex="1">
+          <mxGeometry height="30" width="60" x="110" y="14" as="geometry" />
+        </mxCell>
+        <mxCell id="gLTRWekvQ6bvALw8akEB-12" parent="gLTRWekvQ6bvALw8akEB-5" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Records" vertex="1">
+          <mxGeometry height="30" width="60" x="205" y="14" as="geometry" />
+        </mxCell>
+        <mxCell id="gLTRWekvQ6bvALw8akEB-13" parent="gLTRWekvQ6bvALw8akEB-5" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Settings" vertex="1">
+          <mxGeometry height="30" width="60" x="290" y="14" as="geometry" />
+        </mxCell>
+        <mxCell id="gLTRWekvQ6bvALw8akEB-14" parent="1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#0050ef;fontColor=#ffffff;strokeColor=#001DBC;" value="" vertex="1">
+          <mxGeometry height="50" width="370" x="200" y="480" as="geometry" />
+        </mxCell>
+        <mxCell id="gLTRWekvQ6bvALw8akEB-15" parent="1" style="text;html=1;whiteSpace=wrap;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;rounded=0;" value="Whirlpool Logger" vertex="1">
+          <mxGeometry height="30" width="60" x="210" y="490" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
