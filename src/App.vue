@@ -1,11 +1,18 @@
 <script setup lang="ts"></script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <VApp>
+    <VAppBar>
+      <VAppBarTitle>Whirlpool Logger</VAppBarTitle>
+    </VAppBar>
+    <VMain><RouterView /></VMain>
+    <VBottomNavigation>
+      <VBtn to="home">Home</VBtn>
+      <VBtn to="entry">Entry</VBtn>
+      <VBtn to="records">Records</VBtn>
+      <VBtn to="settings">Settings</VBtn>
+    </VBottomNavigation>
+  </VApp>
 </template>
 
 <style scoped></style>

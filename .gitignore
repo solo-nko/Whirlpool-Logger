@@ -38,4 +38,11 @@ __screenshots__/
 # Vite
 *.timestamp-*-*.mjs
 
+#env file
 .env
+
+# Generated files
+auto-imports.d.ts
+components.d.ts
+typed-router.d.ts
+.eslintrc-auto-import.json
