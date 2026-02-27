@@ -1,14 +1,14 @@
 {
-  "files": [],
-  "compilerOptions": {
-    "moduleResolution": "bundler"
-  },
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    },
-    {
-      "path": "./tsconfig.app.json"
-    }
-  ]
+	"files": [],
+	"compilerOptions": {
+		"moduleResolution": "bundler"
+	},
+	"references": [
+		{
+			"path": "./tsconfig.node.json"
+		},
+		{
+			"path": "./tsconfig.app.json"
+		}
+	]
 }
