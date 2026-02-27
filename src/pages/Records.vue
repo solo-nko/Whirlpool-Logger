@@ -1,7 +1,20 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import useCategoriesStore from "@/stores/categories.ts"
+
+const categoriesStore = useCategoriesStore()
+const currentTab = ref()
+</script>
 
 <template>
-	<div>This is the records page.</div>
+	<VContainer>
+		<VRow class="justify-center">
+			<VTabs v-model="currentTab">
+				<VTab v-for="category in categoriesStore.clientCategories" :key="category.id">
+					{{ category.name }}
+				</VTab>
+			</VTabs>
+		</VRow>
+	</VContainer>
 </template>
 
 <style scoped></style>
