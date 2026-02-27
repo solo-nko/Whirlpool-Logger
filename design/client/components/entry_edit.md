@@ -42,12 +42,12 @@ Input boxes for filling out the Whirlpool log entry.
 
 - **EXPERIMENTAL: Element/Component:** [VExpansionPanel](https://vuetifyjs.com/en/components/expansion-panels/)
 - **Display:**
-    - If category.extraFields.length is greater than 0, Yes. Otherwise, No.
-    - Open by default?
+  - If category.extraFields.length is greater than 0, Yes. Otherwise, No.
+  - Open by default?
 - **Usable:** Yes
 - **Content:**
-    - Header: "Additional Fields"
-    - For each item in category.extraFields, display an element.
+  - Header: "Additional Fields"
+  - For each item in category.extraFields, display an element.
 
 ### Date Updated
 

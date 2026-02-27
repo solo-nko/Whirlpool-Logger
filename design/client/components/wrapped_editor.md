@@ -28,5 +28,3 @@
 
 - Link
 - Remove Formatting
-
-
