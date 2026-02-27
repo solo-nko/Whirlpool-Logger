@@ -1,7 +1,11 @@
 <script setup lang="ts"></script>
 
 <template>
-	<div>This is the entry page</div>
+	<VApp>
+		<VMain>
+			<slot name="story" />
+		</VMain>
+	</VApp>
 </template>
 
 <style scoped></style>
