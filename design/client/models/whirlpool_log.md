@@ -44,7 +44,7 @@ Date created. This should be automatically set when the object is first created.
 
 Category the media belongs to.
 
-- **Name:** `category`
+- **Name:** `categoryId`
 - **Type:** string
   - ID of the [Category](/design/client/models/category.md) this log is assigned to.
 
@@ -101,7 +101,7 @@ The user may input a rating of the media.
 [//]: # (TODO: decide whether to use HTML or JSON. I'm leaning towards HTML because it's more semantic, though JSON is probably easier to parse and transport.)
 
 - **Name:** `notes`
-- **Type:** string
+- **Type:** JSON object
 
 #### Sync Code
 
@@ -129,3 +129,6 @@ The user may input a rating of the media.
 - **Type:** DateTime
 
 #### Date Updated (User)
+
+- **Name:** `userUpdatedOn`
+- **Type:** string (simple ISO date)

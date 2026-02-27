@@ -22,7 +22,7 @@ Modifications made to the default fields. This should be chosen from among the v
 available in a Whirlpool Log. Each string refers to the `name` of the field.
 
 - **Name:** `hiddenFields`
-- **Type:**
+- **Type:** Array of objects containing the following:
   - `field`: string
     - Name of the field to customize
   - `rename`: string | undefined
@@ -32,10 +32,17 @@ available in a Whirlpool Log. Each string refers to the `name` of the field.
 
 #### Additional Fields
 
-Array of custom fields.
+Array of custom fields attached to this category.
 
 - **Name:** `extraFields`
-- **Type:** Field[]
+- **Type:** [Field[]](/design/client/models/field.md)
+
+#### Statuses
+
+Array of statuses attached to this category.
+
+- **Name:** `statuses`
+- **Type:** [Status[]](/design/client/models/status.md)
 
 #### Date Updated
 
