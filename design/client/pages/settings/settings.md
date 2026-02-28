@@ -14,16 +14,16 @@
 
 - **Element/Component:** VList
 
-* **Display:** Yes
-* **Usable:** Yes
-* **Contents:**
-  - Header: "Settings"
+- **Display:** Yes
+- **Usable:** Yes
+- **Contents:**
+  - **Header:** "Settings"
   - "General"
   - "Export & Sync"
   - "Theming"
-  - "Status Settings"
   - "Category Settings"
   - "About"
+
 * **Action:** When a content item other than the header is clicked on, it should navigate to that component.
 
 ## Actions

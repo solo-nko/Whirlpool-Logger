@@ -1,4 +1,4 @@
-import type { ULID } from "ulid";
+import type { ULID } from "ulid"
 
 export enum FieldType {
 	STRING = "string",
@@ -8,8 +8,8 @@ export enum FieldType {
 }
 
 export type IField = {
-	id: ULID;
-	label: string;
-	type: FieldType;
-	placeholder: string;
-};
+	id: ULID
+	label: string
+	type: FieldType
+	placeholder: string
+}

@@ -52,3 +52,6 @@ storybook-static
 
 # random stuff added by storybook
 .storybook/stories/examples
+
+# drawio backup files
+*.drawio.bkp

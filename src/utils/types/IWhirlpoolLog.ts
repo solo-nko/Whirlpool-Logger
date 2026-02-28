@@ -1,6 +1,6 @@
-import type { ULID } from "ulid";
-import type { DateTime } from "luxon";
-import type { IFieldValue } from "@/utils/types/IFieldValue";
+import type { ULID } from "ulid"
+import type { DateTime } from "luxon"
+import type { IFieldValue } from "@/utils/types/IFieldValue"
 
 export type IWhirlpoolLog = {
 	id: ULID

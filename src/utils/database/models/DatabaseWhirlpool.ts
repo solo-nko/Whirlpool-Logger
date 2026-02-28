@@ -1,6 +1,6 @@
-import { Entity } from "dexie";
-import type DatabaseConfig from "@/utils/database/DatabaseConfig";
-import type { IFieldValue } from "@/utils/types/IFieldValue";
+import { Entity } from "dexie"
+import type DatabaseConfig from "@/utils/database/DatabaseConfig"
+import type { IFieldValue } from "@/utils/types/IFieldValue"
 
 class DatabaseWhirlpool extends Entity<DatabaseConfig> {
 	id!: string
@@ -22,4 +22,4 @@ class DatabaseWhirlpool extends Entity<DatabaseConfig> {
 	createdOn!: Date
 }
 
-export default DatabaseWhirlpool;
+export default DatabaseWhirlpool

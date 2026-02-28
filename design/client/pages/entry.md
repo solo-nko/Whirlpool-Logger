@@ -21,7 +21,7 @@
 - **Contents:**
   - For each element in Categories, add a tab:
     - Name: category.name
-    - Component: [EditEntry](/design/client/components/entry_edit.md)
+    - Component: [EditEntry](/design/client/components/entry_editor.md)
       - Props:
         - category: category.id
 -

@@ -8,7 +8,6 @@ import "../src/assets/styles/tailwind.css"
 import "@mdi/font/css/materialdesignicons.css"
 import "vuetify/styles"
 
-
 setup((app) => {
 	app.use(vuetify)
 	app.use(createPinia())
