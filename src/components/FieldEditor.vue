@@ -1,5 +1,4 @@
 <script setup lang="ts">
-// eslint-disable-next-line import/namespace
 import { ulid } from "ulid"
 import { FieldType, type IField } from "@/utils/types/IField.ts"
 
@@ -44,8 +43,6 @@ const translatedLabels = [
 ]
 
 function UndoChanges() {
-	console.log("prop: ", props.fieldData)
-	console.log("model: ", fieldModel.value)
 	if (props.fieldData) fieldModel.value = structuredClone(toRaw(props.fieldData))
 }
 </script>

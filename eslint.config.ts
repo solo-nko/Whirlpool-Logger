@@ -2,7 +2,7 @@ import eslint from "@eslint/js"
 import { globalIgnores } from "eslint/config"
 import pluginVue from "eslint-plugin-vue"
 import skipFormatting from "eslint-config-prettier/flat"
-import importPlugin from "eslint-plugin-import"
+import { importX } from "eslint-plugin-import-x"
 import { defineConfigWithVueTs, vueTsConfigs } from "@vue/eslint-config-typescript"
 
 // To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
@@ -11,11 +11,13 @@ import { defineConfigWithVueTs, vueTsConfigs } from "@vue/eslint-config-typescri
 // More info at https://github.com/vuejs/eslint-config-typescript/#advanced-setup
 
 export default defineConfigWithVueTs(
+	// global rules
 	eslint.configs.recommended,
 	vueTsConfigs.recommended,
+	importX.flatConfigs.recommended,
+	importX.flatConfigs.typescript,
 	...pluginVue.configs["flat/recommended"],
 	skipFormatting,
-	importPlugin.flatConfigs.recommended,
 	globalIgnores([
 		"**/dist/**",
 		"**/dist-ssr/**",
@@ -24,11 +26,23 @@ export default defineConfigWithVueTs(
 		"*.d.ts",
 		"**/storybook-static/**"
 	]),
+	// rules per-filetype
 	{
 		files: ["**/*.{vue,ts,mts,tsx}"],
+		plugins: {
+			"import-x": importX
+		},
+		// needed in order to resolve TypeScript imports correctly
+		settings: {
+			"import/resolver": {
+				typescript: true,
+				node: true
+			}
+		},
 		rules: {
-			"import/no-unresolved": "off",
-			"import/order": "warn",
+			"no-console": "warn",
+			"import-x/no-unresolved": "off",
+			"import-x/order": "warn",
 			"no-unused-vars": "off",
 			"@typescript-eslint/no-unused-vars": "warn",
 			"vue-no-unused-vars": "off",
@@ -36,7 +50,7 @@ export default defineConfigWithVueTs(
 		}
 	},
 	{
-		// multi-word component names are annoying to work with for the router's file-based routing, so i'll turn it off
+		// multi-word component names are annoying to work with for the router's file-based routing, so I'll turn it off
 		files: ["src/pages/*.vue"],
 		rules: {
 			"vue/multi-word-component-names": "off"
