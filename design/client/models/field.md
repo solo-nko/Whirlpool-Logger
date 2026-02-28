@@ -21,6 +21,13 @@ Type of data the field will hold.
 - **Name:** `label`
 - **Type:** string
 
+#### Hidden
+
+Whether the field is hidden/active.
+
+- **Name:** `hidden`
+- **Type:** boolean
+
 ### Optional
 
 #### Placeholder
