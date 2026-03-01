@@ -11,5 +11,17 @@ export default createVuetify({
 	theme: {
 		defaultTheme: "system",
 		utilities: false
+	},
+	display: {
+		mobileBreakpoint: "md",
+		thresholds: {
+			// repeated in tailwind.css and settings.scss
+			xs: 0,
+			sm: 400,
+			md: 840,
+			lg: 1145,
+			xl: 1540,
+			xxl: 2140
+		}
 	}
 })

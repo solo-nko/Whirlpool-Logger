@@ -35,10 +35,10 @@
 	--breakpoint-sm: 400px;
 	--breakpoint-md: 840px;
 	--breakpoint-lg: 1145px;
-	--breakpoint-xl: 1545px;
-	--breakpoint-xxl: 2138px;
+	--breakpoint-xl: 1540px;
+	--breakpoint-xxl: 2140px;
 }
-
+/* https://vuetifyjs.com/en/blog/building-with-vite-and-tailwindcss/#configure-class-based-light-dark-variants */
 @custom-variant light (&:where(.v-theme--light, .v-theme--light *));
 @custom-variant dark (&:where(.v-theme--dark, .v-theme--dark *));
 

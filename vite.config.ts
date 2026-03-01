@@ -8,6 +8,7 @@ import vuetify from "vite-plugin-vuetify"
 import tailwindcss from "@tailwindcss/vite"
 import vueRouter from "vue-router/vite"
 import autoimport from "unplugin-auto-import/vite"
+import fonts from "unplugin-fonts/vite"
 
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
 import { playwright } from "@vitest/browser-playwright"
@@ -29,6 +30,24 @@ export default defineConfig({
 			autoImport: true,
 			styles: {
 				configFile: "src/assets/styles/settings.scss"
+			}
+		}),
+		fonts({
+			fontsource: {
+				families: [
+					{
+						name: "Bricolage Grotesque",
+						weights: [300, 400, 500, 700]
+					},
+					{
+						name: "Sen",
+						weights: [400, 500, 700]
+					},
+					{
+						name: "Sometype Mono",
+						weights: [400, 700]
+					}
+				]
 			}
 		}),
 		tailwindcss()
