@@ -1,4 +1,6 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import TipTapEditor from "@/components/TipTapEditor.vue"
+</script>
 
 <template>
 	<VCard>
@@ -25,6 +27,9 @@
 				<VCol>
 					<VTextField label="Series"></VTextField>
 				</VCol>
+			</VRow>
+			<VRow>
+				<TipTapEditor />
 			</VRow>
 			<VRow>
 				<!-- TODO: Experiment with using date picker instead -->
