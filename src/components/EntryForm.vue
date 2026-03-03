@@ -17,6 +17,11 @@ const chapterFieldMods = computed(() => {
 	return fieldMod
 })
 
+const extraFields = computed(() => {
+	if (!props.category || props.category.extraFields.length === 0) return null
+	return props.category.extraFields
+})
+
 const props = defineProps<EntryFormProps>()
 </script>
 
@@ -56,6 +61,15 @@ const props = defineProps<EntryFormProps>()
 						<VBtn>Today</VBtn>
 					</template>
 				</VTextField>
+			</VRow>
+			<VRow v-if="extraFields">
+				<VExpansionPanels v-for="extraField in extraFields" :key="extraField.id">
+					<VExpansionPanel :title="extraField.label">
+						<VExpansionPanelText>
+							<VTextField />
+						</VExpansionPanelText>
+					</VExpansionPanel>
+				</VExpansionPanels>
 			</VRow>
 		</VContainer>
 		<VCardActions>
