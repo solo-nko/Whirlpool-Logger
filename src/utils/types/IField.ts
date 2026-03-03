@@ -13,4 +13,5 @@ export type IField = {
 	type: FieldType
 	placeholder?: string
 	hidden: boolean
+	// TODO: required?
 }

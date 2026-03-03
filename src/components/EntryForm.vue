@@ -1,19 +1,37 @@
 <script setup lang="ts">
 import TipTapEditor from "@/components/TipTapEditor.vue"
+import type { ICategory } from "@/utils/types/ICategory.ts"
+import type { IWhirlpoolLog } from "@/utils/types/IWhirlpoolLog.ts"
+
+type EntryFormProps = {
+	category?: ICategory
+	existingEntry?: IWhirlpoolLog
+}
+
+const isEditMode = computed(() => props.existingEntry !== undefined)
+const chapterFieldMods = computed(() => {
+	if (!props.category) return null
+	// TODO: can prolly turn this into a shared function
+	const fieldMod = props.category.modifiedFields.find((field) => field.field === "chapter")
+	if (!fieldMod) return null
+	return fieldMod
+})
+
+const props = defineProps<EntryFormProps>()
 </script>
 
 <template>
 	<VCard>
-		<VCardTitle>Test Card</VCardTitle>
+		<VCardTitle>{{ isEditMode ? "Edit Entry" : "Add Entry" }}</VCardTitle>
 		<VContainer>
 			<VRow>
 				<VTextField label="Title"></VTextField>
 			</VRow>
 			<VRow>
-				<VTextField label="Status"></VTextField>
+				<VAutocomplete label="Status" :items="props.category?.statuses ?? []" item-title="name" />
 			</VRow>
 			<VRow>
-				<VCol>
+				<VCol v-if="chapterFieldMods?.hidden !== true">
 					<VNumberInput label="Chapter" control-variant="stacked" loading :min="0">
 						<template v-slot:loader>
 							<!--							TODO: experiment with this-->
@@ -42,7 +60,7 @@ import TipTapEditor from "@/components/TipTapEditor.vue"
 		</VContainer>
 		<VCardActions>
 			<VBtn>Save</VBtn>
-			<VBtn>Cancel</VBtn>
+			<VBtn v-if="isEditMode">Cancel</VBtn>
 		</VCardActions>
 	</VCard>
 </template>
