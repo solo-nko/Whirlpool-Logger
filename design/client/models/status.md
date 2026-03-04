@@ -4,6 +4,13 @@
 
 ### Required
 
+#### Id
+
+Id assigned to the status.
+
+- **Name:** `id`
+- **Type:** ULID/string
+
 #### Name
 
 Name of the status.
@@ -17,6 +24,13 @@ Name of the status.
 - **Type:** DateTime
 
 ### Optional
+
+#### Order
+
+Order the status should be displayed in. If undefined, it will be treated as low/0 priority.
+
+- **Name:** `order`
+- **Type:** number
 
 #### Color
 

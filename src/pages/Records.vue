@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import useCategoriesStore from "@/stores/categories.ts"
+import useCategoriesStore from "@/stores/categories.ts";
 
-const categoriesStore = useCategoriesStore()
-const currentTab = ref()
+const categoriesStore = useCategoriesStore();
+const currentTab = ref();
 </script>
 
 <template>

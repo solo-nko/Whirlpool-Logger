@@ -1,8 +1,11 @@
-import type { DateTime } from "luxon"
+import type { DateTime } from "luxon";
+import type { ULID } from "ulid";
 
 export type IStatus = {
-	name: string
-	color?: string
-	deletedOn?: DateTime
-	createdOn: DateTime
-}
+	id: ULID;
+	name: string;
+	order?: number;
+	color?: string;
+	deletedOn?: DateTime;
+	createdOn: DateTime;
+};

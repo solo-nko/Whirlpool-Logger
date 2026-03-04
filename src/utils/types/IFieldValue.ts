@@ -1,6 +1,6 @@
-import type { ULID } from "ulid"
+import type { ULID } from "ulid";
 
 export type IFieldValue = {
-	fieldId: ULID
-	value: unknown
-}
+	fieldId: ULID;
+	value: unknown;
+};

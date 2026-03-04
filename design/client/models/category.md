@@ -21,7 +21,7 @@ Name of the category.
 Modifications made to the default fields. This should be chosen from among the various input members
 available in a Whirlpool Log. Each string refers to the `name` of the field.
 
-- **Name:** `hiddenFields`
+- **Name:** `modifiedFields`
 - **Type:** Array of objects containing the following:
   - `field`: string
     - Name of the field to customize
@@ -53,6 +53,13 @@ Array of statuses attached to this category.
 
 - **Name:** `createdOn`
 - **Type:** DateTime
+
+#### Tags
+
+Tags available to be applied to Whirlpools in this category. For design ideas, see the [Chip component on Vuetify.](https://vuetifyjs.com/en/components/chips/#in-selects)
+
+- **Name:** `tags`
+- **Type:** [Tag[]](/design/client/models/tag.md)
 
 ### Optional
 

@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { ulid } from "ulid"
-import { FieldType, type IField } from "@/utils/types/IField.ts"
+import { ulid } from "ulid";
+import { FieldType, type IField } from "@/utils/types/IField.ts";
 
 type FieldEditorProps = {
 	/** Whether this is a default field or not.	 */
-	default: boolean
-	fieldData?: IField
-}
+	default: boolean;
+	fieldData?: IField;
+};
 
-const props = defineProps<FieldEditorProps>()
-const isNewField = computed(() => props.fieldData === undefined)
+const props = defineProps<FieldEditorProps>();
+const isNewField = computed(() => props.fieldData === undefined);
 
 const fieldModel = ref<IField>(
 	props.fieldData
@@ -21,7 +21,7 @@ const fieldModel = ref<IField>(
 				placeholder: "",
 				hidden: false
 			}
-)
+);
 
 const translatedLabels = [
 	{
@@ -40,10 +40,10 @@ const translatedLabels = [
 		type: FieldType.NUMBER,
 		label: "Number"
 	}
-]
+];
 
 function UndoChanges() {
-	if (props.fieldData) fieldModel.value = structuredClone(toRaw(props.fieldData))
+	if (props.fieldData) fieldModel.value = structuredClone(toRaw(props.fieldData));
 }
 </script>
 

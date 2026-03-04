@@ -1,24 +1,24 @@
 /// <reference types="vitest/config" />
-import { fileURLToPath, URL } from "node:url"
-import path from "node:path"
-import { defineConfig } from "vite"
-import vue from "@vitejs/plugin-vue"
-import vueDevTools from "vite-plugin-vue-devtools"
-import vuetify from "vite-plugin-vuetify"
-import tailwindcss from "@tailwindcss/vite"
-import vueRouter from "vue-router/vite"
-import autoimport from "unplugin-auto-import/vite"
-import fonts from "unplugin-fonts/vite"
+import { fileURLToPath, URL } from "node:url";
+import path from "node:path";
+import { defineConfig } from "vite";
+import vue from "@vitejs/plugin-vue";
+import vueDevTools from "vite-plugin-vue-devtools";
+import vuetify from "vite-plugin-vuetify";
+import tailwindcss from "@tailwindcss/vite";
+import vueRouter from "vue-router/vite";
+import autoimport from "unplugin-auto-import/vite";
+import fonts from "unplugin-fonts/vite";
 
-import { storybookTest } from "@storybook/addon-vitest/vitest-plugin"
-import { playwright } from "@vitest/browser-playwright"
+import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
+import { playwright } from "@vitest/browser-playwright";
 
 const dirname =
-	typeof __dirname !== "undefined" ? __dirname : path.dirname(fileURLToPath(import.meta.url))
+	typeof __dirname !== "undefined" ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
 // https://github.com/storybookjs/storybook/issues/32462
 // The gist is that storybook and vuedevtools conflict. Storybook won't start correctly if vuedevtools is enabled
-const isStorybookProcess = process.env.npm_lifecycle_event === "storybook"
+const isStorybookProcess = process.env.npm_lifecycle_event === "storybook";
 
 export default defineConfig({
 	plugins: [
@@ -85,4 +85,4 @@ export default defineConfig({
 			}
 		]
 	}
-})
+});

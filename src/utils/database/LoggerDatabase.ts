@@ -1,5 +1,5 @@
-import DatabaseConfig from "@/utils/database/DatabaseConfig"
+import DatabaseConfig from "@/utils/database/DatabaseConfig";
 
-const LoggerDatabase = new DatabaseConfig()
+const LoggerDatabase = new DatabaseConfig();
 
-export default LoggerDatabase
+export default LoggerDatabase;

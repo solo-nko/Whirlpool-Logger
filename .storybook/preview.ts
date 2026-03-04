@@ -1,17 +1,17 @@
-import type { Preview } from "@storybook/vue3-vite"
-import { setup } from "@storybook/vue3"
-import { createPinia } from "pinia"
-import vuetify from "../.plugins/vuetify"
-import { withVuetifyTheme } from "./withVuetifyTheme.decorator"
-import "../src/assets/styles/layers.css"
-import "../src/assets/styles/tailwind.css"
-import "@mdi/font/css/materialdesignicons.css"
-import "vuetify/styles"
+import type { Preview } from "@storybook/vue3-vite";
+import { setup } from "@storybook/vue3";
+import { createPinia } from "pinia";
+import vuetify from "../.plugins/vuetify";
+import { withVuetifyTheme } from "./withVuetifyTheme.decorator";
+import "../src/assets/styles/layers.css";
+import "../src/assets/styles/tailwind.css";
+import "@mdi/font/css/materialdesignicons.css";
+import "vuetify/styles";
 
 setup((app) => {
-	app.use(vuetify)
-	app.use(createPinia())
-})
+	app.use(vuetify);
+	app.use(createPinia());
+});
 
 const preview: Preview = {
 	parameters: {
@@ -29,6 +29,6 @@ const preview: Preview = {
 			test: "todo"
 		}
 	}
-}
+};
 
-export default preview
+export default preview;

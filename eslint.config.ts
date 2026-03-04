@@ -1,9 +1,9 @@
-import eslint from "@eslint/js"
-import { globalIgnores } from "eslint/config"
-import pluginVue from "eslint-plugin-vue"
-import skipFormatting from "eslint-config-prettier/flat"
-import { importX } from "eslint-plugin-import-x"
-import { defineConfigWithVueTs, vueTsConfigs } from "@vue/eslint-config-typescript"
+import eslint from "@eslint/js";
+import { globalIgnores } from "eslint/config";
+import pluginVue from "eslint-plugin-vue";
+import skipFormatting from "eslint-config-prettier/flat";
+import { importX } from "eslint-plugin-import-x";
+import { defineConfigWithVueTs, vueTsConfigs } from "@vue/eslint-config-typescript";
 
 // To allow more languages other than `ts` in `.vue` files, uncomment the following lines:
 // import { configureVueProject } from '@vue/eslint-config-typescript'
@@ -56,4 +56,4 @@ export default defineConfigWithVueTs(
 			"vue/multi-word-component-names": "off"
 		}
 	}
-)
+);

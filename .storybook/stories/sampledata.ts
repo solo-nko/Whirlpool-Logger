@@ -1,8 +1,8 @@
-import { ICategory } from "../../src/utils/types/ICategory"
-import { DateTime } from "luxon"
-import { FieldType } from "../../src/utils/types/IField"
+import { ICategory } from "../../src/utils/types/ICategory";
+import { DateTime } from "luxon";
+import { FieldType } from "../../src/utils/types/IField";
 
-const sampleDay = DateTime.fromISO("2025-12-15")
+const sampleDay = DateTime.fromISO("2025-12-15");
 
 const GamesCategory: ICategory = {
 	id: "01KJT3Y9HVSTN783BDQ6BV4T0N",
@@ -43,6 +43,6 @@ const GamesCategory: ICategory = {
 	unsyncedChanges: false,
 	updatedOn: sampleDay,
 	createdOn: sampleDay
-}
+};
 
-export { GamesCategory }
+export { GamesCategory };

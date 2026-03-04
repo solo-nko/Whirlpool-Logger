@@ -1,4 +1,4 @@
-import type { StorybookConfig } from "@storybook/vue3-vite"
+import type { StorybookConfig } from "@storybook/vue3-vite";
 
 const config: StorybookConfig = {
 	stories: ["./stories/*.stories.@(js|jsx|mjs|ts|tsx)", "./stories/*.mdx"],
@@ -15,5 +15,5 @@ const config: StorybookConfig = {
 			docgen: "vue-component-meta"
 		}
 	}
-}
-export default config
+};
+export default config;

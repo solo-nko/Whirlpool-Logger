@@ -38,6 +38,19 @@ Date created. This should be automatically set when the object is first created.
 - **Name:** `createdOn`
 - **Type:** DateTime (Luxon)
 
+#### Additional Fields
+
+- **Name:** `extraFields`
+- **Type:** [FieldValue](/design/client/models/field_value.md)[]
+
+#### Tags
+
+Tags applied to the Whirlpool.
+
+- **Name:** `tags`
+- **Type:** string
+  - Array of ids corresponding to applied tags
+
 ### Optional
 
 #### Category
@@ -112,16 +125,6 @@ The user may input a rating of the media.
 
 - **Name:** `unsyncedChanges`
 - **Type:** boolean
-
-#### Additional Fields
-
-- **Name:** `extraFields`
-- **Type:** [FieldValue](/design/client/models/field_value.md)[]
-
-#### Tags
-
-<!-- prettier-ignore -->
-[//]: # (TODO: this is just an idea.")
 
 #### Date Deleted
 

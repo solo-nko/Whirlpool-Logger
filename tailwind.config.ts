@@ -1,4 +1,4 @@
-import type { Config } from "tailwindcss"
+import type { Config } from "tailwindcss";
 
 module.exports = {
 	blocklist: [
@@ -9,4 +9,4 @@ module.exports = {
 		"rounded-4xl",
 		"rounded-full"
 	]
-} satisfies Config
+} satisfies Config;

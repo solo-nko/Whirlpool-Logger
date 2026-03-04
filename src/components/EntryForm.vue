@@ -1,28 +1,98 @@
 <script setup lang="ts">
-import TipTapEditor from "@/components/TipTapEditor.vue"
-import type { ICategory } from "@/utils/types/ICategory.ts"
-import type { IWhirlpoolLog } from "@/utils/types/IWhirlpoolLog.ts"
+import { DateTime } from "luxon";
+import { ulid } from "ulid";
+import TipTapEditor from "@/components/TipTapEditor.vue";
+import type { ICategory } from "@/utils/types/ICategory.ts";
+import type { IWhirlpoolLog } from "@/utils/types/IWhirlpoolLog.ts";
+import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 
 type EntryFormProps = {
-	category?: ICategory
-	existingEntry?: IWhirlpoolLog
-}
+	category?: ICategory;
+	existingEntry?: IWhirlpoolLog;
+	demoOnly?: boolean;
+};
 
-const isEditMode = computed(() => props.existingEntry !== undefined)
+const props = defineProps<EntryFormProps>();
+const emits = defineEmits(["close", "save"]);
+
+const newWhirlpool: IWhirlpoolLog = {
+	id: ulid(),
+	title: "",
+	categoryId: props.category?.id,
+	unsyncedChanges: true,
+	extraFieldValues: [],
+	tags: [],
+	updatedOn: DateTime.now(),
+	createdOn: DateTime.now()
+};
+
+const isEditMode = computed(() => props.existingEntry !== undefined);
 const chapterFieldMods = computed(() => {
-	if (!props.category) return null
+	if (!props.category) return null;
 	// TODO: can prolly turn this into a shared function
-	const fieldMod = props.category.modifiedFields.find((field) => field.field === "chapter")
-	if (!fieldMod) return null
-	return fieldMod
-})
+	const fieldMod = props.category.modifiedFields.find((field) => field.field === "chapter");
+	if (!fieldMod) return null;
+	return fieldMod;
+});
 
 const extraFields = computed(() => {
-	if (!props.category || props.category.extraFields.length === 0) return null
-	return props.category.extraFields
-})
+	if (!props.category || props.category.extraFields.length === 0) return null;
+	return props.category.extraFields;
+});
+const entryModel = ref<IWhirlpoolLog>(props.existingEntry || newWhirlpool);
 
-const props = defineProps<EntryFormProps>()
+function SetToToday() {
+	entryModel.value.userUpdatedOn = DateTime.now().toISODate();
+}
+
+function ResetFields() {
+	entryModel.value = { ...newWhirlpool, id: ulid() };
+}
+
+function OnSaveEntry(whichType: "add" | "update") {
+	emits("save", whichType);
+}
+
+async function AddEntry() {
+	// TODO: add field validation check
+	await LoggerDatabase.whirlpools
+		.add({
+			...entryModel.value,
+			deletedOn:
+				entryModel.value.deletedOn === undefined
+					? undefined
+					: entryModel.value.deletedOn.toJSDate(),
+			updatedOn: entryModel.value.updatedOn.toJSDate(),
+			createdOn: entryModel.value.createdOn.toJSDate()
+		})
+		.then(() => {
+			ResetFields();
+		});
+	OnSaveEntry("add");
+}
+
+async function UpdateEntry() {
+	await LoggerDatabase.whirlpools
+		.update(entryModel.value.id, {
+			...entryModel.value,
+			deletedOn:
+				entryModel.value.deletedOn === undefined
+					? undefined
+					: entryModel.value.deletedOn.toJSDate(),
+			updatedOn: entryModel.value.updatedOn.toJSDate(),
+			createdOn: entryModel.value.createdOn.toJSDate()
+		})
+		.then(() => {
+			ResetFields();
+		});
+	OnSaveEntry("update");
+}
+
+async function OnClickSave() {
+	if (props.demoOnly) return;
+	if (isEditMode.value) await UpdateEntry();
+	else await AddEntry();
+}
 </script>
 
 <template>
@@ -30,14 +100,26 @@ const props = defineProps<EntryFormProps>()
 		<VCardTitle>{{ isEditMode ? "Edit Entry" : "Add Entry" }}</VCardTitle>
 		<VContainer>
 			<VRow>
-				<VTextField label="Title"></VTextField>
+				<VTextField v-model="entryModel.title" label="Title"></VTextField>
 			</VRow>
 			<VRow>
-				<VAutocomplete label="Status" :items="props.category?.statuses ?? []" item-title="name" />
+				<VAutocomplete
+					v-model="entryModel.status"
+					label="Status"
+					:items="props.category?.statuses ?? []"
+					item-title="name"
+					item-value="id"
+				/>
 			</VRow>
 			<VRow>
 				<VCol v-if="chapterFieldMods?.hidden !== true">
-					<VNumberInput label="Chapter" control-variant="stacked" loading :min="0">
+					<VNumberInput
+						v-model="entryModel.chapter"
+						label="Chapter"
+						control-variant="stacked"
+						loading
+						:min="0"
+					>
 						<template v-slot:loader>
 							<!--							TODO: experiment with this-->
 							<VProgressLinear max="50"></VProgressLinear>
@@ -45,10 +127,15 @@ const props = defineProps<EntryFormProps>()
 					</VNumberInput>
 				</VCol>
 				<VCol>
-					<VNumberInput label="Volume" control-variant="stacked" :min="0" />
+					<VNumberInput
+						v-model="entryModel.volume"
+						label="Volume"
+						control-variant="stacked"
+						:min="0"
+					/>
 				</VCol>
 				<VCol>
-					<VTextField label="Series"></VTextField>
+					<VTextField v-model="entryModel.series" label="Series"></VTextField>
 				</VCol>
 			</VRow>
 			<VRow>
@@ -56,9 +143,9 @@ const props = defineProps<EntryFormProps>()
 			</VRow>
 			<VRow>
 				<!-- TODO: Experiment with using date picker instead -->
-				<VTextField type="date">
+				<VTextField v-model="entryModel.userUpdatedOn" label="Last Updated" type="date">
 					<template v-slot:append>
-						<VBtn>Today</VBtn>
+						<VBtn @click="SetToToday">Today</VBtn>
 					</template>
 				</VTextField>
 			</VRow>
@@ -73,8 +160,8 @@ const props = defineProps<EntryFormProps>()
 			</VRow>
 		</VContainer>
 		<VCardActions>
-			<VBtn>Save</VBtn>
-			<VBtn v-if="isEditMode">Cancel</VBtn>
+			<VBtn @click="OnClickSave">Save</VBtn>
+			<VBtn v-if="isEditMode" @click="emits('close')">Cancel</VBtn>
 		</VCardActions>
 	</VCard>
 </template>

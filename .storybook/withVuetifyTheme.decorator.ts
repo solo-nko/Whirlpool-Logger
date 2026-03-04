@@ -1,8 +1,8 @@
-import { h } from "vue"
-import StoryWrapper from "./StoryWrapper.vue"
+import { h } from "vue";
+import StoryWrapper from "./StoryWrapper.vue";
 
 export const withVuetifyTheme = (storyFunc, context) => {
-	const story = storyFunc()
+	const story = storyFunc();
 	return () => {
 		return h(
 			StoryWrapper,
@@ -10,6 +10,6 @@ export const withVuetifyTheme = (storyFunc, context) => {
 			{
 				story: () => h(story, { ...context.args })
 			}
-		)
-	}
-}
+		);
+	};
+};

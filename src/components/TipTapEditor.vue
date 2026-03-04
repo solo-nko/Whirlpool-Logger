@@ -1,34 +1,34 @@
 <script setup lang="ts">
-import { EditorContent, useEditor } from "@tiptap/vue-3"
-import { StarterKit } from "@tiptap/starter-kit"
+import { EditorContent, useEditor } from "@tiptap/vue-3";
+import { StarterKit } from "@tiptap/starter-kit";
 
 const model = defineModel({
 	type: Object,
 	default: () => ({ type: "doc", content: [] })
-})
+});
 
 const editor = useEditor({
 	extensions: [StarterKit],
 	onUpdate({ editor }) {
-		model.value = editor.getJSON()
+		model.value = editor.getJSON();
 	},
 	editorProps: {
 		attributes: {
 			class: "editor-container"
 		}
 	}
-})
+});
 
 function ToggleBold() {
-	editor.value?.chain().focus().toggleBold().run()
+	editor.value?.chain().focus().toggleBold().run();
 }
 
 function ToggleItalic() {
-	editor.value?.chain().focus().toggleItalic().run()
+	editor.value?.chain().focus().toggleItalic().run();
 }
 
 function ToggleUnderline() {
-	editor.value?.chain().focus().toggleUnderline().run()
+	editor.value?.chain().focus().toggleUnderline().run();
 }
 </script>
 
@@ -56,9 +56,11 @@ function ToggleUnderline() {
 							density="comfortable"
 							size="small"
 							icon="mdi-format-italic"
+							v-bind="activatorProps"
 							@click="ToggleItalic"
 						/>
 					</template>
+					Italic
 				</VTooltip>
 
 				<VBtn
