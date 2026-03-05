@@ -7,7 +7,7 @@
 #### Categories
 
 - Name: `categories`
-- Type: Category
+- Type: [Category[]](/design/client/models/category.md)
 
 ### Props
 
@@ -19,15 +19,15 @@
 - **Display:** Yes
 - **Usable:** Yes
 - **Contents:**
-  - For each element in Categories, add a tab:
-    - Name: category.name
+  - For each `category` in [Categories](#categories), add a tab:
+    - Name: `category.name`
     - Component: [EditEntry](/design/client/components/entry_editor.md)
       - Props:
-        - category: category.id
+        - category: `category`
 -
 
 ## Actions
 
 ### On Mounted
 
-- Set [categories](#categories) using categories table from IndexedDB
+- Set [Categories](#categories) using categories table from IndexedDB

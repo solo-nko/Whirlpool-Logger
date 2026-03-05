@@ -79,8 +79,8 @@ Sync Code used for cloud sync.
 
 Whether there are unsynced changes to the category.
 
-**Name:** `unsyncedChanges`
-**Type:** boolean
+- **Name:** `unsyncedChanges`
+- **Type:** boolean
 
 #### Color
 
