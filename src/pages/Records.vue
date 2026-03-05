@@ -2,7 +2,7 @@
 import useCategoriesStore from "@/stores/categories.ts";
 
 const categoriesStore = useCategoriesStore();
-const currentTab = ref();
+const currentTab = ref(categoriesStore.clientCategories[0]);
 </script>
 
 <template>

@@ -3,16 +3,15 @@ import { DateTime } from "luxon";
 import { defineStore } from "pinia";
 import { useObservable } from "@vueuse/rxjs";
 import { from } from "rxjs";
-import { computed, ref } from "vue";
+import { computed } from "vue";
 import type { ICategory } from "@/utils/types/ICategory";
 import type DatabaseCategory from "@/utils/database/models/DatabaseCategory";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 
 const useCategoriesStore = defineStore("category-store", () => {
 	const databaseCategories = useObservable<DatabaseCategory[]>(
-		from(liveQuery(() => LoggerDatabase.categories.toArray()))
+		from(liveQuery(async () => LoggerDatabase.categories.toArray()))
 	);
-	const defaultCategory = ref<ICategory>();
 	const clientCategories = computed<ICategory[]>(() => {
 		const stored = databaseCategories.value;
 		if (stored) {
@@ -35,7 +34,7 @@ const useCategoriesStore = defineStore("category-store", () => {
 		return [];
 	});
 
-	return { databaseCategories, clientCategories, defaultCategory };
+	return { databaseCategories, clientCategories };
 });
 
 export default useCategoriesStore;

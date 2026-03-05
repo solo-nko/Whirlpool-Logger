@@ -6,7 +6,7 @@
 			<VAppBarTitle>Whirlpool Logger</VAppBarTitle>
 		</VAppBar>
 		<VMain><RouterView /></VMain>
-		<VBottomNavigation>
+		<VBottomNavigation grow order="-1">
 			<VBtn to="home">Home</VBtn>
 			<VBtn to="entry">Entry</VBtn>
 			<VBtn to="records">Records</VBtn>
