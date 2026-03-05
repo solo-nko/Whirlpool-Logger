@@ -9,10 +9,17 @@ export type WhirlpoolFields = keyof Omit<
 	"id" | "syncCode" | "extraFields" | "unsyncedChanges" | "deletedOn" | "updatedOn"
 >;
 
+export type DefaultField = {
+	field: WhirlpoolFields;
+	rename?: string;
+	placeholder?: string;
+	hidden: boolean;
+};
+
 export type ICategory = {
 	id: ULID;
 	name: string;
-	modifiedFields: { field: WhirlpoolFields; rename?: string; hidden: boolean }[];
+	modifiedFields: DefaultField[];
 	extraFields: IField[];
 	order?: number;
 	statuses: IStatus[];

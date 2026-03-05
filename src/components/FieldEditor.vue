@@ -3,8 +3,6 @@ import { ulid } from "ulid";
 import { FieldType, type IField } from "@/utils/types/IField.ts";
 
 type FieldEditorProps = {
-	/** Whether this is a default field or not.	 */
-	default: boolean;
 	fieldData?: IField;
 };
 
@@ -53,7 +51,7 @@ function UndoChanges() {
 		<VTextField v-model="fieldModel.placeholder" density="compact" label="Placeholder (optional)" />
 		<VRow class="items-center">
 			<VCol cols="8">
-				<VRadioGroup v-if="!props.default" v-model="fieldModel.type" inline>
+				<VRadioGroup v-model="fieldModel.type" inline>
 					<template v-slot:label>
 						<div>Field Type</div>
 					</template>
@@ -87,7 +85,7 @@ function UndoChanges() {
 		<VCheckbox v-else-if="fieldModel.type === FieldType.BOOL" :label="fieldModel.label" />
 
 		<div class="flex justify-end">
-			<VBtn v-if="!props.default && !isNewField">
+			<VBtn v-if="!isNewField">
 				<template v-slot:prepend> <VIcon icon="mdi-close" /></template>
 				Delete
 			</VBtn>
