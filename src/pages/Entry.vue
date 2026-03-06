@@ -1,8 +1,20 @@
 <script setup lang="ts">
 import EntryForm from "@/components/EntryForm.vue";
 import useCategoriesStore from "@/stores/categories.ts";
+import useSettingsStore from "@/stores/settings.ts";
 const categoriesStore = useCategoriesStore();
+const settingsStore = useSettingsStore();
 const currentTab = ref();
+
+watch(
+	() => settingsStore.defaultEntryCategory,
+	(loadedDefault) => {
+		if (loadedDefault && !currentTab.value) {
+			currentTab.value = loadedDefault;
+		}
+	},
+	{ immediate: true }
+);
 </script>
 
 <template>

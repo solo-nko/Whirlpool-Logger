@@ -8,16 +8,9 @@ enum LocalStorageKeys {
 
 const useSettingsStore = defineStore("settings-store", () => {
 	const categoryStore = useCategoriesStore();
-	const getDefaultEntryCategory = localStorage.getItem(LocalStorageKeys.DefaultEntry);
 
-	const defaultEntryCategory = ref<ICategory | undefined>(
-		categoryStore.clientCategories.find((category) => category.id === getDefaultEntryCategory)
-	);
-	const defaultTableCategory = ref<ICategory | undefined>(
-		categoryStore.clientCategories.find(
-			(category) => category.id === localStorage.getItem(LocalStorageKeys.DefaultTable)
-		)
-	);
+	const defaultEntryCategory = ref<ICategory | undefined>();
+	const defaultTableCategory = ref<ICategory | undefined>();
 
 	function SetDefaultEntryToLocalStorage(input: ICategory) {
 		localStorage.setItem(LocalStorageKeys.DefaultEntry, input.id);
@@ -26,6 +19,25 @@ const useSettingsStore = defineStore("settings-store", () => {
 	function SetDefaultTableToLocalStorage(input: ICategory) {
 		localStorage.setItem(LocalStorageKeys.DefaultTable, input.id);
 	}
+
+	watch(
+		() => categoryStore.clientCategories,
+		(loadedCategories) => {
+			const storedEntryDefault = localStorage.getItem(LocalStorageKeys.DefaultEntry);
+			const storedTableDefault = localStorage.getItem(LocalStorageKeys.DefaultTable);
+			if (loadedCategories.length > 0) {
+				if (defaultEntryCategory.value === undefined)
+					defaultEntryCategory.value =
+						loadedCategories.find((category) => category.id === storedEntryDefault) ??
+						loadedCategories[0];
+				if (defaultTableCategory.value === undefined)
+					defaultTableCategory.value =
+						loadedCategories.find((category) => category.id === storedTableDefault) ??
+						loadedCategories[0];
+			}
+		},
+		{ immediate: true }
+	);
 
 	return {
 		defaultEntryCategory,
