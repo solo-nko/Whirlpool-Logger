@@ -7,6 +7,7 @@ import { computed } from "vue";
 import type { ICategory } from "@/utils/types/ICategory";
 import type DatabaseCategory from "@/utils/database/models/DatabaseCategory";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
+import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 
 const useCategoriesStore = defineStore("category-store", () => {
 	const databaseCategories = useObservable<DatabaseCategory[]>(
@@ -15,21 +16,30 @@ const useCategoriesStore = defineStore("category-store", () => {
 	const clientCategories = computed<ICategory[]>(() => {
 		const stored = databaseCategories.value;
 		if (stored) {
-			return stored.map((category) => {
-				return {
-					id: category.id,
-					name: category.name,
-					modifiedFields: category.modifiedFields,
-					extraFields: category.extraFields,
-					statuses: category.statuses,
-					color: category.color,
-					syncCode: category.syncCode,
-					unsyncedChanges: category.unsyncedChanges,
-					deletedOn: category.deletedOn ? DateTime.fromJSDate(category.deletedOn) : undefined,
-					updatedOn: DateTime.fromJSDate(category.updatedOn),
-					createdOn: DateTime.fromJSDate(category.createdOn)
-				};
-			});
+			return stored
+				.map((category) => {
+					return {
+						id: category.id,
+						name: category.name,
+						modifiedFields: category.modifiedFields,
+						extraFields: category.extraFields,
+						order: category.displayOrder,
+						availableStatuses: DatabaseStatus.ConvertStatusesFromDatabase(
+							category.availableStatuses
+						),
+						color: category.color,
+						syncCode: category.syncCode,
+						unsyncedChanges: category.unsyncedChanges,
+						deletedOn: category.deletedOn ? DateTime.fromJSDate(category.deletedOn) : undefined,
+						updatedOn: DateTime.fromJSDate(category.updatedOn),
+						createdOn: DateTime.fromJSDate(category.createdOn)
+					};
+				})
+				.sort((cat1, cat2) => {
+					// sort based on defined order
+					if (cat1.order === undefined || cat2.order === undefined) return 0;
+					return cat1.order - cat2.order;
+				});
 		}
 		return [];
 	});

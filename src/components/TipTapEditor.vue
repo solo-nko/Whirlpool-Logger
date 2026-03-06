@@ -19,17 +19,17 @@ const editor = useEditor({
 	}
 });
 
-function ToggleBold() {
+const toggleBold = () => {
 	editor.value?.chain().focus().toggleBold().run();
-}
+};
 
-function ToggleItalic() {
+const toggleItalic = () => {
 	editor.value?.chain().focus().toggleItalic().run();
-}
+};
 
-function ToggleUnderline() {
+const toggleUnderline = () => {
 	editor.value?.chain().focus().toggleUnderline().run();
-}
+};
 </script>
 
 <template>
@@ -44,7 +44,7 @@ function ToggleUnderline() {
 							size="small"
 							icon="mdi-format-bold"
 							v-bind="activatorProps"
-							@click="ToggleBold"
+							@click="toggleBold"
 						>
 						</VBtn>
 					</template>
@@ -57,7 +57,7 @@ function ToggleUnderline() {
 							size="small"
 							icon="mdi-format-italic"
 							v-bind="activatorProps"
-							@click="ToggleItalic"
+							@click="toggleItalic"
 						/>
 					</template>
 					Italic
@@ -67,7 +67,7 @@ function ToggleUnderline() {
 					density="comfortable"
 					size="small"
 					icon="mdi-format-underline"
-					@click="ToggleUnderline"
+					@click="toggleUnderline"
 				/>
 			</VBtnGroup>
 		</div>

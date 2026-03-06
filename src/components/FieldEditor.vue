@@ -5,25 +5,25 @@ import { FieldType, type IField } from "@/utils/types/IField.ts";
 type FieldEditorProps = {
 	fieldData?: IField;
 };
+const blankField: IField = {
+	id: ulid(),
+	label: "",
+	type: FieldType.TEXT,
+	placeholder: "",
+	hidden: false
+};
 
 const props = defineProps<FieldEditorProps>();
 const isNewField = computed(() => props.fieldData === undefined);
+const emits = defineEmits(["updateField", "addField", "removeField"]);
 
 const fieldModel = ref<IField>(
-	props.fieldData
-		? structuredClone(toRaw(props.fieldData))
-		: {
-				id: ulid(),
-				label: "",
-				type: FieldType.STRING,
-				placeholder: "",
-				hidden: false
-			}
+	props.fieldData ? structuredClone(toRaw(props.fieldData)) : blankField
 );
 
 const translatedLabels = [
 	{
-		type: FieldType.STRING,
+		type: FieldType.TEXT,
 		label: "Text"
 	},
 	{
@@ -40,9 +40,22 @@ const translatedLabels = [
 	}
 ];
 
-function UndoChanges() {
+const undoChanges = () => {
 	if (props.fieldData) fieldModel.value = structuredClone(toRaw(props.fieldData));
-}
+};
+
+const addField = () => {
+	emits("addField", fieldModel.value);
+	fieldModel.value = blankField;
+};
+
+const updateField = () => {
+	emits("updateField", fieldModel.value);
+};
+
+const removeField = () => {
+	emits("removeField", fieldModel.value.id);
+};
 </script>
 
 <template>
@@ -72,7 +85,7 @@ function UndoChanges() {
 		</VRow>
 		<div>Preview</div>
 		<VTextField
-			v-if="fieldModel.type === FieldType.STRING"
+			v-if="fieldModel.type === FieldType.TEXT"
 			:label="fieldModel.label"
 			:placeholder="fieldModel.placeholder"
 		/>
@@ -85,17 +98,17 @@ function UndoChanges() {
 		<VCheckbox v-else-if="fieldModel.type === FieldType.BOOL" :label="fieldModel.label" />
 
 		<div class="flex justify-end">
-			<VBtn v-if="!isNewField">
+			<VBtn v-if="!isNewField" @click="removeField">
 				<template v-slot:prepend> <VIcon icon="mdi-close" /></template>
 				Delete
 			</VBtn>
-			<VBtn v-if="!isNewField" class="ml-3" @click="UndoChanges">
+			<VBtn v-if="!isNewField" class="ml-3" @click="undoChanges">
 				<template v-slot:prepend>
 					<VIcon icon="mdi-arrow-u-left-top" />
 				</template>
 				Revert
 			</VBtn>
-			<VBtn class="ml-3">
+			<VBtn class="ml-3" @click="isNewField ? addField() : updateField()">
 				<template v-slot:prepend>
 					<VIcon v-if="isNewField" icon="mdi-plus" />
 					<VIcon v-else icon="mdi-check" />

@@ -14,7 +14,7 @@
 Type of data the field will hold.
 
 - **Name:** `type`
-- **Type:** string
+- **Type:** [FieldType](#enum-fieldtype)
 
 #### Label
 
@@ -34,3 +34,14 @@ Whether the field is hidden/active.
 
 - **Name:** `placeholder`
 - **Type:** string
+
+### Enum FieldType
+
+FieldType indicates what manner of field should be used for this field, as well as what type of data it should hold.
+
+- **Name:** `FieldType`
+- **Values**:
+  - `TEXT` - string
+  - `NUMBER` - number
+  - `BOOL` - boolean
+  - `DATE` - DateTime

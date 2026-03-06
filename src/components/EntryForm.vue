@@ -5,6 +5,7 @@ import TipTapEditor from "@/components/TipTapEditor.vue";
 import type { ICategory } from "@/utils/types/ICategory.ts";
 import type { IWhirlpoolLog } from "@/utils/types/IWhirlpoolLog.ts";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
+import { FieldType } from "@/utils/types/IField.ts";
 
 type EntryFormProps = {
 	category?: ICategory;
@@ -41,9 +42,9 @@ const extraFields = computed(() => {
 });
 const entryModel = ref<IWhirlpoolLog>(props.existingEntry || newWhirlpool);
 
-function SetToToday() {
+const setToToday = () => {
 	entryModel.value.userUpdatedOn = DateTime.now().toISODate();
-}
+};
 
 function ResetFields() {
 	entryModel.value = { ...newWhirlpool, id: ulid() };
@@ -88,11 +89,11 @@ async function UpdateEntry() {
 	OnSaveEntry("update");
 }
 
-async function OnClickSave() {
+const onClickSave = async () => {
 	if (props.demoOnly) return;
 	if (isEditMode.value) await UpdateEntry();
 	else await AddEntry();
-}
+};
 </script>
 
 <template>
@@ -106,7 +107,7 @@ async function OnClickSave() {
 				<VAutocomplete
 					v-model="entryModel.status"
 					label="Status"
-					:items="props.category?.statuses ?? []"
+					:items="props.category?.availableStatuses ?? []"
 					item-title="name"
 					item-value="id"
 				/>
@@ -145,7 +146,7 @@ async function OnClickSave() {
 				<!-- TODO: Experiment with using date picker instead -->
 				<VTextField v-model="entryModel.userUpdatedOn" label="Last Updated" type="date">
 					<template v-slot:append>
-						<VBtn @click="SetToToday">Today</VBtn>
+						<VBtn @click="setToToday">Today</VBtn>
 					</template>
 				</VTextField>
 			</VRow>
@@ -153,14 +154,28 @@ async function OnClickSave() {
 				<VExpansionPanels v-for="extraField in extraFields" :key="extraField.id">
 					<VExpansionPanel :title="extraField.label">
 						<VExpansionPanelText>
-							<VTextField />
+							<VTextField
+								v-if="extraField.type === FieldType.TEXT"
+								:label="extraField.label"
+								:placeholder="extraField.placeholder"
+							/>
+							<VNumberInput
+								v-else-if="extraField.type === FieldType.NUMBER"
+								:label="extraField.label"
+							/>
+							<VTextField
+								v-else-if="extraField.type === FieldType.DATE"
+								:label="extraField.label"
+								type="date"
+							/>
+							<VCheckbox v-else-if="extraField.type === FieldType.BOOL" :label="extraField.label" />
 						</VExpansionPanelText>
 					</VExpansionPanel>
 				</VExpansionPanels>
 			</VRow>
 		</VContainer>
 		<VCardActions>
-			<VBtn @click="OnClickSave">Save</VBtn>
+			<VBtn @click="onClickSave">Save</VBtn>
 			<VBtn v-if="isEditMode" @click="emits('close')">Cancel</VBtn>
 		</VCardActions>
 	</VCard>

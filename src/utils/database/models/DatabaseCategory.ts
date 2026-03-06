@@ -1,15 +1,17 @@
 import { Entity } from "dexie";
 import type DatabaseConfig from "@/utils/database/DatabaseConfig";
 import type { IField } from "@/utils/types/IField";
-import type { IStatus } from "@/utils/types/IStatus.ts";
-import type { WhirlpoolFields } from "@/utils/types/ICategory.ts";
+import type { DefaultField } from "@/utils/types/ICategory.ts";
+import type { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 
+// When changing fields here, make sure to also change their name in DatabaseConfig!
 class DatabaseCategory extends Entity<DatabaseConfig> {
 	id!: string;
 	name!: string;
-	modifiedFields!: { field: WhirlpoolFields; rename?: string; hidden: boolean }[];
+	modifiedFields!: DefaultField[];
 	extraFields!: IField[];
-	statuses!: IStatus[];
+	displayOrder?: number;
+	availableStatuses!: DatabaseStatus[];
 	color?: string;
 	syncCode?: string;
 	unsyncedChanges!: boolean;

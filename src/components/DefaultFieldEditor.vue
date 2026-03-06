@@ -7,9 +7,9 @@ type FieldEditorProps = {
 
 const props = defineProps<FieldEditorProps>();
 const fieldModel = ref<DefaultField>(structuredClone(toRaw(props.fieldData)));
-function UndoChanges() {
+const undoChanges = () => {
 	if (props.fieldData) fieldModel.value = structuredClone(toRaw(props.fieldData));
-}
+};
 </script>
 
 <template>
@@ -21,7 +21,7 @@ function UndoChanges() {
 			</VSwitch>
 		</VRow>
 		<div class="flex justify-end">
-			<VBtn class="ml-3" @click="UndoChanges">
+			<VBtn class="ml-3" @click="undoChanges">
 				<template v-slot:prepend>
 					<VIcon icon="mdi-arrow-u-left-top" />
 				</template>

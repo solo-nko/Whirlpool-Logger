@@ -18,7 +18,7 @@ const GamesCategory: ICategory = {
 			type: FieldType.DATE
 		}
 	],
-	statuses: [
+	availableStatuses: [
 		{
 			name: "Playing",
 			createdOn: sampleDay

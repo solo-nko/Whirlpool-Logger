@@ -4,6 +4,7 @@ import { ulid } from "ulid";
 import DatabaseWhirlpool from "@/utils/database/models/DatabaseWhirlpool";
 import DatabaseCategory from "@/utils/database/models/DatabaseCategory";
 import type { ICategory } from "@/utils/types/ICategory";
+import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 
 const now = DateTime.now();
 const defaultCategories: ICategory[] = [
@@ -12,7 +13,7 @@ const defaultCategories: ICategory[] = [
 		name: "Games",
 		modifiedFields: [],
 		extraFields: [],
-		statuses: [
+		availableStatuses: [
 			{
 				id: ulid(),
 				name: "Playing",
@@ -43,7 +44,7 @@ const defaultCategories: ICategory[] = [
 		name: "TV",
 		modifiedFields: [{ field: "series", hidden: true }],
 		extraFields: [],
-		statuses: [
+		availableStatuses: [
 			{
 				id: ulid(),
 				name: "Watching",
@@ -77,7 +78,7 @@ const defaultCategories: ICategory[] = [
 			{ field: "volume", hidden: true }
 		],
 		extraFields: [],
-		statuses: [
+		availableStatuses: [
 			{
 				id: ulid(),
 				name: "Watching",
@@ -111,7 +112,7 @@ const defaultCategories: ICategory[] = [
 			{ field: "chapter", hidden: true }
 		],
 		extraFields: [],
-		statuses: [
+		availableStatuses: [
 			{
 				id: ulid(),
 				name: "Reading",
@@ -149,13 +150,14 @@ class DatabaseConfig extends Dexie {
 			whirlpools:
 				"id, categoryId, title, status, chapter, volume, series, progress, rating, notes, syncCode, unsyncedChanges, extraFieldValues, deletedOn, userUpdatedOn, updatedOn, createdOn",
 			categories:
-				"id, name, modifiedFields, extraFields, statuses, color, syncCode, unsyncedChanged, updatedOn, createdOn, deletedOn"
+				"id, name, modifiedFields, extraFields, displayOrder, availableStatuses, color, syncCode, unsyncedChanges, updatedOn, createdOn, deletedOn"
 		});
 
 		this.on("populate", function (transaction) {
 			const convertedDefaults = defaultCategories.map((category) => {
 				return {
 					...category,
+					availableStatuses: DatabaseStatus.ConvertStatusesToDatabase(category.availableStatuses),
 					updatedOn: category.updatedOn.toJSDate(),
 					createdOn: category.createdOn.toJSDate()
 				};

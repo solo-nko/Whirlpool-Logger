@@ -1,10 +1,10 @@
 import type { ULID } from "ulid";
 
 export enum FieldType {
-	STRING,
-	NUMBER,
-	BOOL,
-	DATE
+	TEXT = "text",
+	NUMBER = "number",
+	BOOL = "boolean",
+	DATE = "date"
 }
 
 export type IField = {
