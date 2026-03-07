@@ -9,6 +9,7 @@ import tailwindcss from "@tailwindcss/vite";
 import vueRouter from "vue-router/vite";
 import autoimport from "unplugin-auto-import/vite";
 import fonts from "unplugin-fonts/vite";
+import { VueRouterAutoImports } from "vue-router/unplugin";
 
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 import { playwright } from "@vitest/browser-playwright";
@@ -24,7 +25,7 @@ export default defineConfig({
 	plugins: [
 		vueRouter(),
 		vue(),
-		autoimport({ dts: true, imports: ["vue", "@vueuse/core", "vue-router", "pinia"] }),
+		autoimport({ dts: true, imports: ["vue", "@vueuse/core", VueRouterAutoImports, "pinia"] }),
 		!isStorybookProcess && vueDevTools(),
 		vuetify({
 			autoImport: true,
