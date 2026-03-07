@@ -1,5 +1,6 @@
 import type { ULID } from "ulid";
 import type { DateTime } from "luxon";
+import type { JSONContent } from "@tiptap/vue-3";
 import type { IFieldValue } from "@/utils/types/IFieldValue";
 
 export type IWhirlpoolLog = {
@@ -15,7 +16,7 @@ export type IWhirlpoolLog = {
 	progress?: string;
 	rating?: number;
 	/** editor content */
-	notes?: unknown;
+	notes?: JSONContent;
 	syncCode?: string;
 	unsyncedChanges: boolean;
 	extraFieldValues: IFieldValue[];

@@ -140,7 +140,7 @@ const onClickSave = async () => {
 				</VCol>
 			</VRow>
 			<VRow>
-				<TipTapEditor />
+				<TipTapEditor v-model="entryModel.notes" />
 			</VRow>
 			<VRow>
 				<!-- TODO: Experiment with using date picker instead -->

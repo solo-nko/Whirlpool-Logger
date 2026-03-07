@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
+		"dev-host": "vite --host",
 		"build": "run-p type-check \"build-only {@}\" --",
 		"preview": "vite preview",
 		"build-only": "vite build",
@@ -20,6 +21,7 @@
 		"@fontsource/sen": "^5.2.8",
 		"@fontsource/sometype-mono": "^5.2.7",
 		"@mdi/font": "^7.4.47",
+		"@tiptap/extensions": "^3.20.1",
 		"@tiptap/pm": "^3.20.0",
 		"@tiptap/starter-kit": "^3.20.0",
 		"@tiptap/vue-3": "^3.20.0",

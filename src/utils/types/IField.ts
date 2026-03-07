@@ -13,5 +13,6 @@ export type IField = {
 	type: FieldType;
 	placeholder?: string;
 	hidden: boolean;
+	// TODO: display order?
 	// TODO: required?
 };
