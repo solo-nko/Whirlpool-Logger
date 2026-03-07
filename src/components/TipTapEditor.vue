@@ -11,7 +11,7 @@ type TipTapEditorProps = {
 
 const buttonFormatting: Pick<VBtn, "density" | "size"> = {
 	density: "comfortable",
-	size: "small"
+	size: "large"
 };
 
 const {
@@ -27,9 +27,26 @@ const {
 } = defineProps<TipTapEditorProps>();
 const emits = defineEmits(["update:modelValue"]);
 
+// TODO: overwrite tab shortcut for lists: https://tiptap.dev/docs/editor/core-concepts/keyboard-shortcuts#overwrite-keyboard-shortcuts
 const editor = useEditor({
 	extensions: [
-		StarterKit,
+		StarterKit.configure({
+			paragraph: {
+				HTMLAttributes: {
+					class: "my-0"
+				}
+			},
+			orderedList: {
+				HTMLAttributes: {
+					class: "my-0"
+				}
+			},
+			bulletList: {
+				HTMLAttributes: {
+					class: "my-0"
+				}
+			}
+		}),
 		Placeholder.configure({
 			placeholder: "Write down your thoughts..."
 		})
@@ -41,7 +58,7 @@ const editor = useEditor({
 	},
 	editorProps: {
 		attributes: {
-			class: "editor-container"
+			class: "editor-container min-h-15 m-2"
 		}
 	}
 });
@@ -111,6 +128,7 @@ onBeforeUnmount(() => {
 							icon="mdi-undo"
 							v-bind="activatorProps"
 							:disabled="!canUndo"
+							variant="text"
 							@click="executeUndo"
 						>
 						</VBtn>
@@ -125,6 +143,7 @@ onBeforeUnmount(() => {
 							icon="mdi-redo"
 							v-bind="activatorProps"
 							:disabled="!canRedo"
+							variant="text"
 							@click="executeRedo"
 						>
 						</VBtn>
@@ -140,6 +159,7 @@ onBeforeUnmount(() => {
 							:size="buttonFormatting.size"
 							icon="mdi-format-bold"
 							v-bind="activatorProps"
+							variant="text"
 							@click="toggleBold"
 						>
 						</VBtn>
@@ -153,6 +173,7 @@ onBeforeUnmount(() => {
 							:size="buttonFormatting.size"
 							icon="mdi-format-italic"
 							v-bind="activatorProps"
+							variant="text"
 							@click="toggleItalic"
 						/>
 					</template>
@@ -165,6 +186,7 @@ onBeforeUnmount(() => {
 							:size="buttonFormatting.size"
 							icon="mdi-format-underline"
 							v-bind="activatorProps"
+							variant="text"
 							@click="toggleUnderline"
 						/>
 					</template>
@@ -178,6 +200,7 @@ onBeforeUnmount(() => {
 							:size="buttonFormatting.size"
 							icon="mdi-format-strikethrough-variant"
 							v-bind="activatorProps"
+							variant="text"
 							@click="toggleStrikethrough"
 						/>
 					</template>
@@ -191,6 +214,7 @@ onBeforeUnmount(() => {
 							:size="buttonFormatting.size"
 							icon="mdi-format-list-bulleted"
 							v-bind="activatorProps"
+							variant="text"
 							@click="toggleBulletList"
 						/>
 					</template>
@@ -203,6 +227,7 @@ onBeforeUnmount(() => {
 							:size="buttonFormatting.size"
 							icon="mdi-format-list-numbered"
 							v-bind="activatorProps"
+							variant="text"
 							@click="toggleOrderedList"
 						/>
 					</template>
@@ -221,14 +246,6 @@ onBeforeUnmount(() => {
 /* https://github.com/ueberdosis/tiptap/issues/526#issuecomment-1146048772 */
 ::v-deep(.ProseMirror:focus-visible) {
 	outline: none;
-}
-
-::v-deep(.tiptap) {
-	min-height: 3rem;
-}
-
-::v-deep(.tiptap p) {
-	font-size: 0.75rem;
 }
 
 ::v-deep(.tiptap p.is-editor-empty:first-child::before) {

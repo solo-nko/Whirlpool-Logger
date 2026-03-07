@@ -17,13 +17,13 @@ const useCategoriesStore = defineStore("category-store", () => {
 		const stored = databaseCategories.value;
 		if (stored) {
 			return stored
-				.map((category) => {
+				.map((category): ICategory => {
 					return {
 						id: category.id,
 						name: category.name,
 						modifiedFields: category.modifiedFields,
 						extraFields: category.extraFields,
-						order: category.displayOrder,
+						displayOrder: category.displayOrder,
 						availableStatuses: DatabaseStatus.ConvertStatusesFromDatabase(
 							category.availableStatuses
 						),
@@ -37,8 +37,10 @@ const useCategoriesStore = defineStore("category-store", () => {
 				})
 				.sort((cat1, cat2) => {
 					// sort based on defined order
-					if (cat1.order === undefined || cat2.order === undefined) return 0;
-					return cat1.order - cat2.order;
+					if (cat1.displayOrder === undefined && cat2.displayOrder === undefined) return 0;
+					if (cat1.displayOrder === undefined) return 1;
+					if (cat2.displayOrder === undefined) return -1;
+					return cat1.displayOrder - cat2.displayOrder;
 				});
 		}
 		return [];

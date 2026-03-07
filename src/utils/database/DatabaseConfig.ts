@@ -13,6 +13,7 @@ const defaultCategories: ICategory[] = [
 		name: "Games",
 		modifiedFields: [],
 		extraFields: [],
+		displayOrder: 5,
 		availableStatuses: [
 			{
 				id: ulid(),
@@ -44,6 +45,7 @@ const defaultCategories: ICategory[] = [
 		name: "TV",
 		modifiedFields: [{ field: "series", hidden: true }],
 		extraFields: [],
+		displayOrder: 5,
 		availableStatuses: [
 			{
 				id: ulid(),
@@ -78,6 +80,7 @@ const defaultCategories: ICategory[] = [
 			{ field: "volume", hidden: true }
 		],
 		extraFields: [],
+		displayOrder: 5,
 		availableStatuses: [
 			{
 				id: ulid(),
@@ -112,6 +115,7 @@ const defaultCategories: ICategory[] = [
 			{ field: "chapter", hidden: true }
 		],
 		extraFields: [],
+		displayOrder: 5,
 		availableStatuses: [
 			{
 				id: ulid(),
