@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import useCategoriesStore from "@/stores/categories.ts";
 import useSettingsStore from "@/stores/settings.ts";
+import WhirlpoolTable from "@/components/WhirlpoolTable.vue";
 
 const categoriesStore = useCategoriesStore();
 const settingsStore = useSettingsStore();
@@ -29,6 +30,21 @@ watch(
 					{{ category.name }}
 				</VTab>
 			</VTabs>
+		</VRow>
+		<VRow>
+			<VCol>
+				<VCard>
+					<VTabsWindow v-model="currentTab">
+						<VTabsWindowItem
+							v-for="category in categoriesStore.clientCategories"
+							:key="category.id"
+							:value="category"
+						>
+							<WhirlpoolTable />
+						</VTabsWindowItem>
+					</VTabsWindow>
+				</VCard>
+			</VCol>
 		</VRow>
 	</VContainer>
 </template>

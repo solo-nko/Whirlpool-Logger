@@ -73,6 +73,7 @@ async function AddEntry() {
 }
 
 async function UpdateEntry() {
+	// TODO: This throws a clone error
 	await LoggerDatabase.whirlpools
 		.update(entryModel.value.id, {
 			...entryModel.value,

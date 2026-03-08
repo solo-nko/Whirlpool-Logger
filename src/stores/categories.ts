@@ -19,17 +19,10 @@ const useCategoriesStore = defineStore("category-store", () => {
 			return stored
 				.map((category): ICategory => {
 					return {
-						id: category.id,
-						name: category.name,
-						modifiedFields: category.modifiedFields,
-						extraFields: category.extraFields,
-						displayOrder: category.displayOrder,
+						...category,
 						availableStatuses: DatabaseStatus.ConvertStatusesFromDatabase(
 							category.availableStatuses
 						),
-						color: category.color,
-						syncCode: category.syncCode,
-						unsyncedChanges: category.unsyncedChanges,
 						deletedOn: category.deletedOn ? DateTime.fromJSDate(category.deletedOn) : undefined,
 						updatedOn: DateTime.fromJSDate(category.updatedOn),
 						createdOn: DateTime.fromJSDate(category.createdOn)

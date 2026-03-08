@@ -20,7 +20,7 @@ export type IWhirlpoolLog = {
 	syncCode?: string;
 	unsyncedChanges: boolean;
 	extraFieldValues: IFieldValue[];
-	/** id of tags applied to Whirlpool. */
+	/** ids of tags applied to Whirlpool. */
 	tags: string[];
 	deletedOn?: DateTime;
 	userUpdatedOn?: string;
