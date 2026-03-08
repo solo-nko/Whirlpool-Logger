@@ -6,6 +6,7 @@ import vue from "@vitejs/plugin-vue";
 import vueDevTools from "vite-plugin-vue-devtools";
 import vuetify from "vite-plugin-vuetify";
 import tailwindcss from "@tailwindcss/vite";
+import { VitePWA } from "vite-plugin-pwa";
 import vueRouter from "vue-router/vite";
 import autoimport from "unplugin-auto-import/vite";
 import fonts from "unplugin-fonts/vite";
@@ -51,7 +52,36 @@ export default defineConfig({
 				]
 			}
 		}),
-		tailwindcss()
+		tailwindcss(),
+		VitePWA({
+			registerType: "prompt",
+			injectRegister: false,
+
+			pwaAssets: {
+				disabled: false,
+				config: true
+			},
+
+			manifest: {
+				name: "Whirlpool Logger",
+				short_name: "Whirlpool Logger",
+				description: "A media diary for your whirlpool of thoughts",
+				theme_color: "#ffffff"
+			},
+
+			workbox: {
+				globPatterns: ["**/*.{js,css,html,svg,png,ico}"],
+				cleanupOutdatedCaches: true,
+				clientsClaim: true
+			},
+
+			devOptions: {
+				enabled: false,
+				navigateFallback: "index.html",
+				suppressWarnings: true,
+				type: "module"
+			}
+		})
 	],
 	resolve: {
 		alias: {
