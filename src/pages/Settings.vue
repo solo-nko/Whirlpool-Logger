@@ -19,6 +19,7 @@ const currentTab = ref<settingsRefs>("GeneralSettings");
 </script>
 
 <template>
+	<!--	TODO: highlight which icon/tab is currently selected -->
 	<VNavigationDrawer rail expand-on-hover permanent location="right">
 		<VList>
 			<VListItem prepend-icon="mdi-cogs" link @click="currentTab = 'GeneralSettings'"

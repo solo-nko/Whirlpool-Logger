@@ -9,8 +9,8 @@ import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
 import vueRouter from "vue-router/vite";
 import autoimport from "unplugin-auto-import/vite";
-import fonts from "unplugin-fonts/vite";
 import { VueRouterAutoImports } from "vue-router/unplugin";
+import viteFonts from "unplugin-fonts/vite";
 
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 import { playwright } from "@vitest/browser-playwright";
@@ -34,9 +34,14 @@ export default defineConfig({
 				configFile: "src/assets/styles/settings.scss"
 			}
 		}),
-		fonts({
+		viteFonts({
 			fontsource: {
 				families: [
+					{
+						name: "Roboto",
+						weights: [100, 300, 400, 500, 700, 900],
+						styles: ["normal", "italic"]
+					},
 					{
 						name: "Bricolage Grotesque",
 						weights: [300, 400, 500, 700]
