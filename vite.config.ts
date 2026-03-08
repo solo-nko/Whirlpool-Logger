@@ -26,7 +26,7 @@ export default defineConfig({
 		vueRouter(),
 		vue(),
 		autoimport({ dts: true, imports: ["vue", "@vueuse/core", VueRouterAutoImports, "pinia"] }),
-		!isStorybookProcess && vueDevTools(),
+		!isStorybookProcess && vueDevTools({ launchEditor: "webstorm" }),
 		vuetify({
 			autoImport: true,
 			styles: {

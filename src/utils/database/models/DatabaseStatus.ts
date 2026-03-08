@@ -5,7 +5,8 @@ import type { IStatus } from "@/utils/types/IStatus.ts";
 export class DatabaseStatus {
 	id: ULID;
 	name: string;
-	order?: number;
+	description?: string;
+	displayOrder?: number;
 	color?: string;
 	deletedOn?: Date;
 	createdOn: Date;

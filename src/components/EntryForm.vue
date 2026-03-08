@@ -143,7 +143,6 @@ const onClickSave = async () => {
 				<TipTapEditor v-model="entryModel.notes" />
 			</VRow>
 			<VRow>
-				<!-- TODO: Experiment with using date picker instead -->
 				<VTextField v-model="entryModel.userUpdatedOn" label="Last Updated" type="date">
 					<template v-slot:append>
 						<VBtn @click="setToToday">Today</VBtn>

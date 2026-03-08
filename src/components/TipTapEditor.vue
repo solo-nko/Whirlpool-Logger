@@ -119,7 +119,7 @@ onBeforeUnmount(() => {
 	<div class="border-2 border-gray-200/50 rounded-lg w-full">
 		<!--		Toolbar wrapper -->
 		<div class="border-b-1 border-gray-200/50 flex justify-center">
-			<VBtnGroup>
+			<VBtnToggle multiple>
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
@@ -233,7 +233,7 @@ onBeforeUnmount(() => {
 					</template>
 					<span>Numbered List</span>
 				</VTooltip>
-			</VBtnGroup>
+			</VBtnToggle>
 		</div>
 		<!--		Editor wrapper-->
 		<div class="overflow-y-auto max-h-40 min-h-20 px-2">

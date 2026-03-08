@@ -5,10 +5,10 @@ type FieldEditorProps = {
 	fieldData: DefaultField;
 };
 
-const props = defineProps<FieldEditorProps>();
-const fieldModel = ref<DefaultField>(structuredClone(toRaw(props.fieldData)));
+const { fieldData } = defineProps<FieldEditorProps>();
+const fieldModel = ref<DefaultField>(structuredClone(toRaw(fieldData)));
 const undoChanges = () => {
-	if (props.fieldData) fieldModel.value = structuredClone(toRaw(props.fieldData));
+	if (fieldData) fieldModel.value = structuredClone(toRaw(fieldData));
 };
 </script>
 

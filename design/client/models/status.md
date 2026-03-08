@@ -25,11 +25,18 @@ Name of the status.
 
 ### Optional
 
-#### Order
+#### Description
+
+Description of the status and what it means.
+
+- **Name:** `description`
+- **Type:** string
+
+#### Display Order
 
 Order the status should be displayed in. If undefined, it will be treated as low/0 priority.
 
-- **Name:** `order`
+- **Name:** `displayOrder`
 - **Type:** number
 
 #### Color

@@ -4,7 +4,8 @@ import type { ULID } from "ulid";
 export type IStatus = {
 	id: ULID;
 	name: string;
-	order?: number;
+	description?: string;
+	displayOrder?: number;
 	color?: string;
 	deletedOn?: DateTime;
 	createdOn: DateTime;
