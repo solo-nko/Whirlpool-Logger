@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { ImportOldFormat } from "@/utils/transformers.ts";
+import { ExportDatabase } from "@/utils/ImportExportUtils.ts";
 
 const uploadedFile = ref<File | null>(null);
 
+const onClickExport = async () => {
+	await ExportDatabase();
+};
 const onClickImport = () => {
 	if (uploadedFile.value === null) return;
-	ImportOldFormat(uploadedFile.value);
 };
 </script>
 
@@ -25,7 +27,7 @@ const onClickImport = () => {
 					to add it back in. To protect the integrity of your data, it is strongly recommended to
 					avoid directly editing the file.
 				</p>
-				<VBtn>Export Whirlpool Logs</VBtn>
+				<VBtn @click="onClickExport">Export Whirlpool Logs</VBtn>
 			</VCol>
 		</VRow>
 		<VRow>

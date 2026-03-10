@@ -34,6 +34,11 @@ const defaultCategories: ICategory[] = [
 				id: ulid(),
 				name: "Dropped",
 				createdOn: now
+			},
+			{
+				id: ulid(),
+				name: "Hiatus",
+				createdOn: now
 			}
 		],
 		updatedOn: now,
@@ -65,6 +70,11 @@ const defaultCategories: ICategory[] = [
 			{
 				id: ulid(),
 				name: "Dropped",
+				createdOn: now
+			},
+			{
+				id: ulid(),
+				name: "Hiatus",
 				createdOn: now
 			}
 		],
@@ -101,6 +111,11 @@ const defaultCategories: ICategory[] = [
 				id: ulid(),
 				name: "Dropped",
 				createdOn: now
+			},
+			{
+				id: ulid(),
+				name: "Hiatus",
+				createdOn: now
 			}
 		],
 		updatedOn: now,
@@ -135,6 +150,11 @@ const defaultCategories: ICategory[] = [
 			{
 				id: ulid(),
 				name: "Dropped",
+				createdOn: now
+			},
+			{
+				id: ulid(),
+				name: "Hiatus",
 				createdOn: now
 			}
 		],
