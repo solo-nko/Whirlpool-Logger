@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import Quill from "quill";
 import CategorySettings from "@/components/settings/CategorySettings.vue";
 import AboutSettings from "@/components/settings/AboutSettings.vue";
 import GeneralSettings from "@/components/settings/GeneralSettings.vue";
 import ImportExportSettings from "@/components/settings/ImportExportSettings.vue";
 import ThemeSettings from "@/components/settings/ThemeSettings.vue";
+import QuillImporter from "@/utils/QuillImporter.ts";
 
 const settingsPages = {
 	AboutSettings,
@@ -16,9 +18,13 @@ const settingsPages = {
 type settingsRefs = keyof typeof settingsPages;
 
 const currentTab = ref<settingsRefs>("GeneralSettings");
+onMounted(() => {
+	QuillImporter.quill.instance = new Quill("#temp-editor");
+});
 </script>
 
 <template>
+	<div v-show="false" id="temp-editor"></div>
 	<!--	TODO: highlight which icon/tab is currently selected -->
 	<VNavigationDrawer rail expand-on-hover permanent location="right">
 		<VList>

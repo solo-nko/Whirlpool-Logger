@@ -1,11 +1,15 @@
 <script setup lang="ts">
-import { ImportOldFormat } from "@/utils/transformers.ts";
+import QuillImporter from "@/utils/QuillImporter.ts";
 
 const uploadedFile = ref<File | null>(null);
+const oldVersion = ref<boolean>(false);
 
-const onClickImport = () => {
+const onClickImport = async () => {
 	if (uploadedFile.value === null) return;
-	ImportOldFormat(uploadedFile.value);
+	if (oldVersion.value === true) {
+		await QuillImporter.ImportOldFormat(uploadedFile.value);
+		// uploadedFile.value = null;
+	}
 };
 </script>
 
@@ -37,17 +41,22 @@ const onClickImport = () => {
 					</VCol>
 				</VRow>
 				<VRow>
-					<VCol cols="12" md="9">
+					<VCol>
+						<VCheckboxBtn v-model="oldVersion">
+							<template v-slot:label
+								><span>I'm importing from the old version of the app!</span></template
+							>
+						</VCheckboxBtn>
 						<VFileInput
 							v-model="uploadedFile"
 							label="Place database file here..."
 							accept=".json"
 							clearable
-						/>
+						>
+						</VFileInput>
+						<VBtn @click="onClickImport"> Import Whirlpool Logs </VBtn>
 					</VCol>
-
 					<!--	TODO: I'd prefer to use the append slot here because it aligns better, but it doesn't work too great with mobile screens. Maybe we can do something with v-if and tailwind breakpoints? -->
-					<VCol><VBtn @click="onClickImport">Import Whirlpool Logs</VBtn></VCol>
 				</VRow>
 			</VCol>
 		</VRow>
