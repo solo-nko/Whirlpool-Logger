@@ -1,9 +1,13 @@
 <script setup lang="ts">
 import QuillImporter from "@/utils/QuillImporter.ts";
+import { ExportDatabase } from "@/utils/ImportExportUtils.ts";
 
 const uploadedFile = ref<File | null>(null);
 const oldVersion = ref<boolean>(false);
 
+const onClickExport = async () => {
+	await ExportDatabase()
+}
 const onClickImport = async () => {
 	if (uploadedFile.value === null) return;
 	if (oldVersion.value === true) {
@@ -29,7 +33,7 @@ const onClickImport = async () => {
 					to add it back in. To protect the integrity of your data, it is strongly recommended to
 					avoid directly editing the file.
 				</p>
-				<VBtn>Export Whirlpool Logs</VBtn>
+				<VBtn @click="onClickExport">Export Whirlpool Logs</VBtn>
 			</VCol>
 		</VRow>
 		<VRow>
@@ -56,7 +60,6 @@ const onClickImport = async () => {
 						</VFileInput>
 						<VBtn @click="onClickImport"> Import Whirlpool Logs </VBtn>
 					</VCol>
-					<!--	TODO: I'd prefer to use the append slot here because it aligns better, but it doesn't work too great with mobile screens. Maybe we can do something with v-if and tailwind breakpoints? -->
 				</VRow>
 			</VCol>
 		</VRow>
