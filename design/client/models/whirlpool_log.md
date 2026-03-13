@@ -110,9 +110,6 @@ The user may input a rating of the media.
 
 #### Notes
 
-<!-- prettier-ignore -->
-[//]: # (TODO: decide whether to use HTML or JSON. I'm leaning towards HTML because it's more semantic, though JSON is probably easier to parse and transport.)
-
 - **Name:** `notes`
 - **Type:** JSON object
 

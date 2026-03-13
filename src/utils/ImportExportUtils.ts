@@ -4,6 +4,7 @@ import { DateTime } from "luxon";
 
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 
+/** converts the dexie database to a JSON blob and then generates a request for the browser to download the JSON file. */
 async function ExportDatabase() {
 	const exportBlob = await LoggerDatabase.export({ prettyJson: true });
 	const timeStampString = DateTime.now().toFormat("yyyyLLdd_HHmmss");
@@ -25,6 +26,11 @@ async function PeekAtFile(importFile: Blob) {
 	}
 }
 
+/**
+ * Receives a blob representing the database JSON, then overwrites the existing database using its contents.
+ * @param importFile
+ * @constructor
+ */
 async function ImportDatabase(importFile: Blob) {
 	const peekResult = await PeekAtFile(importFile);
 	if (peekResult === null || peekResult.formatName !== "dexie") return;

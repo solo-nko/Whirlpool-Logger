@@ -47,8 +47,6 @@ const onClickImport = () => {
 							clearable
 						/>
 					</VCol>
-
-					<!--	TODO: I'd prefer to use the append slot here because it aligns better, but it doesn't work too great with mobile screens. Maybe we can do something with v-if and tailwind breakpoints? -->
 					<VCol><VBtn @click="onClickImport">Import Whirlpool Logs</VBtn></VCol>
 				</VRow>
 			</VCol>
