@@ -41,6 +41,7 @@ const defaultCategories: ICategory[] = [
 				createdOn: now
 			}
 		],
+		tags: [],
 		updatedOn: now,
 		createdOn: now,
 		unsyncedChanges: true
@@ -78,6 +79,7 @@ const defaultCategories: ICategory[] = [
 				createdOn: now
 			}
 		],
+		tags: [],
 		updatedOn: now,
 		createdOn: now,
 		unsyncedChanges: true
@@ -118,6 +120,7 @@ const defaultCategories: ICategory[] = [
 				createdOn: now
 			}
 		],
+		tags: [],
 		updatedOn: now,
 		createdOn: now,
 		unsyncedChanges: true
@@ -158,6 +161,7 @@ const defaultCategories: ICategory[] = [
 				createdOn: now
 			}
 		],
+		tags: [],
 		updatedOn: now,
 		createdOn: now,
 		unsyncedChanges: true
@@ -172,9 +176,9 @@ class DatabaseConfig extends Dexie {
 		super("LoggerDB");
 		this.version(1).stores({
 			whirlpools:
-				"id, categoryId, title, status, chapter, volume, series, progress, rating, notes, syncCode, unsyncedChanges, extraFieldValues, deletedOn, userUpdatedOn, updatedOn, createdOn",
+				"id, categoryId, title, statusId, chapter, volume, series, progress, rating, notes, syncCode, unsyncedChanges, extraFieldValues, tagIds, deletedOn, userUpdatedOn, updatedOn, createdOn",
 			categories:
-				"id, name, modifiedFields, extraFields, displayOrder, availableStatuses, color, syncCode, unsyncedChanges, updatedOn, createdOn, deletedOn"
+				"id, name, modifiedFields, extraFields, displayOrder, availableStatuses, tags, color, syncCode, unsyncedChanges, updatedOn, createdOn, deletedOn"
 		});
 
 		this.on("populate", function (transaction) {

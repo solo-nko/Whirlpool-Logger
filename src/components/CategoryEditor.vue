@@ -1,19 +1,23 @@
 <script setup lang="ts">
 import { DateTime } from "luxon";
-import type { ICategory } from "@/utils/types/ICategory.ts";
+import { DefaultFields, type DefaultField, type ICategory } from "@/utils/types/ICategory.ts";
 import FieldEditor from "@/components/FieldEditor.vue";
 import DefaultFieldEditor from "@/components/DefaultFieldEditor.vue";
 import type { IField } from "@/utils/types/IField.ts";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 import StatusEditor from "@/components/StatusEditor.vue";
+import TagEditor from "@/components/TagEditor.vue";
+import { TransformWhirlpoolFieldName } from "@/utils/types/Utilities.ts";
+import type { ITag } from "@/utils/types/ITag.ts";
+import type { IStatus } from "@/utils/types/IStatus.ts";
 
 type CategoryEditorProps = {
 	category: ICategory;
 };
 
-const props = defineProps<CategoryEditorProps>();
-const editingModel = ref<ICategory>(props.category);
+const { category } = defineProps<CategoryEditorProps>();
+const editingModel = ref<ICategory>(category);
 const openPanels = ref([]);
 const addExtraField = (input: IField) => {
 	editingModel.value.extraFields.push(input);
@@ -34,6 +38,23 @@ const removeExtraField = (input: string) => {
 	if (fieldIndexToUpdate >= 0) editingModel.value.extraFields.splice(fieldIndexToUpdate, 1);
 };
 
+const updateDefaultField = (input: DefaultField) => {
+	const fieldIndexToUpdate = editingModel.value.modifiedFields.findIndex(
+		(field) => field.field === input.field
+	);
+	if (fieldIndexToUpdate >= 0 && editingModel.value.modifiedFields[fieldIndexToUpdate])
+		editingModel.value.modifiedFields.splice(fieldIndexToUpdate, 1, input);
+	else editingModel.value.modifiedFields.push(input);
+};
+
+const updateStatuses = (newStatuses: IStatus[]) => {
+	editingModel.value.availableStatuses = newStatuses.slice();
+};
+
+const updateTags = (newTags: ITag[]) => {
+	editingModel.value.tags = newTags.slice();
+};
+
 const updateCategory = async () => {
 	// TODO: figure out what to do when user deletes fields or statuses that are attached to existing whirlpools
 	await LoggerDatabase.categories.update(editingModel.value.id, {
@@ -51,7 +72,7 @@ const updateCategory = async () => {
 };
 
 watch(
-	() => props.category,
+	() => category,
 	(newValue) => {
 		if (newValue) {
 			editingModel.value = { ...newValue };
@@ -68,7 +89,7 @@ watch(
 				<VNumberInput
 					v-model="editingModel.displayOrder"
 					type="number"
-					label="Display Order"
+					label="Display Order (lower is higher)"
 					control-variant="stacked"
 				/>
 			</VRow>
@@ -76,20 +97,26 @@ watch(
 				<VCol>
 					<VCard>
 						<VCardTitle>Field Settings</VCardTitle>
-						<VCardSubtitle
-							>Here you can modify the category's default fields by renaming or hiding them. You can
-							also add custom fields of your own.</VCardSubtitle
-						>
+						<VCardSubtitle>
+							Here you can modify the category's default fields by renaming or hiding them. You can
+							also add custom fields of your own.
+						</VCardSubtitle>
 						<VExpansionPanels v-model="openPanels">
-							<VExpansionPanel
-								v-for="(modifiedDefault, index) in editingModel.modifiedFields"
-								:key="index"
-							>
-								<VExpansionPanelTitle
-									>{{ modifiedDefault.field }} (Default Field)</VExpansionPanelTitle
-								>
+							<VExpansionPanel v-for="(defaultField, index) in DefaultFields" :key="index">
+								<VExpansionPanelTitle>
+									{{ TransformWhirlpoolFieldName(defaultField.field) }}
+									&nbsp;
+									<strong>(Default Field)</strong>
+								</VExpansionPanelTitle>
 								<VExpansionPanelText>
-									<DefaultFieldEditor :field-data="modifiedDefault" />
+									<DefaultFieldEditor
+										:field-data="
+											editingModel.modifiedFields.find(
+												(field) => field.field === defaultField.field
+											) ?? defaultField
+										"
+										@update-field="updateDefaultField"
+									/>
 								</VExpansionPanelText>
 							</VExpansionPanel>
 							<VExpansionPanel v-for="field in editingModel.extraFields" :key="field.id">
@@ -103,7 +130,7 @@ watch(
 								</VExpansionPanelText>
 							</VExpansionPanel>
 							<VExpansionPanel>
-								<VExpansionPanelTitle>Add New Field</VExpansionPanelTitle>
+								<VExpansionPanelTitle>Add New Custom Field</VExpansionPanelTitle>
 								<VExpansionPanelText>
 									<FieldEditor @add-field="addExtraField" />
 								</VExpansionPanelText>
@@ -119,7 +146,19 @@ watch(
 						<VCardSubtitle
 							>Here you can modify the status fields attached to the category.</VCardSubtitle
 						>
-						<StatusEditor :statuses="editingModel.availableStatuses" />
+						<StatusEditor
+							:statuses="editingModel.availableStatuses"
+							@update-statuses="updateStatuses"
+						/>
+					</VCard>
+				</VCol>
+			</VRow>
+			<VRow>
+				<VCol>
+					<VCard>
+						<VCardTitle>Tag Settings</VCardTitle>
+						<VCardSubtitle>Here you can modify the tags attached to the category.</VCardSubtitle>
+						<TagEditor :tags="editingModel.tags" @update-tags="updateTags" />
 					</VCard>
 				</VCol>
 			</VRow>

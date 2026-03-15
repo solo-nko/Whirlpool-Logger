@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import useWhirlpoolStore from "@/stores/whirlpools.ts";
-import type { IWhirlpoolLog } from "@/utils/types/IWhirlpoolLog.ts";
+import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 
 type HeaderItem = {
 	title: string;
 	value: string;
 	key?: string;
 	sortable?: boolean;
-	sortRaw?: (a: IWhirlpoolLog, b: IWhirlpoolLog) => number;
+	sortRaw?: (a: WhirlpoolLog, b: WhirlpoolLog) => number;
 };
 
 const whirlpoolsStore = useWhirlpoolStore();

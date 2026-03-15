@@ -6,9 +6,14 @@ type FieldEditorProps = {
 };
 
 const { fieldData } = defineProps<FieldEditorProps>();
+const emits = defineEmits(["updateField"]);
 const fieldModel = ref<DefaultField>(structuredClone(toRaw(fieldData)));
 const undoChanges = () => {
 	if (fieldData) fieldModel.value = structuredClone(toRaw(fieldData));
+};
+
+const updateField = () => {
+	emits("updateField", fieldModel.value);
 };
 </script>
 
@@ -27,7 +32,7 @@ const undoChanges = () => {
 				</template>
 				Revert
 			</VBtn>
-			<VBtn class="ml-3">
+			<VBtn class="ml-3" @click="updateField">
 				<template v-slot:prepend>
 					<VIcon icon="mdi-check" />
 				</template>

@@ -1,5 +1,4 @@
-import type { Preview } from "@storybook/vue3-vite";
-import { setup } from "@storybook/vue3";
+import { Preview, setup } from "@storybook/vue3-vite";
 import { createPinia } from "pinia";
 import vuetify from "../.plugins/vuetify";
 import { withVuetifyTheme } from "./withVuetifyTheme.decorator";

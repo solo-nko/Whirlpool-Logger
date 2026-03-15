@@ -56,10 +56,9 @@ const onClickImport = async () => {
 							label="Place database file here..."
 							accept=".json"
 							clearable
-						>
-						</VFileInput>
-						<VBtn @click="onClickImport"> Import Whirlpool Logs </VBtn>
+						/>
 					</VCol>
+					<VCol><VBtn @click="onClickImport">Import Whirlpool Logs</VBtn></VCol>
 				</VRow>
 			</VCol>
 		</VRow>

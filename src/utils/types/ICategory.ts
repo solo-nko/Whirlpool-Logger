@@ -2,12 +2,42 @@ import { ulid, type ULID } from "ulid";
 import { DateTime } from "luxon";
 import type { IField } from "@/utils/types/IField";
 import type { IStatus } from "@/utils/types/IStatus.ts";
-import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
+import { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
+import type { ITag } from "@/utils/types/ITag.ts";
 
 export type WhirlpoolFields = keyof Omit<
 	WhirlpoolLog,
-	"id" | "syncCode" | "extraFields" | "unsyncedChanges" | "deletedOn" | "updatedOn"
+	| "id"
+	| "categoryId"
+	| "title"
+	| "syncCode"
+	| "extraFieldValues"
+	| "unsyncedChanges"
+	| "deletedOn"
+	| "updatedOn"
+	| "createdOn"
 >;
+
+export const DefaultFields: DefaultField[] = Object.keys(new WhirlpoolLog("placeholder"))
+	.filter((key) => {
+		return (
+			key !== "id" &&
+			key !== "categoryId" &&
+			key !== "title" &&
+			key !== "syncCode" &&
+			key !== "extraFieldValues" &&
+			key !== "unsyncedChanges" &&
+			key !== "deletedOn" &&
+			key !== "updatedOn" &&
+			key !== "createdOn"
+		);
+	})
+	.map((key) => {
+		return {
+			field: key as WhirlpoolFields,
+			hidden: false
+		};
+	});
 
 export type DefaultField = {
 	field: WhirlpoolFields;
@@ -23,6 +53,7 @@ export type ICategory = {
 	extraFields: IField[];
 	displayOrder?: number;
 	availableStatuses: IStatus[];
+	tags: ITag[];
 	color?: string;
 	syncCode?: string;
 	unsyncedChanges: boolean;

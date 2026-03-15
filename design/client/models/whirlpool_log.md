@@ -41,15 +41,15 @@ Date created. This should be automatically set when the object is first created.
 #### Additional Fields
 
 - **Name:** `extraFields`
-- **Type:** [FieldValue](/design/client/models/field_value.md)[]
+- **Type:** [FieldValue[]](/design/client/models/field_value.md)
 
 #### Tags
 
 Tags applied to the Whirlpool.
 
 - **Name:** `tags`
-- **Type:** string
-  - Array of ids corresponding to applied tags
+- **Type:** string[]
+  - Array of [IDs](/design/client/models/tag.md#id) corresponding to the tags applied to this whirlpool.
 
 ### Optional
 
@@ -110,9 +110,6 @@ The user may input a rating of the media.
 
 #### Notes
 
-<!-- prettier-ignore -->
-[//]: # (TODO: decide whether to use HTML or JSON. I'm leaning towards HTML because it's more semantic, though JSON is probably easier to parse and transport.)
-
 - **Name:** `notes`
 - **Type:** JSON object
 
@@ -135,3 +132,19 @@ The user may input a rating of the media.
 
 - **Name:** `userUpdatedOn`
 - **Type:** string (simple ISO date)
+
+## Actions
+
+### Convert from DateTime to string
+
+Converts a luxon DateTime object to an ISO string.
+
+- **Name:** `DateTimetoString()`
+- **Static:** Yes
+- **Returns:** string
+- **Parameters:**
+  - `simple`
+    - Determines whether to return in simple format or not. Simple format means `YYYY-MM-DD`, omitting time.
+    - Type: boolean
+    - Required: No
+      - Default: `false`
