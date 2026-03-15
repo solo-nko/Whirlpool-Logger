@@ -10,7 +10,18 @@ type HeaderItem = {
 	sortRaw?: (a: WhirlpoolLog, b: WhirlpoolLog) => number;
 };
 
+type WhirlPoolTableProps = {
+	categoryId: string;
+};
+
+const { categoryId } = defineProps<WhirlPoolTableProps>();
+
 const whirlpoolsStore = useWhirlpoolStore();
+const tableItems = computed(() => {
+	return whirlpoolsStore.clientWhirlpools.filter(
+		(whirlpool) => whirlpool.categoryId === categoryId
+	);
+});
 const tableHeaders = ref<HeaderItem[]>([
 	{ title: "Title", value: "title", sortable: true },
 	{ title: "Actions", value: "actions", key: "actions", sortable: false }
@@ -18,7 +29,7 @@ const tableHeaders = ref<HeaderItem[]>([
 </script>
 
 <template>
-	<VDataTable :headers="tableHeaders" :items="whirlpoolsStore.clientWhirlpools"></VDataTable>
+	<VDataTable :headers="tableHeaders" :items="tableItems"></VDataTable>
 </template>
 
 <style scoped></style>
