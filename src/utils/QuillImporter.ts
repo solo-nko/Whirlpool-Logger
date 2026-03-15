@@ -163,6 +163,16 @@ export default class QuillImporter {
 					tagIds: []
 				};
 			});
+			await LoggerDatabase.whirlpools.bulkAdd(
+				gamesImports.map((gameImport) => {
+					return {
+						...gameImport,
+						createdOn: gameImport.createdOn.toJSDate(),
+						updatedOn: gameImport.updatedOn.toJSDate(),
+						deletedOn: gameImport.deletedOn?.toJSDate()
+					};
+				})
+			);
 		}
 
 		// import tv
@@ -180,6 +190,7 @@ export default class QuillImporter {
 					progress: shapedRow.progress,
 					rating: shapedRow.rating,
 					notes: deriveNotes(shapedRow),
+					deletedOn: undefined,
 					createdOn: DateTime.fromISO(shapedRow.dateCreated),
 					updatedOn: DateTime.fromISO(shapedRow.dateModified),
 					extraFieldValues: [],
@@ -187,6 +198,16 @@ export default class QuillImporter {
 					tagIds: []
 				};
 			});
+			await LoggerDatabase.whirlpools.bulkAdd(
+				tvImports.map((tvImport) => {
+					return {
+						...tvImport,
+						createdOn: tvImport.createdOn.toJSDate(),
+						updatedOn: tvImport.updatedOn.toJSDate(),
+						deletedOn: undefined
+					};
+				})
+			);
 		}
 
 		// import movies
@@ -211,6 +232,16 @@ export default class QuillImporter {
 					tagIds: []
 				};
 			});
+			await LoggerDatabase.whirlpools.bulkAdd(
+				movieImports.map((movieImport) => {
+					return {
+						...movieImport,
+						createdOn: movieImport.createdOn.toJSDate(),
+						updatedOn: movieImport.updatedOn.toJSDate(),
+						deletedOn: undefined
+					};
+				})
+			);
 		}
 
 		// import books
@@ -235,6 +266,16 @@ export default class QuillImporter {
 					tagIds: []
 				};
 			});
+			await LoggerDatabase.whirlpools.bulkAdd(
+				booksImports.map((bookImport) => {
+					return {
+						...bookImport,
+						createdOn: bookImport.createdOn.toJSDate(),
+						updatedOn: bookImport.updatedOn.toJSDate(),
+						deletedOn: undefined
+					};
+				})
+			);
 		}
 	}
 }
