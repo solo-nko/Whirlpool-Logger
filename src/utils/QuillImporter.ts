@@ -5,7 +5,7 @@ import { DateTime } from "luxon";
 import { generateJSON } from "@tiptap/html";
 import { StarterKit } from "@tiptap/starter-kit";
 import { Placeholder } from "@tiptap/extensions";
-import type { IWhirlpoolLog } from "@/utils/types/IWhirlpoolLog.ts";
+import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 
 interface OldRow {
@@ -145,14 +145,14 @@ export default class QuillImporter {
 		const gamesEntries = data.data.find((element) => element.tableName === "games");
 		if (gamesEntries) {
 			const gamesCategory = categories.find((category) => category.name === "Games");
-			const gamesImports: IWhirlpoolLog[] = gamesEntries.rows.map((row): IWhirlpoolLog => {
+			const gamesImports: WhirlpoolLog[] = gamesEntries.rows.map((row): WhirlpoolLog => {
 				const shapedRow = row as unknown as OldRow;
 
 				return {
 					id: ulid(),
 					categoryId: gamesCategory ? gamesCategory.id : undefined,
 					title: shapedRow.title,
-					status: deriveStatus(shapedRow.status, "Games"),
+					statusId: deriveStatus(shapedRow.status, "Games"),
 					progress: shapedRow.progress,
 					rating: shapedRow.rating,
 					notes: deriveNotes(shapedRow),
@@ -160,7 +160,7 @@ export default class QuillImporter {
 					updatedOn: DateTime.fromISO(shapedRow.dateModified),
 					extraFieldValues: [],
 					unsyncedChanges: true,
-					tags: []
+					tagIds: []
 				};
 			});
 		}
@@ -169,14 +169,14 @@ export default class QuillImporter {
 		const tvEntries = data.data.find((element) => element.tableName === "television");
 		if (tvEntries) {
 			const tvCategory = categories.find((category) => category.name === "TV");
-			const tvImports: IWhirlpoolLog[] = tvEntries.rows.map((row): IWhirlpoolLog => {
+			const tvImports: WhirlpoolLog[] = tvEntries.rows.map((row): WhirlpoolLog => {
 				const shapedRow = row as unknown as OldRow;
 
 				return {
 					id: ulid(),
 					categoryId: tvCategory ? tvCategory.id : undefined,
 					title: shapedRow.title,
-					status: deriveStatus(shapedRow.status, "Television"),
+					statusId: deriveStatus(shapedRow.status, "Television"),
 					progress: shapedRow.progress,
 					rating: shapedRow.rating,
 					notes: deriveNotes(shapedRow),
@@ -184,7 +184,7 @@ export default class QuillImporter {
 					updatedOn: DateTime.fromISO(shapedRow.dateModified),
 					extraFieldValues: [],
 					unsyncedChanges: true,
-					tags: []
+					tagIds: []
 				};
 			});
 		}
@@ -193,14 +193,14 @@ export default class QuillImporter {
 		const movieEntries = data.data.find((element) => element.tableName === "movies");
 		if (movieEntries) {
 			const moviesCategory = categories.find((category) => category.name === "Movies");
-			const movieImports: IWhirlpoolLog[] = movieEntries.rows.map((row): IWhirlpoolLog => {
+			const movieImports: WhirlpoolLog[] = movieEntries.rows.map((row): WhirlpoolLog => {
 				const shapedRow = row as unknown as OldRow;
 
 				return {
 					id: ulid(),
 					categoryId: moviesCategory ? moviesCategory.id : undefined,
 					title: shapedRow.title,
-					status: undefined,
+					statusId: undefined,
 					progress: shapedRow.progress || undefined,
 					rating: shapedRow.rating || undefined,
 					notes: deriveNotes(shapedRow),
@@ -208,7 +208,7 @@ export default class QuillImporter {
 					updatedOn: DateTime.fromISO(shapedRow.dateModified),
 					extraFieldValues: [],
 					unsyncedChanges: true,
-					tags: []
+					tagIds: []
 				};
 			});
 		}
@@ -217,14 +217,14 @@ export default class QuillImporter {
 		const booksEntries = data.data.find((element) => element.tableName === "books");
 		if (booksEntries) {
 			const booksCategory = categories.find((category) => category.name === "Books");
-			const booksImports: IWhirlpoolLog[] = booksEntries.rows.map((row): IWhirlpoolLog => {
+			const booksImports: WhirlpoolLog[] = booksEntries.rows.map((row): WhirlpoolLog => {
 				const shapedRow = row as unknown as OldRow;
 
 				return {
 					id: ulid(),
 					categoryId: booksCategory ? booksCategory.id : undefined,
 					title: shapedRow.title,
-					status: deriveStatus(shapedRow.status, "Books"),
+					statusId: deriveStatus(shapedRow.status, "Books"),
 					progress: shapedRow.progress || undefined,
 					rating: shapedRow.rating || undefined,
 					notes: deriveNotes(shapedRow),
@@ -232,7 +232,7 @@ export default class QuillImporter {
 					updatedOn: DateTime.fromISO(shapedRow.dateModified),
 					extraFieldValues: [],
 					unsyncedChanges: true,
-					tags: []
+					tagIds: []
 				};
 			});
 		}
