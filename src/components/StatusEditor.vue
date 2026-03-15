@@ -8,47 +8,63 @@ type StatusEditorProps = {
 };
 
 const newStatus: IStatus = {
-	id: ulid(),
+	id: "new",
 	name: "",
 	createdOn: DateTime.now()
 };
 
-const emits = defineEmits(["update", "add", "delete"]);
+const emits = defineEmits(["updateStatuses"]);
 const { statuses } = defineProps<StatusEditorProps>();
-const editingStatuses = ref([...statuses]);
+/** The component's own copy of the prop, for editing purposes. */
+const editingStatuses = ref(statuses.slice());
+/** ref for tracking which item is currently selected, if any */
 const selectedStatus = ref<IStatus[]>(editingStatuses.value.slice(0, 1) || [newStatus]);
+/** ref for holding data that's currently being edited */
+const editingStatus = ref<IStatus>(newStatus);
 
 // determine whether user is currently editing an existing status, or adding a new one
-const isNewStatus = computed(() => {
-	return !editingStatuses.value.find((status) => status.id === selectedStatus.value[0]?.id);
+const isNewStatus = computed<boolean>(() => {
+	return editingStatus.value.id === "new";
 });
 
 const addStatus = () => {
 	// ensure there's a unique id at point of adding
-	editingStatuses.value.push({ ...newStatus, id: ulid() });
-	emits("add", editingStatuses);
+	editingStatuses.value.push({ ...editingStatus.value, id: ulid() });
+	emits("updateStatuses", editingStatuses.value);
 };
 
 const updateStatus = () => {
 	editingStatuses.value = editingStatuses.value.map((status) => {
-		if (selectedStatus.value[0] && status.id === selectedStatus.value[0].id)
-			return selectedStatus.value[0];
+		if (status.id === editingStatus.value.id) return editingStatus.value;
 		return status;
 	});
-	emits("update", editingStatuses);
+	emits("updateStatuses", editingStatuses.value);
 };
 
 const deleteStatus = () => {
 	editingStatuses.value = editingStatuses.value.filter((status) => {
-		return !(selectedStatus.value[0] && status.id === selectedStatus.value[0].id);
+		return status.id !== editingStatus.value.id;
 	});
-	emits("delete", editingStatuses);
+	emits("updateStatuses", editingStatuses.value);
 };
 
+// TODO: add form validation
+// TODO: something fishy's going on with the reactive object handling here. When a status is saved or selected, it changes from object to reactive.
+// When props change, refresh the editing status
 watch(
 	() => statuses,
 	(newStatuses) => {
-		editingStatuses.value = [...newStatuses];
+		editingStatuses.value = newStatuses.slice();
+		if (editingStatuses.value[0]) selectedStatus.value = [{ ...editingStatuses.value[0] }];
+	}
+);
+// When selected status changes, change the status being edited (for the input fields)
+watch(
+	() => selectedStatus.value,
+	(newSelection) => {
+		if (newSelection[0]) {
+			editingStatus.value = newSelection[0];
+		}
 	}
 );
 </script>
@@ -64,19 +80,18 @@ watch(
 					class="border border-gray-200/50 rounded-lg max-h-60 overflow-y-auto"
 					mandatory
 				>
-					<VListItem v-for="status in editingStatuses" :key="status.id" :value="status">{{
-						status.name
-					}}</VListItem>
+					<VListItem v-for="status in editingStatuses" :key="status.id" :value="status">
+						{{ status.name }}
+					</VListItem>
 					<VDivider></VDivider>
 					<VListItem :value="newStatus">Add New</VListItem>
 				</VList>
 			</VCol>
 			<VCol cols="12" md="9">
 				<VCard>
-					<!--	TODO: At the moment this live-updates the name in the selection box, which I don't like. -->
-					<VTextField v-model="selectedStatus[0]!.name" label="Name" />
+					<VTextField v-model="editingStatus.name" label="Name" />
 					<VTextarea
-						v-model="selectedStatus[0]!.description"
+						v-model="editingStatus.description"
 						label="Description (Optional)"
 						placeholder="What does this status mean?"
 						rows="2"

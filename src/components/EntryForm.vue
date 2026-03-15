@@ -2,45 +2,99 @@
 import { DateTime } from "luxon";
 import { ulid } from "ulid";
 import TipTapEditor from "@/components/TipTapEditor.vue";
-import type { ICategory } from "@/utils/types/ICategory.ts";
-import type { IWhirlpoolLog } from "@/utils/types/IWhirlpoolLog.ts";
+import type { ICategory, WhirlpoolFields } from "@/utils/types/ICategory.ts";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { FieldType } from "@/utils/types/IField.ts";
+import type { ITag } from "@/utils/types/ITag.ts";
+import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 
 type EntryFormProps = {
 	category?: ICategory;
-	existingEntry?: IWhirlpoolLog;
+	existingEntry?: WhirlpoolLog;
 	demoOnly?: boolean;
 };
 
 const props = defineProps<EntryFormProps>();
 const emits = defineEmits(["close", "save"]);
 
-const newWhirlpool: IWhirlpoolLog = {
+const newWhirlpool: WhirlpoolLog = {
 	id: ulid(),
 	title: "",
 	categoryId: props.category?.id,
 	unsyncedChanges: true,
 	extraFieldValues: [],
-	tags: [],
+	tagIds: [],
 	updatedOn: DateTime.now(),
 	createdOn: DateTime.now()
 };
 
 const isEditMode = computed(() => props.existingEntry !== undefined);
+
+function GetModifiedField(input: WhirlpoolFields) {
+	return props.category?.modifiedFields.find((field) => {
+		return field.field === input;
+	});
+}
+
+// Modified Default Fields
+
+const statusFieldMods = computed(() => {
+	if (!props.category) return null;
+	return GetModifiedField("statusId") ? GetModifiedField("statusId") : null;
+});
+
 const chapterFieldMods = computed(() => {
 	if (!props.category) return null;
-	// TODO: can prolly turn this into a shared function
-	const fieldMod = props.category.modifiedFields.find((field) => field.field === "chapter");
-	if (!fieldMod) return null;
-	return fieldMod;
+	return GetModifiedField("chapter") ? GetModifiedField("chapter") : null;
 });
+
+const volumeFieldMods = computed(() => {
+	if (!props.category) return null;
+	return GetModifiedField("volume") ? GetModifiedField("volume") : null;
+});
+
+const seriesFieldMods = computed(() => {
+	if (!props.category) return null;
+	return GetModifiedField("series") ? GetModifiedField("series") : null;
+});
+
+const notesFieldMods = computed(() => {
+	if (!props.category) return null;
+	return GetModifiedField("notes") ? GetModifiedField("notes") : null;
+});
+
+const tagsFieldMods = computed(() => {
+	if (!props.category) return null;
+	return GetModifiedField("tagIds") ? GetModifiedField("tagIds") : null;
+});
+
+const userUpdatedFieldMods = computed(() => {
+	if (!props.category) return null;
+	return GetModifiedField("userUpdatedOn") ? GetModifiedField("userUpdatedOn") : null;
+});
+
+const availableTags = computed<ITag[]>(() => {
+	if (!props.category || props.category.tags.length === 0) return [];
+	return props.category.tags;
+});
+
+const entryModel = ref<WhirlpoolLog>(props.existingEntry || newWhirlpool);
 
 const extraFields = computed(() => {
 	if (!props.category || props.category.extraFields.length === 0) return null;
 	return props.category.extraFields;
 });
-const entryModel = ref<IWhirlpoolLog>(props.existingEntry || newWhirlpool);
+
+const updateExtraField = (value: unknown, fieldId: string, fieldType: FieldType) => {
+	const indexToUpdate = entryModel.value.extraFieldValues.findIndex(
+		(value) => value.fieldId === fieldId
+	);
+	if (indexToUpdate === -1) {
+		entryModel.value.extraFieldValues.push({ fieldId, value, fieldType });
+	} else if (entryModel.value.extraFieldValues[indexToUpdate] !== undefined) {
+		entryModel.value.extraFieldValues[indexToUpdate].value = value;
+	}
+};
 
 const setToToday = () => {
 	entryModel.value.userUpdatedOn = DateTime.now().toISODate();
@@ -106,18 +160,19 @@ const onClickSave = async () => {
 			</VRow>
 			<VRow>
 				<VAutocomplete
-					v-model="entryModel.status"
-					label="Status"
+					v-if="statusFieldMods?.hidden !== true"
+					v-model="entryModel.statusId"
+					:label="statusFieldMods?.rename ? statusFieldMods?.rename : 'Status'"
 					:items="props.category?.availableStatuses ?? []"
 					item-title="name"
 					item-value="id"
 				/>
 			</VRow>
-			<VRow>
+			<VRow class="xs:max-sm:flex-col">
 				<VCol v-if="chapterFieldMods?.hidden !== true">
 					<VNumberInput
 						v-model="entryModel.chapter"
-						label="Chapter"
+						:label="chapterFieldMods?.rename ? chapterFieldMods?.rename : 'Chapter'"
 						control-variant="stacked"
 						loading
 						:min="0"
@@ -128,47 +183,96 @@ const onClickSave = async () => {
 						</template>
 					</VNumberInput>
 				</VCol>
-				<VCol>
+				<VCol v-if="volumeFieldMods?.hidden !== true">
 					<VNumberInput
 						v-model="entryModel.volume"
-						label="Volume"
+						:label="volumeFieldMods?.rename ? volumeFieldMods?.rename : 'Volume'"
 						control-variant="stacked"
 						:min="0"
 					/>
 				</VCol>
-				<VCol>
+				<VCol v-if="seriesFieldMods?.hidden !== true">
 					<VTextField v-model="entryModel.series" label="Series"></VTextField>
 				</VCol>
 			</VRow>
 			<VRow>
-				<TipTapEditor v-model="entryModel.notes" />
+				<TipTapEditor v-if="notesFieldMods?.hidden !== true" v-model="entryModel.notes" />
 			</VRow>
-			<VRow>
-				<VTextField v-model="entryModel.userUpdatedOn" label="Last Updated" type="date">
-					<template v-slot:append>
-						<VBtn @click="setToToday">Today</VBtn>
-					</template>
-				</VTextField>
+			<VRow class="xs:max-md:flex-col">
+				<VCol v-if="tagsFieldMods?.hidden !== true">
+					<VAutocomplete
+						v-model="entryModel.tagIds"
+						:items="availableTags"
+						:label="tagsFieldMods?.rename ? tagsFieldMods?.rename : 'Tags'"
+						chips
+						clearable
+						closable-chips
+						multiple
+						item-title="label"
+						item-value="id"
+					>
+						<template v-slot:chip="{ props, item }">
+							<VChip
+								v-bind="props"
+								:color="item.color ? item.color : undefined"
+								variant="flat"
+							></VChip>
+						</template>
+					</VAutocomplete>
+				</VCol>
+				<VCol v-if="userUpdatedFieldMods?.hidden !== true">
+					<VTextField
+						v-model="entryModel.userUpdatedOn"
+						:label="userUpdatedFieldMods?.rename ? userUpdatedFieldMods.rename : 'Last Updated'"
+						type="date"
+					>
+						<template v-slot:append>
+							<VBtn @click="setToToday">Today</VBtn>
+						</template>
+					</VTextField>
+				</VCol>
 			</VRow>
-			<VRow v-if="extraFields">
-				<VExpansionPanels v-for="extraField in extraFields" :key="extraField.id">
-					<VExpansionPanel :title="extraField.label">
+			<VRow v-if="extraFields" class="mt-0">
+				<VExpansionPanels>
+					<VExpansionPanel>
+						<VExpansionPanelTitle>Other Fields</VExpansionPanelTitle>
 						<VExpansionPanelText>
-							<VTextField
-								v-if="extraField.type === FieldType.TEXT"
-								:label="extraField.label"
-								:placeholder="extraField.placeholder"
-							/>
-							<VNumberInput
-								v-else-if="extraField.type === FieldType.NUMBER"
-								:label="extraField.label"
-							/>
-							<VTextField
-								v-else-if="extraField.type === FieldType.DATE"
-								:label="extraField.label"
-								type="date"
-							/>
-							<VCheckbox v-else-if="extraField.type === FieldType.BOOL" :label="extraField.label" />
+							<VRow
+								v-for="extraField in extraFields"
+								:key="extraField.id"
+								:title="extraField.label"
+							>
+								<VTextField
+									v-if="extraField.type === FieldType.TEXT"
+									:label="extraField.label"
+									:placeholder="extraField.placeholder"
+									@update:modelValue="
+										(value: unknown) => updateExtraField(value, extraField.id, extraField.type)
+									"
+								/>
+								<VNumberInput
+									v-else-if="extraField.type === FieldType.NUMBER"
+									:label="extraField.label"
+									@update:modelValue="
+										(value: unknown) => updateExtraField(value, extraField.id, extraField.type)
+									"
+								/>
+								<VTextField
+									v-else-if="extraField.type === FieldType.DATE"
+									:label="extraField.label"
+									type="date"
+									@update:modelValue="
+										(value: unknown) => updateExtraField(value, extraField.id, extraField.type)
+									"
+								/>
+								<VCheckbox
+									v-else-if="extraField.type === FieldType.BOOL"
+									:label="extraField.label"
+									@update:modelValue="
+										(value: unknown) => updateExtraField(value, extraField.id, extraField.type)
+									"
+								/>
+							</VRow>
 						</VExpansionPanelText>
 					</VExpansionPanel>
 				</VExpansionPanels>

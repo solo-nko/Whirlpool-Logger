@@ -54,14 +54,14 @@ const updateField = () => {
 };
 
 const removeField = () => {
-	emits("removeField", fieldModel.value.id);
+	emits("removeField", fieldModel.value);
 };
 </script>
 
 <template>
 	<VContainer>
 		<VTextField v-model="fieldModel.label" density="compact" label="Label" />
-		<VTextField v-model="fieldModel.placeholder" density="compact" label="Placeholder (optional)" />
+		<VTextField v-model="fieldModel.placeholder" density="compact" label="Placeholder (Optional)" />
 		<VRow class="items-center">
 			<VCol cols="8">
 				<VRadioGroup v-model="fieldModel.type" inline>

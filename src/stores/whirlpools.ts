@@ -4,17 +4,17 @@ import { from } from "rxjs";
 import { liveQuery } from "dexie";
 import type DatabaseWhirlpool from "@/utils/database/models/DatabaseWhirlpool.ts";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
-import type { IWhirlpoolLog } from "@/utils/types/IWhirlpoolLog.ts";
+import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 
 const useWhirlpoolStore = defineStore("whirlpool-store", () => {
 	const databaseWhirlpools = useObservable<DatabaseWhirlpool[]>(
 		from(liveQuery(async () => LoggerDatabase.whirlpools.toArray()))
 	);
 
-	const clientWhirlpools = computed<IWhirlpoolLog[]>(() => {
+	const clientWhirlpools = computed<WhirlpoolLog[]>(() => {
 		const stored = databaseWhirlpools.value;
 		if (stored) {
-			return stored.map((log): IWhirlpoolLog => {
+			return stored.map((log): WhirlpoolLog => {
 				return {
 					...log,
 					deletedOn: log.deletedOn ? DateTime.fromJSDate(log.deletedOn) : undefined,

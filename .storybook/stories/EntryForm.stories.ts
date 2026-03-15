@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/vue3-vite";
 import EntryForm from "../../src/components/EntryForm.vue";
-import { GamesCategory } from "./sampledata";
+import { existingGamesEntry, GamesCategory } from "./sampledata";
 
 const meta: Meta = {
 	title: "Whirlpool Entry",
@@ -22,8 +22,15 @@ export const Primary: Story = {
 	args: {}
 };
 
-export const GamesEntry: Story = {
+export const GamesEntryNew: Story = {
 	args: {
 		category: GamesCategory
+	}
+};
+
+export const GamesEntryExisting: Story = {
+	args: {
+		category: GamesCategory,
+		existingEntry: existingGamesEntry
 	}
 };
