@@ -1,6 +1,6 @@
 import type { ICategory } from "@/utils/types/ICategory.ts";
 import useCategoriesStore from "@/stores/categories.ts";
-
+import { useDisplay } from "vuetify";
 enum LocalStorageKeys {
 	DefaultEntry = "defaultEntryCategory",
 	DefaultTable = "defaultTableCategory"
@@ -11,6 +11,7 @@ const useSettingsStore = defineStore("settings-store", () => {
 
 	const defaultEntryCategory = ref<ICategory | undefined>();
 	const defaultTableCategory = ref<ICategory | undefined>();
+	const display = useDisplay();
 
 	function SetDefaultEntryToLocalStorage(input: ICategory) {
 		localStorage.setItem(LocalStorageKeys.DefaultEntry, input.id);
@@ -43,7 +44,8 @@ const useSettingsStore = defineStore("settings-store", () => {
 		defaultEntryCategory,
 		defaultTableCategory,
 		SetDefaultEntryToLocalStorage,
-		SetDefaultTableToLocalStorage
+		SetDefaultTableToLocalStorage,
+		display
 	};
 });
 

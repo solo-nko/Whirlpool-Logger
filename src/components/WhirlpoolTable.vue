@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import useWhirlpoolStore from "@/stores/whirlpools.ts";
+import useSettingsStore from "@/stores/settings.ts";
 import { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import useCategoriesStore from "@/stores/categories.ts";
 import EntryForm from "@/components/EntryForm.vue";
+
+const settings = useSettingsStore();
 
 type HeaderItem = {
 	title: string;
@@ -65,7 +68,13 @@ const getDate = (item: WhirlpoolLog, type: "updated" | "created") => {
 			<span>{{ getDate(item, "updated") }}</span>
 		</template>
 	</VDataTable>
-	<VDialog v-if="tableCategory && modalEntry" v-model="isEntryModalOpen" scrollable persistent>
+	<VDialog
+		v-if="tableCategory && modalEntry"
+		v-model="isEntryModalOpen"
+		persistent
+		scrollable
+		:fullscreen="settings.display.mobile"
+	>
 		<EntryForm :existing-entry="modalEntry" :category="tableCategory" @close="closeModal" />
 	</VDialog>
 </template>
