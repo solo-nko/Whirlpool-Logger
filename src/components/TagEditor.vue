@@ -10,7 +10,7 @@ const newTag: ITag = { id: "new", label: "", color: "", description: "" };
 const { tags } = defineProps<TagEditorProps>();
 const emits = defineEmits(["updateTags"]);
 
-const editingTags = ref(tags.slice());
+const editingTags = ref<ITag[]>(structuredClone(toRaw(tags)));
 const selectedTag = ref<ITag>();
 const editingTag = ref<ITag>(newTag);
 
@@ -20,7 +20,7 @@ const isEditingNewTag = computed<boolean>(() => {
 
 const addTag = () => {
 	editingTags.value.push({ ...editingTag.value, id: ulid() });
-	emits("updateTags", editingTags.value);
+	emits("updateTags", toRaw(editingTags.value));
 };
 
 // TODO: add form validation
@@ -31,7 +31,7 @@ const updateTag = () => {
 	});
 	editingTag.value = newTag;
 	selectedTag.value = undefined;
-	emits("updateTags", editingTags.value);
+	emits("updateTags", toRaw(editingTags.value));
 };
 
 const deleteTag = () => {
@@ -39,7 +39,7 @@ const deleteTag = () => {
 	editingTags.value = editingTags.value.filter((tag) => {
 		return tag.id !== editingTag.value.id;
 	});
-	emits("updateTags", editingTags.value);
+	emits("updateTags", toRaw(editingTags.value));
 };
 
 watch(

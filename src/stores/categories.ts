@@ -4,7 +4,7 @@ import { defineStore } from "pinia";
 import { useObservable } from "@vueuse/rxjs";
 import { from } from "rxjs";
 import { computed } from "vue";
-import type { Category } from "@/utils/types/ICategory";
+import type { Category } from "@/utils/types/Category.ts";
 import type { DatabaseCategory } from "@/utils/database/models/DatabaseCategory";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";

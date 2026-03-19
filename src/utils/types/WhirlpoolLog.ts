@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
 import { type ULID, ulid } from "ulid";
 import type { JSONContent } from "@tiptap/vue-3";
-import type { Category } from "@/utils/types/ICategory.ts";
+import type { Category } from "@/utils/types/Category.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { IStatus } from "@/utils/types/IStatus.ts";
 import type { IFieldValue } from "@/utils/types/IFieldValue.ts";

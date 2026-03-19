@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import useCategoriesStore from "@/stores/categories.ts";
 import useSettingsStore from "@/stores/settings.ts";
-import type { Category } from "@/utils/types/ICategory.ts";
+import type { Category } from "@/utils/types/Category.ts";
 
 const settingsStore = useSettingsStore();
 const categoryStore = useCategoriesStore();

@@ -1,5 +1,5 @@
 import { useDisplay } from "vuetify";
-import type { Category } from "@/utils/types/ICategory.ts";
+import type { Category } from "@/utils/types/Category.ts";
 import useCategoriesStore from "@/stores/categories.ts";
 enum LocalStorageKeys {
 	DefaultEntry = "defaultEntryCategory",

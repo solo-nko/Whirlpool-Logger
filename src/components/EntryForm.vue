@@ -2,7 +2,7 @@
 import { DateTime } from "luxon";
 import { ulid } from "ulid";
 import TipTapEditor from "@/components/TipTapEditor.vue";
-import type { Category } from "@/utils/types/ICategory.ts";
+import type { Category } from "@/utils/types/Category.ts";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { FieldType } from "@/utils/types/IField.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
@@ -10,6 +10,7 @@ import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import type { WhirlpoolFields } from "@/utils/types/DefaultFieldUtils";
 import { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
+import { DeepToRaw } from "@/utils/types/Utilities";
 
 type EntryFormProps = {
 	category: Category;
@@ -20,17 +21,21 @@ type EntryFormProps = {
 const props = defineProps<EntryFormProps>();
 const emits = defineEmits(["close", "save"]);
 
-const newWhirlpool: WhirlpoolLog = {
-	id: ulid(),
-	title: "",
-	category: props.category,
-	unsyncedChanges: true,
-	extraFieldValues: [],
-	tags: [],
-	updatedOn: DateTime.now(),
-	createdOn: DateTime.now(),
-	deletedOn: null
-};
+function GenerateNewWhirlpool(category: Category): WhirlpoolLog {
+	const now = DateTime.now();
+	return {
+		id: ulid(),
+		title: "",
+		category,
+		unsyncedChanges: true,
+		extraFieldValues: [],
+		tags: [],
+		userUpdatedOn: now.toISODate(),
+		updatedOn: now,
+		createdOn: now,
+		deletedOn: null
+	};
+}
 
 const isEditMode = computed(() => props.existingEntry !== undefined);
 
@@ -81,7 +86,7 @@ const availableTags = computed<ITag[]>(() => {
 	return props.category.tags;
 });
 
-const entryModel = ref<WhirlpoolLog>(props.existingEntry || newWhirlpool);
+const entryModel = ref<WhirlpoolLog>(props.existingEntry || GenerateNewWhirlpool(props.category));
 
 const extraFields = computed(() => {
 	if (!props.category || props.category.extraFields.length === 0) return null;
@@ -104,7 +109,7 @@ const setToToday = () => {
 };
 
 function ResetFields() {
-	entryModel.value = { ...newWhirlpool, id: ulid() };
+	entryModel.value = GenerateNewWhirlpool(props.category);
 }
 
 function OnSaveEntry(whichType: "add" | "update") {
@@ -116,10 +121,13 @@ async function AddEntry() {
 	await LoggerDatabase.whirlpools
 		.add({
 			...entryModel.value,
-			category: DatabaseCategory.ConvertCategoryForDatabase(props.category),
+			category: DatabaseCategory.ConvertCategoryForDatabase({ input: props.category, toRaw: true }),
 			status: entryModel.value.status
 				? DatabaseStatus.ConvertStatusForDatabase(entryModel.value.status)
 				: undefined,
+			notes: toRaw(entryModel.value.notes),
+			extraFieldValues: DeepToRaw(entryModel.value.extraFieldValues),
+			tags: DeepToRaw(entryModel.value.tags),
 			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toJSDate(),
 			updatedOn: entryModel.value.updatedOn.toJSDate(),
 			createdOn: entryModel.value.createdOn.toJSDate()
@@ -131,14 +139,16 @@ async function AddEntry() {
 }
 
 async function UpdateEntry() {
-	// TODO: This throws a clone error
 	await LoggerDatabase.whirlpools
 		.update(entryModel.value.id, {
 			...entryModel.value,
-			category: DatabaseCategory.ConvertCategoryForDatabase(props.category),
+			category: DatabaseCategory.ConvertCategoryForDatabase({ input: props.category, toRaw: true }),
 			status: entryModel.value.status
 				? DatabaseStatus.ConvertStatusForDatabase(entryModel.value.status)
 				: undefined,
+			notes: toRaw(entryModel.value.notes),
+			extraFieldValues: DeepToRaw(entryModel.value.extraFieldValues),
+			tags: DeepToRaw(entryModel.value.tags),
 			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toJSDate(),
 			updatedOn: entryModel.value.updatedOn.toJSDate(),
 			createdOn: entryModel.value.createdOn.toJSDate()
@@ -147,6 +157,7 @@ async function UpdateEntry() {
 			ResetFields();
 		});
 	OnSaveEntry("update");
+	emits("close");
 }
 
 const onClickSave = async () => {
@@ -184,7 +195,7 @@ const onClickSave = async () => {
 					>
 						<template v-slot:loader>
 							<!--							TODO: experiment with this-->
-							<VProgressLinear max="50"></VProgressLinear>
+							<!-- <VProgressLinear max="50"></VProgressLinear> -->
 						</template>
 					</VNumberInput>
 				</VCol>
@@ -285,7 +296,7 @@ const onClickSave = async () => {
 		</VContainer>
 		<VCardActions>
 			<VBtn @click="onClickSave">Save</VBtn>
-			<VBtn v-if="isEditMode" @click="emits('close')">Cancel</VBtn>
+			<VBtn v-if="isEditMode" @click="$emit('close')">Cancel</VBtn>
 		</VCardActions>
 	</VCard>
 </template>

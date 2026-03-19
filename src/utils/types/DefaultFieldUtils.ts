@@ -1,5 +1,5 @@
 import { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
-import { Category } from "@/utils/types/ICategory.ts";
+import { Category } from "@/utils/types/Category.ts";
 
 export type WhirlpoolFields = keyof Omit<
 	WhirlpoolLog,

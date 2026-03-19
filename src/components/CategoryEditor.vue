@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DateTime } from "luxon";
-import type { Category } from "@/utils/types/ICategory.ts";
+import type { Category } from "@/utils/types/Category.ts";
 import FieldEditor from "@/components/FieldEditor.vue";
 import DefaultFieldEditor from "@/components/DefaultFieldEditor.vue";
 import type { IField } from "@/utils/types/IField.ts";
@@ -8,7 +8,7 @@ import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 import StatusEditor from "@/components/StatusEditor.vue";
 import TagEditor from "@/components/TagEditor.vue";
-import { TransformWhirlpoolFieldName } from "@/utils/types/Utilities.ts";
+import { DeepToRaw, TransformWhirlpoolFieldName } from "@/utils/types/Utilities.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { IStatus } from "@/utils/types/IStatus.ts";
 import { type DefaultField, DefaultFields } from "@/utils/types/DefaultFieldUtils.ts";
@@ -49,23 +49,25 @@ const updateDefaultField = (input: DefaultField) => {
 };
 
 const updateStatuses = (newStatuses: IStatus[]) => {
-	editingModel.value.availableStatuses = newStatuses.slice();
+	editingModel.value.availableStatuses = newStatuses;
 };
 
 const updateTags = (newTags: ITag[]) => {
-	editingModel.value.tags = newTags.slice();
+	editingModel.value.tags = newTags;
 };
 
 const updateCategory = async () => {
 	// TODO: figure out what to do when user deletes fields or statuses that are attached to existing whirlpools
 	await LoggerDatabase.categories.update(editingModel.value.id, {
+		// Dexie internally uses structuredClone for its put and add operations. structuredClone can't be used on Proxies, and Vue creates Proxies of object refs to maintain reactivity. Thus, when using a ref (or reactive) that refers to an object, it is likely necessary to use DeepRaw, or Vue's provided toRaw function to pull the object out from the reactive Proxy, or else Dexie won't be able to operate on it. This should not be an issue for refs based on primitive values such as strings and numbers, which is why name and displayOrder do not need this treatment.
 		name: editingModel.value.name,
-		modifiedFields: toRaw(editingModel.value.modifiedFields),
-		extraFields: toRaw(editingModel.value.extraFields),
 		displayOrder: editingModel.value.displayOrder,
+		modifiedFields: DeepToRaw(editingModel.value.modifiedFields),
+		extraFields: DeepToRaw(editingModel.value.extraFields),
 		availableStatuses: editingModel.value.availableStatuses.map((status) =>
 			DatabaseStatus.ConvertStatusForDatabase(status)
 		),
+		tags: DeepToRaw(editingModel.value.tags),
 		deletedOn: editingModel.value.deletedOn ? editingModel.value.deletedOn.toJSDate() : undefined,
 		updatedOn: DateTime.now().toJSDate(),
 		createdOn: editingModel.value.createdOn.toJSDate()

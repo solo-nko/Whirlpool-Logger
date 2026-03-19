@@ -5,7 +5,8 @@ import type { IField } from "@/utils/types/IField";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { DefaultField } from "@/utils/types/DefaultFieldUtils.ts";
-import type { Category } from "@/utils/types/ICategory.ts";
+import type { Category } from "@/utils/types/Category.ts";
+import { DeepToRaw } from "@/utils/types/Utilities";
 
 class DatabaseCategory {
 	id!: string;
@@ -22,15 +23,32 @@ class DatabaseCategory {
 	createdOn!: Date;
 	deletedOn!: Date | null;
 
-	static ConvertCategoryForDatabase(input: Category) {
+	static ConvertCategoryForDatabase(params: {
+		input: Category;
+		toRaw?: boolean;
+	}): DatabaseCategory {
+		if (params.toRaw) {
+			return {
+				...params.input,
+				modifiedFields: DeepToRaw(params.input.modifiedFields),
+				extraFields: DeepToRaw(params.input.extraFields),
+				tags: DeepToRaw(params.input.tags),
+				availableStatuses: params.input.availableStatuses.map((status) =>
+					DatabaseStatus.ConvertStatusForDatabase(status)
+				),
+				updatedOn: params.input.updatedOn.toJSDate(),
+				createdOn: params.input.createdOn.toJSDate(),
+				deletedOn: params.input.deletedOn === null ? null : params.input.deletedOn.toJSDate()
+			};
+		}
 		return {
-			...input,
-			availableStatuses: input.availableStatuses.map((status) =>
+			...params.input,
+			availableStatuses: params.input.availableStatuses.map((status) =>
 				DatabaseStatus.ConvertStatusForDatabase(status)
 			),
-			updatedOn: input.updatedOn.toJSDate(),
-			createdOn: input.createdOn.toJSDate(),
-			deletedOn: input.deletedOn === null ? null : input.deletedOn.toJSDate()
+			updatedOn: params.input.updatedOn.toJSDate(),
+			createdOn: params.input.createdOn.toJSDate(),
+			deletedOn: params.input.deletedOn === null ? null : params.input.deletedOn.toJSDate()
 		};
 	}
 

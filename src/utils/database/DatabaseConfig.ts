@@ -9,7 +9,7 @@ import {
 	DatabaseCategory,
 	InternalDatabaseCategory
 } from "@/utils/database/models/DatabaseCategory";
-import type { Category } from "@/utils/types/ICategory";
+import type { Category } from "@/utils/types/Category.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 
 const now = DateTime.now();
