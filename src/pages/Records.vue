@@ -40,7 +40,7 @@ watch(
 							:key="category.id"
 							:value="category"
 						>
-							<WhirlpoolTable />
+							<WhirlpoolTable :category-id="category.id" />
 						</VTabsWindowItem>
 					</VTabsWindow>
 				</VCard>

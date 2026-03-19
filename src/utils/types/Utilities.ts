@@ -1,3 +1,5 @@
+// import { deepToRaw } from "vuetify/lib/util/helpers.mjs";
+
 /**
  * Takes a variable name and transforms it by capitalizing the first letter and adding a space before subsequent words.
  * @param input Variable name. MUST be camelCase or this won't work correctly.
@@ -22,4 +24,32 @@ function TransformWhirlpoolFieldName(input: string) {
 	return transformedInput;
 }
 
-export { TransformVariableName, TransformWhirlpoolFieldName };
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * Takes a Vue ref and returns the plain object. Goes deeper than Vue's provided toRaw() function.
+ * Taken from https://github.com/vuejs/core/issues/5303#issuecomment-1543596383
+ * Funny enough, Vuetify seems to have copied this function as well, as there's one in their helper libraries that's written almost exactly the same way.
+ * @param sourceObj Original Vue ref
+ */
+function DeepToRaw<T extends Record<string, any>>(sourceObj: T): T {
+	const objectIterator = (input: any): any => {
+		if (Array.isArray(input)) {
+			return input.map((item) => objectIterator(item));
+		}
+		if (isRef(input) || isReactive(input) || isProxy(input)) {
+			return objectIterator(toRaw(input));
+		}
+		if (input && typeof input === "object") {
+			return Object.keys(input).reduce((acc, key) => {
+				acc[key as keyof typeof acc] = objectIterator(input[key]);
+				return acc;
+			}, {} as T);
+		}
+		return input;
+	};
+
+	return objectIterator(sourceObj);
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+export { TransformVariableName, TransformWhirlpoolFieldName, DeepToRaw };

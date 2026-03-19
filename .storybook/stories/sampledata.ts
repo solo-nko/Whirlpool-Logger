@@ -1,11 +1,11 @@
-import { ICategory } from "../../src/utils/types/ICategory";
+import { Category } from "../../src/utils/types/Category";
 import { DateTime } from "luxon";
 import { FieldType } from "../../src/utils/types/IField";
 import { WhirlpoolLog } from "../../src/utils/types/WhirlpoolLog";
 
 const sampleDay = DateTime.fromISO("2025-12-15");
 
-const GamesCategory: ICategory = {
+const GamesCategory: Category = {
 	id: "SampleGamesCategory",
 	name: "Games",
 	modifiedFields: [
@@ -61,14 +61,15 @@ const GamesCategory: ICategory = {
 	],
 	unsyncedChanges: false,
 	updatedOn: sampleDay,
-	createdOn: sampleDay
+	createdOn: sampleDay,
+	deletedOn: null
 };
 
 const existingGamesEntry: WhirlpoolLog = {
 	id: "test",
-	categoryId: "01KJT3Y9HVSTN783BDQ6BV4T0N",
+	category: GamesCategory,
 	title: "Split/Fiction",
-	statusId: "status1",
+	status: "status1",
 	notes: {
 		type: "doc",
 		content: [
@@ -111,9 +112,10 @@ const existingGamesEntry: WhirlpoolLog = {
 			{ type: "paragraph" }
 		]
 	},
+	deletedOn: null,
 	unsyncedChanges: false,
 	extraFieldValues: [],
-	tagIds: ["01KKQQDZR3N1HHE2SXJQ2TZ7MH"],
+	tags: [{ id: "01KKQQDZR3N1HHE2SXJQ2TZ7MH", label: "PS5" }],
 	updatedOn: DateTime.fromObject({ day: 22, hour: 12, year: 2025, month: 10 }),
 	createdOn: DateTime.fromObject({ day: 22, hour: 12, year: 2025, month: 10 })
 };

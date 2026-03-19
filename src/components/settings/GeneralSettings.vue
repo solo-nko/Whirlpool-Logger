@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import useCategoriesStore from "@/stores/categories.ts";
 import useSettingsStore from "@/stores/settings.ts";
-import type { ICategory } from "@/utils/types/ICategory.ts";
+import type { Category } from "@/utils/types/Category.ts";
 
 const settingsStore = useSettingsStore();
 const categoryStore = useCategoriesStore();
-const entryCategories = ref<ICategory[]>([]);
-const tableCategories = ref<ICategory[]>([]);
+const entryCategories = ref<Category[]>([]);
+const tableCategories = ref<Category[]>([]);
 
 watch(
 	() => categoryStore.clientCategories,
@@ -19,10 +19,10 @@ watch(
 	{ immediate: true }
 );
 
-const sendToEntryStoreFunction = (input: ICategory | null) => {
+const sendToEntryStoreFunction = (input: Category | null) => {
 	if (input !== null) settingsStore.SetDefaultEntryToLocalStorage(input);
 };
-const sendToTableStoreFunction = (input: ICategory | null) => {
+const sendToTableStoreFunction = (input: Category | null) => {
 	if (input !== null) settingsStore.SetDefaultTableToLocalStorage(input);
 };
 </script>

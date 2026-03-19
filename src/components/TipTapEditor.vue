@@ -3,6 +3,7 @@ import { EditorContent, useEditor, type JSONContent, type HTMLContent } from "@t
 import { StarterKit } from "@tiptap/starter-kit";
 import type { VBtn } from "vuetify/components";
 import { Placeholder } from "@tiptap/extensions";
+import { Color, TextStyle } from "@tiptap/extension-text-style";
 
 type TipTapEditorProps = {
 	modelValue?: JSONContent | HTMLContent;
@@ -49,7 +50,9 @@ const editor = useEditor({
 		}),
 		Placeholder.configure({
 			placeholder: "Write down your thoughts..."
-		})
+		}),
+		TextStyle,
+		Color
 	],
 	content: modelValue,
 	onUpdate({ editor }) {
@@ -65,6 +68,9 @@ const editor = useEditor({
 
 const canUndo = computed(() => editor.value?.can().undo());
 const canRedo = computed(() => editor.value?.can().redo());
+const currentColor = computed(() => editor.value?.getAttributes("textStyle").color);
+
+const textColor = ref<string | undefined>();
 
 const toggleBold = () => {
 	editor.value?.chain().focus().toggleBold().run();
@@ -109,6 +115,15 @@ watch(
 		editor.value?.commands.setContent(newValue);
 	}
 );
+
+// TODO: figure out a way to unset color/remove formatting
+watch(textColor, (newColor, oldColor) => {
+	if (newColor !== undefined) {
+		editor.value?.commands.setColor(newColor);
+	}
+	console.log("previous:", oldColor);
+	console.log("new:", newColor);
+});
 
 onBeforeUnmount(() => {
 	editor.value?.destroy();
@@ -206,6 +221,32 @@ onBeforeUnmount(() => {
 					</template>
 					<span>Strikethrough</span>
 				</VTooltip>
+				<VMenu location="top">
+					<template v-slot:activator="{ props: activatorProps }">
+						<VBtn
+							:density="buttonFormatting.density"
+							:size="buttonFormatting.size"
+							v-bind="activatorProps"
+							variant="text"
+							class="v-btn--icon"
+						>
+							<div class="color-icon-container">
+								<VIcon class="color-icon-text" icon="mdi-format-color-text"></VIcon>
+								<VIcon class="color-icon-bar" icon="mdi-color-helper" :color="currentColor"></VIcon>
+							</div>
+						</VBtn>
+					</template>
+					<VColorPicker
+						v-model="textColor"
+						title="Text Color"
+						show-swatches
+						:hide-title="false"
+						hide-canvas
+						hide-eye-dropper
+						hide-sliders
+						hide-inputs
+					/>
+				</VMenu>
 				<VDivider vertical gradient thickness="2" />
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
@@ -220,6 +261,7 @@ onBeforeUnmount(() => {
 					</template>
 					<span>Bulleted List</span>
 				</VTooltip>
+
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
@@ -236,7 +278,7 @@ onBeforeUnmount(() => {
 			</VBtnToggle>
 		</div>
 		<!--		Editor wrapper-->
-		<div class="overflow-y-auto max-h-40 min-h-20 px-2">
+		<div class="overflow-y-auto max-h-120 min-h-30 px-2">
 			<EditorContent :editor="editor" />
 		</div>
 	</div>
@@ -254,5 +296,36 @@ onBeforeUnmount(() => {
 	float: left;
 	height: 0;
 	pointer-events: none;
+}
+
+::v-deep(.tiptap p, li) {
+	font-size: 0.8rem;
+}
+
+::v-deep(.tiptap ::marker) {
+	font-size: 0.8rem;
+}
+
+::v-deep(.mdi-format-color-fill) {
+	top: 2px;
+}
+
+.color-icon-container {
+	display: grid;
+	grid-template: 1fr/ 1fr;
+	place-items: center;
+}
+
+.color-icon-container > * {
+	grid-column: 1 / 1;
+	grid-row: 1 / 1;
+}
+
+.color-icon-container .color-icon-text {
+	z-index: 1;
+}
+
+.color-icon-container .color-icon-bar {
+	z-index: 2;
 }
 </style>

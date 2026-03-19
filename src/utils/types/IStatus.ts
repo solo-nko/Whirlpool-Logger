@@ -7,6 +7,6 @@ export type IStatus = {
 	description?: string;
 	displayOrder?: number;
 	color?: string;
-	deletedOn?: DateTime;
+	deletedOn: DateTime | null;
 	createdOn: DateTime;
 };

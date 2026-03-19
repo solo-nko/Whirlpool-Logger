@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { DefaultField } from "@/utils/types/ICategory.ts";
+import type { DefaultField } from "@/utils/types/DefaultFieldUtils.ts";
 
 type FieldEditorProps = {
 	fieldData: DefaultField;

@@ -1,13 +1,19 @@
 import { Dexie, type EntityTable } from "dexie";
 import { DateTime } from "luxon";
 import { ulid } from "ulid";
-import DatabaseWhirlpool from "@/utils/database/models/DatabaseWhirlpool";
-import DatabaseCategory from "@/utils/database/models/DatabaseCategory";
-import type { ICategory } from "@/utils/types/ICategory";
+import {
+	DatabaseWhirlpool,
+	InternalDatabaseWhirlpool
+} from "@/utils/database/models/DatabaseWhirlpool";
+import {
+	DatabaseCategory,
+	InternalDatabaseCategory
+} from "@/utils/database/models/DatabaseCategory";
+import type { Category } from "@/utils/types/Category.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 
 const now = DateTime.now();
-const defaultCategories: ICategory[] = [
+const defaultCategories: Category[] = [
 	{
 		id: ulid(),
 		name: "Games",
@@ -18,32 +24,38 @@ const defaultCategories: ICategory[] = [
 			{
 				id: ulid(),
 				name: "Playing",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Completed",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Replaying",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Dropped",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Hiatus",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			}
 		],
 		tags: [],
 		updatedOn: now,
 		createdOn: now,
+		deletedOn: null,
 		unsyncedChanges: true
 	},
 	{
@@ -56,33 +68,39 @@ const defaultCategories: ICategory[] = [
 			{
 				id: ulid(),
 				name: "Watching",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Completed",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Rewatching",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Dropped",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Hiatus",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			}
 		],
 		tags: [],
 		updatedOn: now,
 		createdOn: now,
-		unsyncedChanges: true
+		unsyncedChanges: true,
+		deletedOn: null
 	},
 	{
 		id: ulid(),
@@ -97,32 +115,38 @@ const defaultCategories: ICategory[] = [
 			{
 				id: ulid(),
 				name: "Watching",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Completed",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Planned",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Dropped",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Hiatus",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			}
 		],
 		tags: [],
 		updatedOn: now,
 		createdOn: now,
+		deletedOn: null,
 		unsyncedChanges: true
 	},
 	{
@@ -138,32 +162,38 @@ const defaultCategories: ICategory[] = [
 			{
 				id: ulid(),
 				name: "Reading",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Completed",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Rereading",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Dropped",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			},
 			{
 				id: ulid(),
 				name: "Hiatus",
-				createdOn: now
+				createdOn: now,
+				deletedOn: null
 			}
 		],
 		tags: [],
 		updatedOn: now,
 		createdOn: now,
+		deletedOn: null,
 		unsyncedChanges: true
 	}
 ];
@@ -176,7 +206,7 @@ class DatabaseConfig extends Dexie {
 		super("LoggerDB");
 		this.version(1).stores({
 			whirlpools:
-				"id, categoryId, title, statusId, chapter, volume, series, progress, rating, notes, syncCode, unsyncedChanges, extraFieldValues, tagIds, deletedOn, userUpdatedOn, updatedOn, createdOn",
+				"id, category, title, status, chapter, volume, series, progress, rating, notes, syncCode, unsyncedChanges, extraFieldValues, tags, deletedOn, userUpdatedOn, updatedOn, createdOn",
 			categories:
 				"id, name, modifiedFields, extraFields, displayOrder, availableStatuses, tags, color, syncCode, unsyncedChanges, updatedOn, createdOn, deletedOn"
 		});
@@ -185,7 +215,9 @@ class DatabaseConfig extends Dexie {
 			const convertedDefaults = defaultCategories.map((category) => {
 				return {
 					...category,
-					availableStatuses: DatabaseStatus.ConvertStatusesToDatabase(category.availableStatuses),
+					availableStatuses: category.availableStatuses.map((status) =>
+						DatabaseStatus.ConvertStatusForDatabase(status)
+					),
 					updatedOn: category.updatedOn.toJSDate(),
 					createdOn: category.createdOn.toJSDate()
 				};
@@ -193,8 +225,8 @@ class DatabaseConfig extends Dexie {
 			transaction.table("categories").bulkAdd(convertedDefaults);
 		});
 
-		this.whirlpools.mapToClass(DatabaseWhirlpool);
-		this.categories.mapToClass(DatabaseCategory);
+		this.whirlpools.mapToClass(InternalDatabaseWhirlpool);
+		this.categories.mapToClass(InternalDatabaseCategory);
 	}
 }
 

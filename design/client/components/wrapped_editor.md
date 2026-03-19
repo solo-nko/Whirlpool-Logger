@@ -21,10 +21,13 @@
 
 #### Paragraph
 
+- Text Align
 - Numbered List
 - Bullet List
+- Block Quote
 
 #### Insert/Misc
 
 - Link
 - Remove Formatting
+- ## Table

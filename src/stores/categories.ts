@@ -4,8 +4,8 @@ import { defineStore } from "pinia";
 import { useObservable } from "@vueuse/rxjs";
 import { from } from "rxjs";
 import { computed } from "vue";
-import type { ICategory } from "@/utils/types/ICategory";
-import type DatabaseCategory from "@/utils/database/models/DatabaseCategory";
+import type { Category } from "@/utils/types/Category.ts";
+import type { DatabaseCategory } from "@/utils/database/models/DatabaseCategory";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 
@@ -13,17 +13,20 @@ const useCategoriesStore = defineStore("category-store", () => {
 	const databaseCategories = useObservable<DatabaseCategory[]>(
 		from(liveQuery(async () => LoggerDatabase.categories.toArray()))
 	);
-	const clientCategories = computed<ICategory[]>(() => {
+	const clientCategories = computed<Category[]>(() => {
 		const stored = databaseCategories.value;
 		if (stored) {
 			return stored
-				.map((category): ICategory => {
+				.map((category): Category => {
 					return {
 						...category,
-						availableStatuses: DatabaseStatus.ConvertStatusesFromDatabase(
-							category.availableStatuses
+						availableStatuses: category.availableStatuses.map((status) =>
+							DatabaseStatus.ConvertStatusesFromDatabase(status)
 						),
-						deletedOn: category.deletedOn ? DateTime.fromJSDate(category.deletedOn) : undefined,
+						deletedOn:
+							category.deletedOn === null
+								? category.deletedOn
+								: DateTime.fromJSDate(category.deletedOn),
 						updatedOn: DateTime.fromJSDate(category.updatedOn),
 						createdOn: DateTime.fromJSDate(category.createdOn)
 					};

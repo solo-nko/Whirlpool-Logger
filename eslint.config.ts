@@ -1,4 +1,3 @@
-import eslint from "@eslint/js";
 import { globalIgnores } from "eslint/config";
 import pluginVue from "eslint-plugin-vue";
 import skipFormatting from "eslint-config-prettier/flat";
@@ -12,7 +11,6 @@ import { defineConfigWithVueTs, vueTsConfigs } from "@vue/eslint-config-typescri
 
 export default defineConfigWithVueTs(
 	// global rules
-	eslint.configs.recommended,
 	vueTsConfigs.recommended,
 	importX.flatConfigs.recommended,
 	importX.flatConfigs.typescript,
@@ -39,6 +37,7 @@ export default defineConfigWithVueTs(
 				node: true
 			}
 		},
+		// global exceptions
 		rules: {
 			"no-console": "warn",
 			"import-x/no-unresolved": "off",
@@ -46,7 +45,8 @@ export default defineConfigWithVueTs(
 			"no-unused-vars": "off",
 			"@typescript-eslint/no-unused-vars": "warn",
 			"vue-no-unused-vars": "off",
-			"vue/v-slot-style": ["warn", { named: "longform" }]
+			"vue/v-slot-style": ["warn", { named: "longform" }],
+			"vue/require-default-prop": "off"
 		}
 	},
 	{

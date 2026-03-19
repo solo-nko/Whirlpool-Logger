@@ -10,7 +10,8 @@ type StatusEditorProps = {
 const newStatus: IStatus = {
 	id: "new",
 	name: "",
-	createdOn: DateTime.now()
+	createdOn: DateTime.now(),
+	deletedOn: null
 };
 
 const emits = defineEmits(["updateStatuses"]);

@@ -1,18 +1,21 @@
 import { DateTime } from "luxon";
 import { type ULID, ulid } from "ulid";
-import type { IFieldValue } from "@/utils/types/IFieldValue.ts";
 import type { JSONContent } from "@tiptap/vue-3";
+import type { Category } from "@/utils/types/Category.ts";
+import type { ITag } from "@/utils/types/ITag.ts";
+import type { IStatus } from "@/utils/types/IStatus.ts";
+import type { IFieldValue } from "@/utils/types/IFieldValue.ts";
 
 // Important: This class needs to line up with the DatabaseWhirlpool class. It should have all the same fields as the DatabaseWhirlpool, as well as the same types, except the DateTime properties, which are set to Dates instead.
 
 export class WhirlpoolLog {
 	id: ULID;
-	/** ID of the category this log belongs to. */
-	categoryId?: string;
+	/** Category this log belongs to. */
+	category: Category;
 	/** Title of the media. */
 	title: string;
-	/** ID of the status applied to this log. */
-	statusId?: string;
+	/** Status applied to this log. */
+	status?: IStatus;
 	/** Small unit of organization, such as an episode or issue. */
 	chapter?: number;
 	/** Large unit of organization, such as a season. */
@@ -32,9 +35,9 @@ export class WhirlpoolLog {
 	/** Values for custom fields. */
 	extraFieldValues: IFieldValue[];
 	/** IDs of applied tags. */
-	tagIds: string[];
+	tags: ITag[];
 	/** When this log was deleted. If undefined, it should be assumed that it has not been deleted. */
-	deletedOn?: DateTime;
+	deletedOn: DateTime | null;
 	/** Last time this log was updated, as inputted by the user. This is different because the user may not want to update this field. */
 	userUpdatedOn?: string;
 	/** Last time this log was updated, as observed internally. */
@@ -42,14 +45,16 @@ export class WhirlpoolLog {
 	/** When this log was created. */
 	createdOn: DateTime;
 
-	constructor(inputTitle: string) {
+	constructor(inputTitle: string, inputCategory: Category) {
 		this.id = ulid();
 		this.title = inputTitle;
+		this.category = inputCategory;
 		this.unsyncedChanges = true;
 		this.extraFieldValues = [];
-		this.tagIds = [];
+		this.tags = [];
 		this.createdOn = DateTime.now();
 		this.updatedOn = DateTime.now();
+		this.deletedOn = null;
 	}
 
 	static DateTimeToString(input: DateTime, simple: boolean = false) {
