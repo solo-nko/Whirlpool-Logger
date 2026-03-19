@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { ExportDatabase } from "@/utils/ImportExportUtils.ts";
+import { ExportDatabase, ImportDatabase } from "@/utils/ImportExportUtils.ts";
 
 const uploadedFile = ref<File | null>(null);
 
 const onClickExport = async () => {
 	await ExportDatabase();
 };
-const onClickImport = () => {
+const onClickImport = async () => {
 	if (uploadedFile.value === null) return;
+	await ImportDatabase(uploadedFile.value);
 };
 </script>
 
