@@ -70,7 +70,8 @@ const updateCategory = async () => {
 		tags: DeepToRaw(editingModel.value.tags),
 		deletedOn: editingModel.value.deletedOn ? editingModel.value.deletedOn.toJSDate() : undefined,
 		updatedOn: DateTime.now().toJSDate(),
-		createdOn: editingModel.value.createdOn.toJSDate()
+		createdOn: editingModel.value.createdOn.toJSDate(),
+		unsyncedChanges: true
 	});
 };
 

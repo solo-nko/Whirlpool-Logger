@@ -296,7 +296,7 @@ const onClickSave = async () => {
 		</VContainer>
 		<VCardActions>
 			<VBtn @click="onClickSave">Save</VBtn>
-			<VBtn v-if="isEditMode" @click="$emit('close')">Cancel</VBtn>
+			<VBtn v-if="isEditMode" @click="$emit('close')">Close</VBtn>
 		</VCardActions>
 	</VCard>
 </template>
