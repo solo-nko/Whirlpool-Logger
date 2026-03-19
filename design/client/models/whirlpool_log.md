@@ -48,8 +48,7 @@ Date created. This should be automatically set when the object is first created.
 Tags applied to the Whirlpool.
 
 - **Name:** `tags`
-- **Type:** string[]
-  - Array of [IDs](/design/client/models/tag.md#id) corresponding to the tags applied to this whirlpool.
+- **Type:** [Tag[]](/design/client/models/tag.md)
 
 ### Optional
 
@@ -66,8 +65,7 @@ Category the media belongs to.
 Current status. For example, this could "watching", or "completed", or "on pause."
 
 - **Name:** `status`
-- **Type:** string
-  - ID of the [Status](/design/client/models/status.md) assigned to this log.
+- **Type:** [Status](/design/client/models/status.md)
 
 #### Chapter
 

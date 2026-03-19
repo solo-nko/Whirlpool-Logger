@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { DateTime } from "luxon";
-import { DefaultFields, type DefaultField, type ICategory } from "@/utils/types/ICategory.ts";
+import type { Category } from "@/utils/types/ICategory.ts";
 import FieldEditor from "@/components/FieldEditor.vue";
 import DefaultFieldEditor from "@/components/DefaultFieldEditor.vue";
 import type { IField } from "@/utils/types/IField.ts";
@@ -11,13 +11,14 @@ import TagEditor from "@/components/TagEditor.vue";
 import { TransformWhirlpoolFieldName } from "@/utils/types/Utilities.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { IStatus } from "@/utils/types/IStatus.ts";
+import { type DefaultField, DefaultFields } from "@/utils/types/DefaultFieldUtils.ts";
 
 type CategoryEditorProps = {
-	category: ICategory;
+	category: Category;
 };
 
 const { category } = defineProps<CategoryEditorProps>();
-const editingModel = ref<ICategory>(category);
+const editingModel = ref<Category>(category);
 const openPanels = ref([]);
 const addExtraField = (input: IField) => {
 	editingModel.value.extraFields.push(input);
@@ -62,8 +63,8 @@ const updateCategory = async () => {
 		modifiedFields: toRaw(editingModel.value.modifiedFields),
 		extraFields: toRaw(editingModel.value.extraFields),
 		displayOrder: editingModel.value.displayOrder,
-		availableStatuses: DatabaseStatus.ConvertStatusesToDatabase(
-			editingModel.value.availableStatuses
+		availableStatuses: editingModel.value.availableStatuses.map((status) =>
+			DatabaseStatus.ConvertStatusForDatabase(status)
 		),
 		deletedOn: editingModel.value.deletedOn ? editingModel.value.deletedOn.toJSDate() : undefined,
 		updatedOn: DateTime.now().toJSDate(),

@@ -2,14 +2,17 @@
 import { DateTime } from "luxon";
 import { ulid } from "ulid";
 import TipTapEditor from "@/components/TipTapEditor.vue";
-import type { ICategory, WhirlpoolFields } from "@/utils/types/ICategory.ts";
+import type { Category } from "@/utils/types/ICategory.ts";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { FieldType } from "@/utils/types/IField.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
+import type { WhirlpoolFields } from "@/utils/types/DefaultFieldUtils";
+import { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.ts";
+import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 
 type EntryFormProps = {
-	category?: ICategory;
+	category: Category;
 	existingEntry?: WhirlpoolLog;
 	demoOnly?: boolean;
 };
@@ -20,12 +23,13 @@ const emits = defineEmits(["close", "save"]);
 const newWhirlpool: WhirlpoolLog = {
 	id: ulid(),
 	title: "",
-	categoryId: props.category?.id,
+	category: props.category,
 	unsyncedChanges: true,
 	extraFieldValues: [],
-	tagIds: [],
+	tags: [],
 	updatedOn: DateTime.now(),
-	createdOn: DateTime.now()
+	createdOn: DateTime.now(),
+	deletedOn: null
 };
 
 const isEditMode = computed(() => props.existingEntry !== undefined);
@@ -37,10 +41,9 @@ function GetModifiedField(input: WhirlpoolFields) {
 }
 
 // Modified Default Fields
-
 const statusFieldMods = computed(() => {
 	if (!props.category) return null;
-	return GetModifiedField("statusId") ? GetModifiedField("statusId") : null;
+	return GetModifiedField("status") ? GetModifiedField("status") : null;
 });
 
 const chapterFieldMods = computed(() => {
@@ -65,7 +68,7 @@ const notesFieldMods = computed(() => {
 
 const tagsFieldMods = computed(() => {
 	if (!props.category) return null;
-	return GetModifiedField("tagIds") ? GetModifiedField("tagIds") : null;
+	return GetModifiedField("tags") ? GetModifiedField("tags") : null;
 });
 
 const userUpdatedFieldMods = computed(() => {
@@ -113,10 +116,11 @@ async function AddEntry() {
 	await LoggerDatabase.whirlpools
 		.add({
 			...entryModel.value,
-			deletedOn:
-				entryModel.value.deletedOn === undefined
-					? undefined
-					: entryModel.value.deletedOn.toJSDate(),
+			category: DatabaseCategory.ConvertCategoryForDatabase(props.category),
+			status: entryModel.value.status
+				? DatabaseStatus.ConvertStatusForDatabase(entryModel.value.status)
+				: undefined,
+			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toJSDate(),
 			updatedOn: entryModel.value.updatedOn.toJSDate(),
 			createdOn: entryModel.value.createdOn.toJSDate()
 		})
@@ -131,10 +135,11 @@ async function UpdateEntry() {
 	await LoggerDatabase.whirlpools
 		.update(entryModel.value.id, {
 			...entryModel.value,
-			deletedOn:
-				entryModel.value.deletedOn === undefined
-					? undefined
-					: entryModel.value.deletedOn.toJSDate(),
+			category: DatabaseCategory.ConvertCategoryForDatabase(props.category),
+			status: entryModel.value.status
+				? DatabaseStatus.ConvertStatusForDatabase(entryModel.value.status)
+				: undefined,
+			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toJSDate(),
 			updatedOn: entryModel.value.updatedOn.toJSDate(),
 			createdOn: entryModel.value.createdOn.toJSDate()
 		})
@@ -161,11 +166,11 @@ const onClickSave = async () => {
 			<VRow>
 				<VAutocomplete
 					v-if="statusFieldMods?.hidden !== true"
-					v-model="entryModel.statusId"
+					v-model="entryModel.status"
 					:label="statusFieldMods?.rename ? statusFieldMods?.rename : 'Status'"
 					:items="props.category?.availableStatuses ?? []"
 					item-title="name"
-					item-value="id"
+					return-object
 				/>
 			</VRow>
 			<VRow class="xs:max-sm:flex-col">
@@ -201,7 +206,7 @@ const onClickSave = async () => {
 			<VRow class="xs:max-md:flex-col">
 				<VCol v-if="tagsFieldMods?.hidden !== true">
 					<VAutocomplete
-						v-model="entryModel.tagIds"
+						v-model="entryModel.tags"
 						:items="availableTags"
 						:label="tagsFieldMods?.rename ? tagsFieldMods?.rename : 'Tags'"
 						chips
@@ -209,7 +214,7 @@ const onClickSave = async () => {
 						closable-chips
 						multiple
 						item-title="label"
-						item-value="id"
+						return-object
 					>
 						<template v-slot:chip="{ props, item }">
 							<VChip

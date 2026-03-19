@@ -1,4 +1,3 @@
-import eslint from "@eslint/js";
 import { globalIgnores } from "eslint/config";
 import pluginVue from "eslint-plugin-vue";
 import skipFormatting from "eslint-config-prettier/flat";
@@ -12,7 +11,6 @@ import { defineConfigWithVueTs, vueTsConfigs } from "@vue/eslint-config-typescri
 
 export default defineConfigWithVueTs(
 	// global rules
-	eslint.configs.recommended,
 	vueTsConfigs.recommended,
 	importX.flatConfigs.recommended,
 	importX.flatConfigs.typescript,

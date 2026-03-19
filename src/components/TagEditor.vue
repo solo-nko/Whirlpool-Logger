@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { ITag } from "@/utils/types/ITag.ts";
 import { ulid } from "ulid";
+import type { ITag } from "@/utils/types/ITag.ts";
 
 type TagEditorProps = {
 	tags: ITag[];

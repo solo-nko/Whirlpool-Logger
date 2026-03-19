@@ -25,7 +25,7 @@ const categoryStore = useCategoriesStore();
 const whirlpoolsStore = useWhirlpoolStore();
 const tableItems = computed(() => {
 	return whirlpoolsStore.clientWhirlpools.filter(
-		(whirlpool) => whirlpool.categoryId === categoryId
+		(whirlpool) => whirlpool.category.id === categoryId
 	);
 });
 const tableHeaders = ref<HeaderItem[]>([
@@ -58,12 +58,14 @@ const getDate = (item: WhirlpoolLog, type: "updated" | "created") => {
 
 <template>
 	<VDataTable :headers="tableHeaders" :items="tableItems">
+		<!--		 eslint-disable-next-line vue/valid-v-slot -->
 		<template v-slot:item.actions="{ item }">
 			<VBtnGroup>
 				<VBtn @click="openModal(item)">Edit</VBtn>
 				<VBtn>Delete</VBtn>
 			</VBtnGroup>
 		</template>
+		<!--		 eslint-disable-next-line vue/valid-v-slot -->
 		<template v-slot:item.updatedOn="{ item }">
 			<span>{{ getDate(item, "updated") }}</span>
 		</template>

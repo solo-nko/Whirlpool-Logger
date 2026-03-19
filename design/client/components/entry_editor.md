@@ -20,7 +20,7 @@
 
 #### Editing Log
 
-Log
+An internal instance/copy of the whirlpool, used for editing.
 
 - **Name:** `editingModel`
 - **Type:** [WhirlpoolLog](/design/client/models/whirlpool_log.md)
@@ -33,17 +33,106 @@ Input boxes for filling out the Whirlpool log entry.
 
 ### Title
 
+- **Element/Component:** Text Field
+- **Required:** Yes
+- **Display:** Yes
+- **Usable:** Yes
+- **Label:** "Title"
+- **Placeholder:** N/A
+- **Actions:**
+  - On input, set `editingModel.title`
+
 ### Status
+
+- **Element/Component**: VAutoComplete
+- **Required:** No
+- **Display:** Yes
+- **Usable:** Yes
+- **Label:** "Status"
+- **Placeholder:** N/A
+- **Actions:**
+  - On input, set `editingModel.status`
 
 ### Chapter
 
+- **Element/Component**: NumericalInput
+- **Required:** No
+- **Display:**
+  - If `entry.modifiedFields` contains a Chapter field where `hidden` is `true`, No
+  - Otherwise, Yes
+- **Usable:** Yes
+- **Label:**
+  - If `entry.modifiedFields` contains a Chapter field, use that field's `rename` value.
+  - Otherwise, "Chapter"
+- **Placeholder:**
+  - If `entry.modifiedFields` contains a Chapter field, use that field's `placeholder` value.
+  - Otherwise, N/A
+- **Actions:**
+  - On input, set `editingModel.chapter`
+
 ### Volume
+
+- **Element/Component**: NumericalInput
+- **Required:** No
+- **Display:**
+  - If `entry.modifiedFields` contains a Volume field where `hidden` is `true`, No
+  - Otherwise, Yes
+- **Usable:** Yes
+- **Label:**
+  - If `entry.modifiedFields` contains a Volume field, use that field's `rename` value.
+  - Otherwise, "Volume"
+- **Placeholder:**
+  - If `entry.modifiedFields` contains a Volume field, use that field's `placeholder` value.
+  - Otherwise, N/A
+- **Actions:**
+  - On input, set `editingModel.volume`
 
 ### Rating
 
+- **Element/Component**: Stars
+- **Required:** No
+- **Display:**
+  - If `entry.modifiedFields` contains a Rating field where `hidden` is `true`, No
+  - Otherwise, Yes
+- **Usable:** Yes
+- **Label:**
+  - If `entry.modifiedFields` contains a Rating field, use that field's `rename` value.
+  - Otherwise, "Rating"
+- **Placeholder:** N/A
+- **Actions:**
+  - On input, set `editingModel.rating`
+
 ### Progress
 
+- **Element/Component**: Text Field
+- **Required:** No
+- **Display:**
+  - If `entry.modifiedFields` contains a Progress field where `hidden` is `true`, No
+  - Otherwise, Yes
+- **Usable:** Yes
+- **Label:**
+  - If `entry.modifiedFields` contains a Progress field, use that field's `rename` value.
+  - Otherwise, "Progress"
+- **Placeholder:**
+  - If `entry.modifiedFields` contains a Progress field, use that field's `placeholder` value.
+  - Otherwise, N/A
+- **Actions:**
+  - On input, set `editingModel.progress`
+
 ### Notes
+
+- **Element/Component**: [TipTapEditor](wrapped_editor.md)
+- **Required:** No
+- **Display:**
+  - If `entry.modifiedFields` contains a Notes field where `hidden` is `true`, No
+  - Otherwise, Yes
+- **Usable:** Yes
+- **Label:** N/A
+- **Placeholder:**
+  - If `entry.modifiedFields` contains a Notes field, use that field's `placeholder` value.
+  - Otherwise, "Write down your thoughts..."
+- **Actions:**
+  - On input, set `editingModel.notes`
 
 ### Additional Fields
 
@@ -68,7 +157,7 @@ Input boxes for filling out the Whirlpool log entry.
 
 ### Set to Today
 
-- **Element/Component:** VButton
+- **Element/Component:** Button
 - **Display:** Yes
 - **Usable:** Yes
 - **Contents:** "Set to Today"
@@ -78,7 +167,7 @@ Input boxes for filling out the Whirlpool log entry.
 
 ### Cancel
 
-- **Element/Component:** VButton
+- **Element/Component:** Button
 - **Display:**
   - If Entry is defined, Yes
   - Otherwise, No

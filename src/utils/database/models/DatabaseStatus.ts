@@ -8,31 +8,30 @@ export class DatabaseStatus {
 	description?: string;
 	displayOrder?: number;
 	color?: string;
-	deletedOn?: Date;
+	deletedOn: Date | null;
 	createdOn: Date;
 
 	constructor(name: string) {
 		this.id = ulid();
 		this.name = name;
 		this.createdOn = new Date();
+		this.deletedOn = null;
 	}
 
 	/** Takes an array of IStatus objects and coverts their date properties for storage in the IndexedDB. This is necessary because IndexedDB cannot store DateTime objects. */
-	static ConvertStatusesToDatabase(input: IStatus[]): DatabaseStatus[] {
-		return input.map((status) => {
-			let newDeletedOn: Date | undefined;
-			const newCreatedOn: Date = status.createdOn.toJSDate();
-			if (status.deletedOn !== undefined) newDeletedOn = status.deletedOn.toJSDate();
-			return { ...status, deletedOn: newDeletedOn, createdOn: newCreatedOn };
-		});
+	static ConvertStatusForDatabase(input: IStatus): DatabaseStatus {
+		return {
+			...input,
+			deletedOn: input.deletedOn === null ? input.deletedOn : input.deletedOn.toJSDate(),
+			createdOn: input.createdOn.toJSDate()
+		};
 	}
 
-	static ConvertStatusesFromDatabase(input: DatabaseStatus[]): IStatus[] {
-		return input.map((status) => {
-			let newDeletedOn: DateTime | undefined;
-			const newCreatedOn: DateTime = DateTime.fromJSDate(status.createdOn);
-			if (status.deletedOn !== undefined) newDeletedOn = DateTime.fromJSDate(status.deletedOn);
-			return { ...status, deletedOn: newDeletedOn, createdOn: newCreatedOn };
-		});
+	static ConvertStatusesFromDatabase(input: DatabaseStatus): IStatus {
+		return {
+			...input,
+			deletedOn: input.deletedOn === null ? input.deletedOn : DateTime.fromJSDate(input.deletedOn),
+			createdOn: DateTime.fromJSDate(input.createdOn)
+		};
 	}
 }

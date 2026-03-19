@@ -117,7 +117,6 @@ watch(
 );
 
 // TODO: figure out a way to unset color/remove formatting
-
 watch(textColor, (newColor, oldColor) => {
 	if (newColor !== undefined) {
 		editor.value?.commands.setColor(newColor);
