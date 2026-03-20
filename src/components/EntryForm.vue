@@ -227,9 +227,9 @@ const onClickSave = async () => {
 						item-title="label"
 						return-object
 					>
-						<template v-slot:chip="{ props, item }">
+						<template v-slot:chip="{ props: chipProps, item }">
 							<VChip
-								v-bind="props"
+								v-bind="chipProps"
 								:color="item.color ? item.color : undefined"
 								variant="flat"
 							></VChip>
@@ -258,6 +258,7 @@ const onClickSave = async () => {
 								:key="extraField.id"
 								:title="extraField.label"
 							>
+								<!-- eslint-disable		vue/v-on-event-hyphenation-->
 								<VTextField
 									v-if="extraField.type === FieldType.TEXT"
 									:label="extraField.label"
@@ -288,6 +289,7 @@ const onClickSave = async () => {
 										(value: unknown) => updateExtraField(value, extraField.id, extraField.type)
 									"
 								/>
+								<!-- eslint-enable		vue/v-on-event-hyphenation-->
 							</VRow>
 						</VExpansionPanelText>
 					</VExpansionPanel>

@@ -7,16 +7,9 @@ import useCategoriesStore from "@/stores/categories.ts";
 import EntryForm from "@/components/EntryForm.vue";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import ConfirmCard from "@/components/ConfirmCard.vue";
+import type { HeaderItem } from "@/utils/types/HeaderItem.ts";
 
 const settings = useSettingsStore();
-
-type HeaderItem = {
-	title: string;
-	value?: string;
-	key?: string;
-	sortable?: boolean;
-	sortRaw?: (a: WhirlpoolLog, b: WhirlpoolLog) => number;
-};
 
 type WhirlPoolTableProps = {
 	categoryId: string;

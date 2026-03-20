@@ -18,16 +18,18 @@ const settingCategory = computed(() => {
 </script>
 
 <template>
-	<h1>Category Settings</h1>
-	<VSelect
-		v-if="categoryStore.clientCategories.length > 0"
-		v-model="settingCategoryId"
-		label="Select Category"
-		:items="categoryStore.clientCategories ?? []"
-		item-title="name"
-		item-value="id"
-	/>
-	<CategoryEditor v-if="settingCategory" :category="settingCategory" />
+	<VContainer>
+		<h2>Category Settings</h2>
+		<VSelect
+			v-if="categoryStore.clientCategories.length > 0"
+			v-model="settingCategoryId"
+			label="Select Category"
+			:items="categoryStore.clientCategories ?? []"
+			item-title="name"
+			item-value="id"
+		/>
+		<CategoryEditor v-if="settingCategory" :category="settingCategory" />
+	</VContainer>
 </template>
 
 <style scoped></style>
