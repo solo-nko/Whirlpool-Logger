@@ -1,3 +1,4 @@
 # Note that prettier will also ignore everything specified in the .gitignore file if the file is in the same directory as this one.
 
 package-lock.json
+pnpm-lock.yaml
