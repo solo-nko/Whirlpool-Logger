@@ -43,6 +43,7 @@ These are items I plan to include, but are not currently in development.
 - Recycle Bin
 - Records search
 - Additional themes
+- Tag and status descriptions
 
 #### Ideas
 
@@ -55,7 +56,7 @@ These are items I'm considering/investigating including in the future.
 - Max chapter/volume setting, for tracking progress visually
 - End-to-end encryption
 - Ability to share lists
-- Allow multiple Impressions fields per log
+- Allow multiple Notes fields per whirlpool
 - Add and delete categories
 - Change ratings scale
 - Modify date created

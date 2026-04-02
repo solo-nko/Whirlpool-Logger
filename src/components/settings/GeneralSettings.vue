@@ -2,7 +2,7 @@
 import useCategoriesStore from "@/stores/categories.ts";
 import useSettingsStore from "@/stores/settings.ts";
 import { type Category } from "@/utils/types/Category.ts";
-import type { HeaderItem } from "@/utils/types/HeaderItem.ts";
+import type { IHeaderItem } from "@/utils/types/IHeaderItem.ts";
 
 const settingsStore = useSettingsStore();
 const categoryStore = useCategoriesStore();
@@ -11,7 +11,7 @@ const entryDefault = ref<Category[]>([]);
 const tableDefault = ref<Category[]>([]);
 
 // Dashboard settings
-const tableHeaders = ref<HeaderItem[]>([
+const tableHeaders = ref<IHeaderItem[]>([
 	{ title: "Display on Home", key: "displayed", sortable: false },
 	{ title: "Category", value: "categoryName", sortable: true },
 	{

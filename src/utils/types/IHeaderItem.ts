@@ -1,6 +1,6 @@
 import { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 
-export type HeaderItem = {
+export type IHeaderItem = {
 	title: string;
 	value?: string;
 	key?: string;

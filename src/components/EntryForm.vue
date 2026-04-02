@@ -10,7 +10,7 @@ import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import type { WhirlpoolFields } from "@/utils/types/DefaultFieldUtils";
 import { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
-import { DeepToRaw } from "@/utils/types/Utilities";
+import { DeepToRaw } from "@/utils/Utilities.ts";
 
 type EntryFormProps = {
 	category: Category;

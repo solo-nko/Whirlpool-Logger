@@ -36,7 +36,7 @@ export class WhirlpoolLog {
 	extraFieldValues: IFieldValue[];
 	/** IDs of applied tags. */
 	tags: ITag[];
-	/** When this log was deleted. If undefined, it should be assumed that it has not been deleted. */
+	/** When this log was deleted. If null, it should be assumed that it has not been deleted. */
 	deletedOn: DateTime | null;
 	/** Last time this log was updated, as inputted by the user. This is different because the user may not want to update this field. */
 	userUpdatedOn?: string;

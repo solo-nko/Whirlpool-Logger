@@ -7,7 +7,7 @@ import useCategoriesStore from "@/stores/categories.ts";
 import EntryForm from "@/components/EntryForm.vue";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import ConfirmCard from "@/components/ConfirmCard.vue";
-import type { HeaderItem } from "@/utils/types/HeaderItem.ts";
+import type { IHeaderItem } from "@/utils/types/IHeaderItem.ts";
 
 const settings = useSettingsStore();
 
@@ -24,7 +24,7 @@ const tableItems = computed(() => {
 		(whirlpool) => whirlpool.category.id === categoryId && whirlpool.deletedOn === null
 	);
 });
-const tableHeaders = ref<HeaderItem[]>([
+const tableHeaders = ref<IHeaderItem[]>([
 	{ title: "Title", value: "title", sortable: true },
 	{ title: "Last Updated", value: "updatedOn", sortable: false },
 	{ title: "Status", value: "status", sortable: true },
