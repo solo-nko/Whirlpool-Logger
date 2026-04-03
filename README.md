@@ -25,9 +25,9 @@ These are items I'm actively working on.
 - [ ] TipTap Editor
   - [ ] Link insertion
   - [ ] Text color
-  - [ ] Test output size with HTML
+  - [x] Test output size with HTML
 - [ ] Form validation
-- [ ] Ratings field
+- [x] Ratings field
 - [ ] Additional table headers
 
 **Minor**
