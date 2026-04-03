@@ -1,5 +1,5 @@
 import { Entity } from "dexie";
-import type { JSONContent } from "@tiptap/vue-3";
+import type { HTMLContent } from "@tiptap/vue-3";
 import type DatabaseConfig from "@/utils/database/DatabaseConfig";
 import type { IFieldValue } from "@/utils/types/IFieldValue";
 import type { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.ts";
@@ -17,7 +17,7 @@ class DatabaseWhirlpool {
 	series?: string;
 	progress?: string;
 	rating?: number;
-	notes?: JSONContent;
+	notes?: HTMLContent;
 	syncCode?: string;
 	unsyncedChanges!: boolean;
 	extraFieldValues!: IFieldValue[];
@@ -38,7 +38,7 @@ class InternalDatabaseWhirlpool extends Entity<DatabaseConfig> implements Databa
 	series?: string;
 	progress?: string;
 	rating?: number;
-	notes?: JSONContent;
+	notes?: HTMLContent;
 	syncCode?: string;
 	unsyncedChanges!: boolean;
 	extraFieldValues!: IFieldValue[];

@@ -5,7 +5,7 @@ import type { IStatus } from "@/utils/types/IStatus.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { DefaultField } from "@/utils/types/DefaultFieldUtils.ts";
 
-export class Category {
+class Category {
 	id: ULID;
 	name: string;
 	modifiedFields: DefaultField[];
@@ -34,3 +34,5 @@ export class Category {
 		this.deletedOn = null;
 	}
 }
+
+export { Category };

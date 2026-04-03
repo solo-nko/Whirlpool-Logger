@@ -8,14 +8,16 @@ import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 import StatusEditor from "@/components/StatusEditor.vue";
 import TagEditor from "@/components/TagEditor.vue";
-import { DeepToRaw, TransformWhirlpoolFieldName } from "@/utils/types/Utilities.ts";
+import { DeepToRaw, TransformWhirlpoolFieldName } from "@/utils/Utilities.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { IStatus } from "@/utils/types/IStatus.ts";
 import { type DefaultField, DefaultFields } from "@/utils/types/DefaultFieldUtils.ts";
+import useSettingsStore from "@/stores/settings.ts";
 
 type CategoryEditorProps = {
 	category: Category;
 };
+const settingsStore = useSettingsStore();
 
 const { category } = defineProps<CategoryEditorProps>();
 const editingModel = ref<Category>(category);
@@ -73,6 +75,7 @@ const updateCategory = async () => {
 		createdOn: editingModel.value.createdOn.toJSDate(),
 		unsyncedChanges: true
 	});
+	settingsStore.UpdateDashboardsTable(editingModel.value);
 };
 
 watch(

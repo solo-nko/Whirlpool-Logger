@@ -6,7 +6,7 @@ import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { DefaultField } from "@/utils/types/DefaultFieldUtils.ts";
 import type { Category } from "@/utils/types/Category.ts";
-import { DeepToRaw } from "@/utils/types/Utilities";
+import { DeepToRaw } from "@/utils/Utilities.ts";
 
 class DatabaseCategory {
 	id!: string;

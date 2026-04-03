@@ -1,6 +1,6 @@
 import { DateTime } from "luxon";
 import { type ULID, ulid } from "ulid";
-import type { JSONContent } from "@tiptap/vue-3";
+import type { HTMLContent } from "@tiptap/vue-3";
 import type { Category } from "@/utils/types/Category.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { IStatus } from "@/utils/types/IStatus.ts";
@@ -26,8 +26,8 @@ export class WhirlpoolLog {
 	progress?: string;
 	/** User rating. */
 	rating?: number;
-	/** Notes entered into the TipTap Editor. Should be saved in JSON. */
-	notes?: JSONContent;
+	/** Notes entered into the TipTap Editor. Should be saved in HTML. */
+	notes?: HTMLContent;
 	/** Sync Code, used for cloud sync. */
 	syncCode?: string;
 	/** Whether this log has changes that have not been sent to server yet. */
@@ -36,7 +36,7 @@ export class WhirlpoolLog {
 	extraFieldValues: IFieldValue[];
 	/** IDs of applied tags. */
 	tags: ITag[];
-	/** When this log was deleted. If undefined, it should be assumed that it has not been deleted. */
+	/** When this log was deleted. If null, it should be assumed that it has not been deleted. */
 	deletedOn: DateTime | null;
 	/** Last time this log was updated, as inputted by the user. This is different because the user may not want to update this field. */
 	userUpdatedOn?: string;

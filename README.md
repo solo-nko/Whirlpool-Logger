@@ -1,48 +1,108 @@
-# whirlpool-logger
+# Whirlpool Logger
 
-This template should help get you started developing with Vue 3 in Vite.
+This is the repository for the Whirlpool Logger, a web app designed to serve as a media diary. Use it to log your thoughts on the various books, games, movies, and TV shows you consume!
 
-## Recommended IDE Setup
+## Overview
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+### Features
 
-## Recommended Browser Setup
+- Per-category tracking.
+- Assign tags and statuses to your whirlpools for easy organization
+- Rich text editor for writing down your thoughts in detail
+- Add custom fields of your own
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+### Roadmap
 
-## Type Support for `.vue` Imports in TS
+#### To-Do
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+These are items I'm actively working on.
 
-## Customize configuration
+**Major**
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+- [ ] Light/Dark Theme
+- [ ] Cloud Sync
+- [ ] Home Screen/Dashboard
+- [ ] TipTap Editor
+  - [ ] Link insertion
+  - [ ] Text color
+  - [ ] Test output size with HTML
+- [ ] Form validation
+- [ ] Ratings field
+- [ ] Additional table headers
 
-## Project Setup
+**Minor**
 
-```sh
-npm install
-```
+- [ ] Tweak app styles
+- [ ] Set up toast messages
+- [ ] Test PWA functionality
 
-### Compile and Hot-Reload for Development
+#### Planned
 
-```sh
-npm run dev
-```
+These are items I plan to include, but are not currently in development.
 
-### Type-Check, Compile and Minify for Production
+- Recycle Bin
+- Records search
+- Additional themes
+- Tag and status descriptions
 
-```sh
-npm run build
-```
+#### Ideas
 
-### Lint with [ESLint](https://eslint.org/)
+These are items I'm considering/investigating including in the future.
 
-```sh
-npm run lint
-```
+- Recently Finished screen
+- Charts and/or statistics
+- Dashboard animations
+- Change app icon
+- Max chapter/volume setting, for tracking progress visually
+- End-to-end encryption
+- Ability to share lists
+- Allow multiple Notes fields per whirlpool
+- Add and delete categories
+- Change ratings scale
+- Modify date created
+
+## Development
+
+### Recommended IDE and Toolchain
+
+- I use Webstorm (and the Vue Devtools are set to open in Webstorm), but VS Code with the Vue Extension should work perfectly fine.
+- It doesn't hurt to have Vue Devtools installed in your browser, but the app has its own version of Devtools, and they do overlap.
+
+### Major Tech Stack
+
+#### Front
+
+- Vue 3.5
+  - Vue Router 5
+  - Pinia 3
+- TypeScript 5
+- Vuetify 4
+- TipTap 3
+- Dexie 4
+- Luxon 4
+
+#### Back (Cloud Sync)
+
+- Pocketbase
+
+### Project Setup
+
+This project uses PNPM for package management. It is also developed on Node.js 25 and built with Vite 7.
+
+### Package Scripts
+
+`pnpm install` - Install dependencies
+
+`pnpm run dev` - Start app in development mode
+
+`pnpm run dev-host` - Start app in development mode, exposed on local network (useful for testing on mobile)
+
+`pnpm run build` - Type check, compile and build for production
+
+`pnpm run preview` - Start app in production mode
+
+`pnpm run lint` - Run linter
+
+`pnpm run format` - Run prettier
+
+`pnpm run storybook` - Run Storybook for developing certain components in isolation

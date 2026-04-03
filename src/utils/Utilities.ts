@@ -52,4 +52,7 @@ function DeepToRaw<T extends Record<string, any>>(sourceObj: T): T {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-export { TransformVariableName, TransformWhirlpoolFieldName, DeepToRaw };
+/** Toast duration in milliseconds. */
+const TOAST_TIMEOUT = 3000;
+
+export { TransformVariableName, TransformWhirlpoolFieldName, DeepToRaw, TOAST_TIMEOUT };
