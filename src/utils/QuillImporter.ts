@@ -2,7 +2,7 @@ import type { DexieExportJsonStructure } from "dexie-export-import/dist/json-str
 import Quill, { Delta } from "quill";
 import { ulid } from "ulid";
 import { DateTime } from "luxon";
-import { generateJSON } from "@tiptap/html";
+import { generateJSON, generateHTML } from "@tiptap/html";
 import { StarterKit } from "@tiptap/starter-kit";
 import { Placeholder } from "@tiptap/extensions";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
@@ -140,8 +140,10 @@ export default class QuillImporter {
 				const htmlContents = this.quill.instance.root.innerHTML;
 
 				// TODO: make sure all extensions that we'll be using are installed and imported before testing extensively
-				jsonExport = generateJSON(htmlContents, [StarterKit, Placeholder]);
-				return jsonExport;
+				const extensions = [StarterKit, Placeholder];
+				jsonExport = generateJSON(htmlContents, extensions);
+				// While it is probably theoretically possible to convert directly from Quill HTML to TipTap's, I'm not sure if they use 100% the same format (in fact I know they don't, as Quill doesn't seem to distinguish between <ul> and <ol> when outputting from Delta). So, we'll convert to TipTap's JSON format first and then convert back to HTML from that.
+				return generateHTML(jsonExport, extensions);
 			}
 		};
 
