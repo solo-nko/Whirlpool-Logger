@@ -60,6 +60,11 @@ These are items I'm considering/investigating including in the future.
 - Add and delete categories
 - Change ratings scale
 - Modify date created
+- Rich Editor Features
+  - Font Family
+  - Font Size/Headers
+  - Tables
+  - Task List
 
 ## Development
 

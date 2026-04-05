@@ -28,6 +28,9 @@
 
 #### Insert/Misc
 
+- Undo
+- Redo
 - Link
 - Remove Formatting
+
 - ## Table
