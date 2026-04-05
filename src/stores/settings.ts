@@ -16,6 +16,8 @@ const useSettingsStore = defineStore("settings-store", () => {
 	const defaultTableCategory = ref<Category | undefined>();
 	const display = useDisplay();
 
+	const itemsPerPage = ref<number>(10);
+
 	function SetDefaultEntryToLocalStorage(input: Category) {
 		localStorage.setItem(LocalStorageKeys.DefaultEntry, input.id);
 	}
@@ -105,6 +107,7 @@ const useSettingsStore = defineStore("settings-store", () => {
 		SetDefaultEntryToLocalStorage,
 		SetDefaultTableToLocalStorage,
 		display,
+		itemsPerPage,
 		dashboards,
 		displayedDashboards,
 		PopulateDashboardsTable,

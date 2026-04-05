@@ -1,5 +1,7 @@
 // import { deepToRaw } from "vuetify/lib/util/helpers.mjs";
 
+import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
+
 /**
  * Takes a variable name and transforms it by capitalizing the first letter and adding a space before subsequent words.
  * @param input Variable name. MUST be camelCase or this won't work correctly.
@@ -52,7 +54,17 @@ function DeepToRaw<T extends Record<string, any>>(sourceObj: T): T {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
+function SortWhirlpoolByUpdated(a: WhirlpoolLog, b: WhirlpoolLog) {
+	return a.updatedOn.toMillis() - b.updatedOn.toMillis();
+}
+
 /** Toast duration in milliseconds. */
 const TOAST_TIMEOUT = 3000;
 
-export { TransformVariableName, TransformWhirlpoolFieldName, DeepToRaw, TOAST_TIMEOUT };
+export {
+	TransformVariableName,
+	TransformWhirlpoolFieldName,
+	DeepToRaw,
+	SortWhirlpoolByUpdated,
+	TOAST_TIMEOUT
+};

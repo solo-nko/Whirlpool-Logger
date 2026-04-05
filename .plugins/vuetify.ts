@@ -29,7 +29,9 @@ import {
 	mdiPaletteSwatch,
 	mdiClipboardEdit,
 	mdiInformation,
-	mdiArrowULeftTop
+	mdiArrowULeftTop,
+	mdiDelete,
+	mdiPencil
 } from "@mdi/js";
 
 export default createVuetify({
@@ -69,7 +71,9 @@ export default createVuetify({
 			removeFormatting: mdiBrushOff,
 			close: mdiClose,
 			check: mdiCheck,
-			revert: mdiArrowULeftTop
+			revert: mdiArrowULeftTop,
+			trash: mdiDelete,
+			edit: mdiPencil
 		},
 		sets: {
 			mdi

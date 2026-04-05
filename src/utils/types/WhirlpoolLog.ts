@@ -61,4 +61,8 @@ export class WhirlpoolLog {
 		if (simple) return input.toISODate();
 		return input.toISO();
 	}
+
+	static DateTimeFromString(input: string): DateTime {
+		return DateTime.fromISO(input);
+	}
 }

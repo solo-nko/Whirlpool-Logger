@@ -8,6 +8,8 @@ import EntryForm from "@/components/EntryForm.vue";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import ConfirmCard from "@/components/ConfirmCard.vue";
 import type { IHeaderItem } from "@/utils/types/IHeaderItem.ts";
+import { SortWhirlpoolByUpdated } from "@/utils/Utilities.ts";
+import type { ISortItem } from "@/utils/types/ISortItem.ts";
 
 const settings = useSettingsStore();
 
@@ -24,12 +26,41 @@ const tableItems = computed(() => {
 		(whirlpool) => whirlpool.category.id === categoryId && whirlpool.deletedOn === null
 	);
 });
+
+const basicHeader: IHeaderItem = {
+	title: "none",
+	// this is a tailwind selector targeting the v-data-table-header__content class
+	headerProps: { class: "*:justify-center" },
+	cellProps: { class: "text-center" }
+} as IHeaderItem;
+
+const itemsPerPageOptions: { title: string; value: number }[] = [
+	{ title: "10", value: 10 },
+	{ title: "25", value: 25 },
+	{ title: "50", value: 50 }
+];
+
 const tableHeaders = ref<IHeaderItem[]>([
-	{ title: "Title", value: "title", sortable: true },
-	{ title: "Last Updated", value: "updatedOn", sortable: false },
-	{ title: "Status", value: "status", sortable: true },
-	{ title: "Actions", key: "actions", sortable: false }
+	{
+		...basicHeader,
+		title: "Title",
+		value: "title",
+		sortable: true,
+		cellProps: { class: "text-left" }
+	},
+	{ ...basicHeader, title: "Status", value: "status", sortable: true },
+	{ ...basicHeader, title: "Tags (3 Max)", value: "tags", sortable: false },
+	{
+		...basicHeader,
+		title: "Last Updated",
+		value: "updatedOn",
+		sortable: true,
+		sortRaw: SortWhirlpoolByUpdated
+	},
+	{ ...basicHeader, title: "Actions", key: "actions", sortable: false }
 ]);
+
+const defaultSortOrder: ISortItem[] = [{ key: "updatedOn", order: "desc" }];
 
 const tableCategory = computed(() => {
 	return categoryStore.clientCategories.find((category) => category.id === categoryId);
@@ -38,6 +69,7 @@ const isEntryModalOpen = ref(false);
 const modalEntry = ref<WhirlpoolLog>();
 const preparedToDelete = ref<WhirlpoolLog | undefined>();
 const isConfirmModalOpen = ref(false);
+const searchValue = ref<string | undefined>();
 
 const openModal = (item: WhirlpoolLog) => {
 	modalEntry.value = item;
@@ -76,19 +108,55 @@ const getDate = (item: WhirlpoolLog, type: "updated" | "created") => {
 </script>
 
 <template>
-	<VDataTable :headers="tableHeaders" :items="tableItems">
+	<VDataTable
+		v-model:items-per-page="settings.itemsPerPage"
+		:headers="tableHeaders"
+		:items="tableItems"
+		:sort-by="defaultSortOrder"
+		:search="searchValue"
+	>
 		<!--	 eslint-disable vue/valid-v-slot -->
 		<template v-slot:item.status="{ item }">
-			<span>{{ item.status ? item.status.name : "Not Set" }}</span>
+			<span v-if="item.status">{{ item.status.name }}</span>
+			<span v-else><em>No Status</em></span>
+		</template>
+		<template v-slot:item.tags="{ item }">
+			<span v-if="item.tags.length === 0"><em>No Tags</em></span>
+			<span v-else>
+				<VChip
+					v-for="tag in item.tags.slice(0, 3)"
+					:key="tag.id"
+					:color="tag.color ?? undefined"
+					size="small"
+					density="compact"
+					variant="flat"
+					>{{ tag.label }}</VChip
+				>
+			</span>
 		</template>
 		<template v-slot:item.actions="{ item }">
 			<VBtnGroup>
-				<VBtn @click="openModal(item)">Edit</VBtn>
-				<VBtn @click="prepareToDelete(item)">Delete</VBtn>
+				<VBtn icon="$edit" @click="openModal(item)" />
+				<VBtn icon="$trash" @click="prepareToDelete(item)" />
 			</VBtnGroup>
 		</template>
 		<template v-slot:item.updatedOn="{ item }">
 			<span>{{ getDate(item, "updated") }}</span>
+		</template>
+		<template v-slot:bottom>
+			<VRow class="items-center xs:max-md:flex-col">
+				<VCol cols="4" class="xs:max-md:w-full xs:max-md:mt-3">
+					<VTextField
+						v-model="searchValue"
+						class="px-4"
+						density="compact"
+						label="Search"
+						variant="outlined"
+						clearable
+						hide-details
+				/></VCol>
+				<VCol> <VDataTableFooter :items-per-page-options="itemsPerPageOptions" /> </VCol>
+			</VRow>
 		</template>
 	</VDataTable>
 	<!--		 eslint-enable vue/valid-v-slot -->

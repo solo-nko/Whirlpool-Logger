@@ -6,4 +6,12 @@ export type IHeaderItem = {
 	key?: string;
 	sortable?: boolean;
 	sortRaw?: (a: WhirlpoolLog, b: WhirlpoolLog) => number;
+	align?: "start" | "end" | "center";
+	width?: string | number;
+	cellProps?: {
+		class: string;
+	};
+	headerProps?: {
+		class?: string;
+	};
 };

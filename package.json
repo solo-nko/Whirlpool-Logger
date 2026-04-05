@@ -67,7 +67,6 @@
 		"eslint-plugin-vue": "~10.8.0",
 		"jiti": "^2.6.1",
 		"npm-run-all2": "^8.0.4",
-		"playwright": "^1.58.2",
 		"prettier": "3.8.1",
 		"sass-embedded": "^1.97.3",
 		"storybook": "^10.2.13",
