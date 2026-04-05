@@ -8,19 +8,19 @@
 		<VMain><RouterView /></VMain>
 		<VBottomNavigation grow order="-1" tag="footer">
 			<VBtn to="home">
-				<VIcon icon="mdi-home" />
+				<VIcon icon="$home" />
 				<span>Home</span>
 			</VBtn>
-			<VBtn to="entry" icon="mdi-plus">
-				<VIcon icon="mdi-plus" />
+			<VBtn to="entry">
+				<VIcon icon="$plus" />
 				<span>Entry</span>
 			</VBtn>
 			<VBtn to="records">
-				<VIcon icon="mdi-table" />
+				<VIcon icon="$table" />
 				<span>Records</span>
 			</VBtn>
 			<VBtn to="settings">
-				<VIcon icon="mdi-cog" />
+				<VIcon icon="$cog" />
 				<span>Settings</span>
 			</VBtn>
 		</VBottomNavigation>

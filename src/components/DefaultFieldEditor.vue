@@ -28,13 +28,13 @@ const updateField = () => {
 		<div class="flex justify-end">
 			<VBtn class="ml-3" @click="undoChanges">
 				<template v-slot:prepend>
-					<VIcon icon="mdi-arrow-u-left-top" />
+					<VIcon icon="$revert" />
 				</template>
 				Revert
 			</VBtn>
 			<VBtn class="ml-3" @click="updateField">
 				<template v-slot:prepend>
-					<VIcon icon="mdi-check" />
+					<VIcon icon="$check" />
 				</template>
 				<template #default> Save </template>
 			</VBtn>

@@ -38,6 +38,7 @@ function GenerateNewWhirlpool(category: Category): WhirlpoolLog {
 }
 
 const isEditMode = computed(() => props.existingEntry !== undefined);
+const showCloseButton = computed(() => isEditMode.value);
 
 // Validation
 const formValidationStatus = ref<boolean | null>(null);
@@ -117,7 +118,10 @@ const availableTags = computed<ITag[]>(() => {
 	return props.category.tags;
 });
 
-const entryModel = ref<WhirlpoolLog>(props.existingEntry || GenerateNewWhirlpool(props.category));
+// somewhat annoying thing with Vue refs is that in the case of objects, if you pass props to them directly, they will take the reference value, which leads to them mutating the props.
+const entryModel = ref<WhirlpoolLog>(
+	props.existingEntry ? { ...props.existingEntry } : GenerateNewWhirlpool(props.category)
+);
 
 const extraFields = computed(() => {
 	if (!props.category || props.category.extraFields.length === 0) return null;
@@ -380,7 +384,7 @@ watch(
 		</VForm>
 		<VCardActions>
 			<VBtn @click="onClickSave">Save</VBtn>
-			<VBtn v-if="isEditMode" @click="$emit('close')">Close</VBtn>
+			<VBtn v-if="showCloseButton" @click="$emit('close')">Close</VBtn>
 		</VCardActions>
 		<VSnackbar v-model="validationToastDisplayed" :timeout="TOAST_TIMEOUT"
 			>A required field is missing, or a field has invalid input.</VSnackbar

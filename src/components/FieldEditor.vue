@@ -99,19 +99,19 @@ const removeField = () => {
 
 		<div class="flex justify-end">
 			<VBtn v-if="!isNewField" @click="removeField">
-				<template v-slot:prepend> <VIcon icon="mdi-close" /></template>
+				<template v-slot:prepend> <VIcon icon="$close" /></template>
 				Delete
 			</VBtn>
 			<VBtn v-if="!isNewField" class="ml-3" @click="undoChanges">
 				<template v-slot:prepend>
-					<VIcon icon="mdi-arrow-u-left-top" />
+					<VIcon icon="$revert" />
 				</template>
 				Revert
 			</VBtn>
 			<VBtn class="ml-3" @click="isNewField ? addField() : updateField()">
 				<template v-slot:prepend>
-					<VIcon v-if="isNewField" icon="mdi-plus" />
-					<VIcon v-else icon="mdi-check" />
+					<VIcon v-if="isNewField" icon="$plus" />
+					<VIcon v-else icon="$check" />
 				</template>
 				<template #default>
 					{{ isNewField ? "Add" : "Save" }}

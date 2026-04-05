@@ -102,13 +102,13 @@ watch(selectedTag, (newSelection) => {
 					</VExpansionPanels>
 					<VCardActions>
 						<VBtn v-if="!isEditingNewTag" @click="deleteTag">
-							<template v-slot:prepend> <VIcon icon="mdi-close" /></template>
+							<template v-slot:prepend> <VIcon icon="$close" /></template>
 							Delete
 						</VBtn>
 						<VBtn @click="isEditingNewTag ? addTag() : updateTag()">
 							<template v-slot:prepend>
-								<VIcon v-if="isEditingNewTag" icon="mdi-plus" />
-								<VIcon v-else icon="mdi-check" />
+								<VIcon v-if="isEditingNewTag" icon="$plus" />
+								<VIcon v-else icon="$check" />
 							</template>
 							<template #default>
 								{{ isEditingNewTag ? "Add" : "Save" }}

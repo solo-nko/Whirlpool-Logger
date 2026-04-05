@@ -101,13 +101,13 @@ watch(
 					/>
 					<VCardActions>
 						<VBtn v-if="!isNewStatus" @click="deleteStatus">
-							<template v-slot:prepend> <VIcon icon="mdi-close" /></template>
+							<template v-slot:prepend> <VIcon icon="$close" /></template>
 							Delete
 						</VBtn>
 						<VBtn @click="isNewStatus ? addStatus() : updateStatus()">
 							<template v-slot:prepend>
-								<VIcon v-if="isNewStatus" icon="mdi-plus" />
-								<VIcon v-else icon="mdi-check" />
+								<VIcon v-if="isNewStatus" icon="$plus" />
+								<VIcon v-else icon="$check" />
 							</template>
 							<template #default>
 								{{ isNewStatus ? "Add" : "Save" }}

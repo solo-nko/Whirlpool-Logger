@@ -55,7 +55,7 @@ const useSettingsStore = defineStore("settings-store", () => {
 			}));
 		}
 	}
-	/** Update dashboards to reflect changes made in Category Editor. */
+	/** Update dashboards to reflect changes made in Category Editor. TODO: Running this (or deleting the dashboard key in localstorage and refreshing) is necessary after using the importer, or the dashboards may not display correctly */
 	function UpdateDashboardsTable(category: Category) {
 		const findDashboardIndex = dashboards.value.findIndex(
 			(dash) => dash.categoryId === category.id
