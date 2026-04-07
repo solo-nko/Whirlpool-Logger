@@ -2,12 +2,7 @@ import { useDisplay } from "vuetify";
 import type { Category } from "@/utils/types/Category.ts";
 import useCategoriesStore from "@/stores/categories.ts";
 import type { IDashboard } from "@/utils/types/IDashboard.ts";
-
-enum LocalStorageKeys {
-	DefaultEntry = "defaultEntryCategory",
-	DefaultTable = "defaultTableCategory",
-	Dashboards = "dashboards"
-}
+import LocalStorageKeys from "@/utils/config/LocalStorageKeys.ts";
 
 const useSettingsStore = defineStore("settings-store", () => {
 	const categoryStore = useCategoriesStore();
