@@ -3,8 +3,8 @@ import useSettingsStore from "@/stores/settings.ts";
 import CategoryDashboard from "@/components/CategoryDashboard.vue";
 import { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import type { Category } from "@/utils/types/Category.ts";
-import ConfirmCard from "@/components/ConfirmCard.vue";
 import EntryForm from "@/components/EntryForm.vue";
+import SpiralGraphic from "@/components/SpiralGraphic.vue";
 const settingsStore = useSettingsStore();
 
 const isEditModalOpen = ref(false);
@@ -23,8 +23,8 @@ const closeEditModal = () => {
 </script>
 
 <template>
-	<VContainer>
-		<div>This is the dashboard!</div>
+	<SpiralGraphic class="z-0" />
+	<VContainer class="relative z-10">
 		<VRow>
 			<VCol v-for="(dash, index) in settingsStore.displayedDashboards" :key="index">
 				<CategoryDashboard :dashboard="dash" @edit-whirlpoool="openEditModal" />
