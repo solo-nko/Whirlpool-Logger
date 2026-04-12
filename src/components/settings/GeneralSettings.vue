@@ -37,10 +37,10 @@ watch(
 	{ immediate: true }
 );
 
-const sendToEntryStoreFunction = (input: Category | null) => {
+const sendToEntryStoreFunction = (input: string | null) => {
 	if (input !== null) settingsStore.SetDefaultEntryToLocalStorage(input);
 };
-const sendToTableStoreFunction = (input: Category | null) => {
+const sendToTableStoreFunction = (input: string | null) => {
 	if (input !== null) settingsStore.SetDefaultTableToLocalStorage(input);
 };
 
@@ -64,7 +64,7 @@ const sendToTableStoreFunction = (input: Category | null) => {
 							v-for="category in entryDefault"
 							:key="category.id"
 							:label="category.name"
-							:value="category"
+							:value="category.id"
 						/>
 					</VRadioGroup>
 				</VCol>
@@ -78,7 +78,7 @@ const sendToTableStoreFunction = (input: Category | null) => {
 							v-for="category in tableDefault"
 							:key="category.id"
 							:label="category.name"
-							:value="category"
+							:value="category.id"
 						/>
 					</VRadioGroup>
 				</VCol>

@@ -8,16 +8,18 @@ import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 import StatusEditor from "@/components/StatusEditor.vue";
 import TagEditor from "@/components/TagEditor.vue";
-import { DeepToRaw, TransformWhirlpoolFieldName } from "@/utils/Utilities.ts";
+import { DeepToRaw, TOAST_TIMEOUT, TransformWhirlpoolFieldName } from "@/utils/Utilities.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { IStatus } from "@/utils/types/IStatus.ts";
 import { type DefaultField, DefaultFields } from "@/utils/types/DefaultFieldUtils.ts";
 import useSettingsStore from "@/stores/settings.ts";
+import useWhirlpoolStore from "@/stores/whirlpools.ts";
 
 type CategoryEditorProps = {
 	category: Category;
 };
 const settingsStore = useSettingsStore();
+const whirlpoolStore = useWhirlpoolStore();
 
 const { category } = defineProps<CategoryEditorProps>();
 const editingModel = ref<Category>(category);
@@ -25,6 +27,8 @@ const openPanels = ref([]);
 const addExtraField = (input: IField) => {
 	editingModel.value.extraFields.push(input);
 };
+const toastDisplayed = ref(false);
+const toastMessage = ref("Category Saved!");
 
 const updateExtraField = (input: IField) => {
 	const fieldIndexToUpdate = editingModel.value.extraFields.findIndex(
@@ -58,24 +62,75 @@ const updateTags = (newTags: ITag[]) => {
 	editingModel.value.tags = newTags;
 };
 
+/** Uses the `updated` and `deleted` flags to find existing Whirlpools in the database which have those tags attached. It then either removes the tags if they've been deleted, or modifies them if they've been updated. */
+async function UpdateTags() {
+	const deletedTags: ITag[] = editingModel.value.tags.filter((tag) => tag.deleted === true);
+	const updatedTags: ITag[] = editingModel.value.tags.filter((tag) => tag.updated === true);
+	// get whirlpools under this category
+	const getClientWhirlpools = whirlpoolStore.clientWhirlpools.filter(
+		(whirlpool) => whirlpool.category.id === editingModel.value.id
+	);
+	// find whirlpools with at least one tag that has either been deleted or modified
+	const whirlpoolsWithStaleTags = getClientWhirlpools.filter((whirlpool) =>
+		whirlpool.tags.some(
+			(tag) =>
+				deletedTags.some((deletedTag) => deletedTag.id === tag.id) ||
+				updatedTags.some((updatedTag) => updatedTag.id === tag.id)
+		)
+	);
+
+	const postTagUpdateWhirlpools = whirlpoolsWithStaleTags.map((whirlpool) => {
+		return {
+			...whirlpool,
+			tags: whirlpool.tags
+				// filter out deleted tags
+				.filter((tag) => deletedTags.some((deletedTag) => deletedTag.id === tag.id) === false)
+				// modify updated tags
+				.map((oldTag) => {
+					const newTag = updatedTags.find((updatedTag) => updatedTag.id === oldTag.id);
+					// return the new version if there is one, else return the existing version
+					return newTag ? { ...newTag, updated: null } : oldTag;
+				})
+		};
+	});
+
+	await LoggerDatabase.whirlpools.bulkUpdate(
+		postTagUpdateWhirlpools.map((whirlpool) => ({
+			key: whirlpool.id,
+			changes: {
+				tags: DeepToRaw(whirlpool.tags)
+			}
+		}))
+	);
+}
+
 const updateCategory = async () => {
 	// TODO: figure out what to do when user deletes fields or statuses that are attached to existing whirlpools
-	await LoggerDatabase.categories.update(editingModel.value.id, {
-		// Dexie internally uses structuredClone for its put and add operations. structuredClone can't be used on Proxies, and Vue creates Proxies of object refs to maintain reactivity. Thus, when using a ref (or reactive) that refers to an object, it is likely necessary to use DeepRaw, or Vue's provided toRaw function to pull the object out from the reactive Proxy, or else Dexie won't be able to operate on it. This should not be an issue for refs based on primitive values such as strings and numbers, which is why name and displayOrder do not need this treatment.
-		name: editingModel.value.name,
-		displayOrder: editingModel.value.displayOrder,
-		modifiedFields: DeepToRaw(editingModel.value.modifiedFields),
-		extraFields: DeepToRaw(editingModel.value.extraFields),
-		availableStatuses: editingModel.value.availableStatuses.map((status) =>
-			DatabaseStatus.ConvertStatusForDatabase(status)
-		),
-		tags: DeepToRaw(editingModel.value.tags),
-		deletedOn: editingModel.value.deletedOn ? editingModel.value.deletedOn.toJSDate() : undefined,
-		updatedOn: DateTime.now().toJSDate(),
-		createdOn: editingModel.value.createdOn.toJSDate(),
-		unsyncedChanges: true
-	});
-	settingsStore.UpdateDashboardsTable(editingModel.value);
+	try {
+		await LoggerDatabase.categories.update(editingModel.value.id, {
+			// Dexie internally uses structuredClone for its put and add operations. structuredClone can't be used on Proxies, and Vue creates Proxies of object refs to maintain reactivity. Thus, when using a ref (or reactive) that refers to an object, it is likely necessary to use DeepRaw, or Vue's provided toRaw function to pull the object out from the reactive Proxy, or else Dexie won't be able to operate on it. This should not be an issue for refs based on primitive values such as strings and numbers, which is why name and displayOrder do not need this treatment.
+			name: editingModel.value.name,
+			displayOrder: editingModel.value.displayOrder,
+			modifiedFields: DeepToRaw(editingModel.value.modifiedFields),
+			extraFields: DeepToRaw(editingModel.value.extraFields),
+			availableStatuses: editingModel.value.availableStatuses.map((status) =>
+				DatabaseStatus.ConvertStatusForDatabase(status)
+			),
+			tags: DeepToRaw(editingModel.value.tags),
+			deletedOn: editingModel.value.deletedOn ? editingModel.value.deletedOn.toJSDate() : undefined,
+			updatedOn: DateTime.now().toJSDate(),
+			createdOn: editingModel.value.createdOn.toJSDate(),
+			unsyncedChanges: true
+		});
+		settingsStore.UpdateDashboardsTable(editingModel.value);
+		toastMessage.value = "Category saved.";
+		toastDisplayed.value = true;
+	} catch (error) {
+		console.log(error);
+		toastMessage.value = "An error has occurred.";
+		toastDisplayed.value = true;
+	}
+	await UpdateTags();
 };
 
 watch(
@@ -151,8 +206,10 @@ watch(
 					<VCard>
 						<VCardTitle>Status Settings</VCardTitle>
 						<VCardSubtitle
-							>Here you can modify the status fields attached to the category.</VCardSubtitle
-						>
+							>Here you can modify the status fields attached to the category. Warning: Upon saving
+							the category, all deleted statuses will be removed from any whirlpools they're
+							attached to.
+						</VCardSubtitle>
 						<StatusEditor
 							:statuses="editingModel.availableStatuses"
 							@update-statuses="updateStatuses"
@@ -164,7 +221,11 @@ watch(
 				<VCol>
 					<VCard>
 						<VCardTitle>Tag Settings</VCardTitle>
-						<VCardSubtitle>Here you can modify the tags attached to the category.</VCardSubtitle>
+						<VCardSubtitle
+							>Here you can modify the tags attached to the category. Warning: Upon saving the
+							category, all deleted tags will be removed from any whirlpools they're attached
+							to.</VCardSubtitle
+						>
 						<TagEditor :tags="editingModel.tags" @update-tags="updateTags" />
 					</VCard>
 				</VCol>
@@ -173,7 +234,12 @@ watch(
 		<VCardActions>
 			<VBtn @click="updateCategory">Save Category</VBtn>
 		</VCardActions>
+		<VSnackbar v-model="toastDisplayed" :timeout="TOAST_TIMEOUT">{{ toastMessage }}</VSnackbar>
 	</VCard>
 </template>
 
-<style scoped></style>
+<style scoped>
+::v-deep(.v-card-subtitle) {
+	white-space: wrap;
+}
+</style>

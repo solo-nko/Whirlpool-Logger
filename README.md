@@ -21,7 +21,7 @@ These are items I'm actively working on.
 
 - [ ] Light/Dark Theme
 - [ ] Cloud Sync
-- [ ] Home Screen/Dashboard
+- [x] Home Screen/Dashboard
 - [x] TipTap Editor
   - [x] Link insertion
   - [x] Text color

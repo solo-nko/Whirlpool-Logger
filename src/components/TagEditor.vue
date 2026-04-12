@@ -6,11 +6,20 @@ type TagEditorProps = {
 	tags: ITag[];
 };
 
-const newTag: ITag = { id: "new", label: "", color: "", description: "" };
+const newTag: ITag = {
+	id: "new",
+	label: "",
+	color: "",
+	description: "",
+	deleted: null,
+	updated: null
+};
 const { tags } = defineProps<TagEditorProps>();
 const emits = defineEmits(["updateTags"]);
 
-const editingTags = ref<ITag[]>(structuredClone(toRaw(tags)));
+const displayedEditingTags = computed(() =>
+	tags.filter((tag) => tag.deleted === null || tag.deleted === undefined)
+);
 const selectedTag = ref<ITag>();
 const editingTag = ref<ITag>(newTag);
 
@@ -19,35 +28,31 @@ const isEditingNewTag = computed<boolean>(() => {
 });
 
 const addTag = () => {
-	editingTags.value.push({ ...editingTag.value, id: ulid() });
-	emits("updateTags", toRaw(editingTags.value));
+	const newTagsList = [...displayedEditingTags.value, { ...editingTag.value, id: ulid() }];
+	emits("updateTags", newTagsList);
 };
 
 // TODO: add form validation
 const updateTag = () => {
-	editingTags.value = editingTags.value.map((tag) => {
-		if (editingTag.value.id === tag.id) return editingTag.value;
+	const newTagsList = displayedEditingTags.value.map((tag) => {
+		if (editingTag.value.id === tag.id) return { ...editingTag.value, updated: true };
 		return tag;
 	});
 	editingTag.value = newTag;
 	selectedTag.value = undefined;
-	emits("updateTags", toRaw(editingTags.value));
+	emits("updateTags", newTagsList);
 };
 
 const deleteTag = () => {
-	selectedTag.value = undefined;
-	editingTags.value = editingTags.value.filter((tag) => {
-		return tag.id !== editingTag.value.id;
+	const newTagsList = displayedEditingTags.value.map((tag) => {
+		if (editingTag.value.id === tag.id) return { ...editingTag.value, deleted: true };
+		return tag;
 	});
-	emits("updateTags", toRaw(editingTags.value));
+	editingTag.value = newTag;
+	selectedTag.value = undefined;
+	emits("updateTags", newTagsList);
 };
 
-watch(
-	() => tags,
-	(newTags) => {
-		editingTags.value = newTags.slice();
-	}
-);
 watch(selectedTag, (newSelection) => {
 	if (newSelection === undefined) {
 		editingTag.value = newTag;
@@ -64,13 +69,13 @@ watch(selectedTag, (newSelection) => {
 				<div
 					class="border border-gray-200/50 rounded-lg min-h-32 max-h-40 overflow-y-auto flex w-full px-2"
 				>
-					<div v-if="editingTags.length === 0" class="self-center grow text-center">
+					<div v-if="displayedEditingTags.length === 0" class="self-center grow text-center">
 						No Tags Currently
 					</div>
 					<div v-else>
 						<VChipGroup v-model="selectedTag" column>
 							<VChip
-								v-for="tag in editingTags"
+								v-for="tag in displayedEditingTags"
 								:key="tag.id"
 								:value="tag"
 								:color="tag.color ? tag.color : undefined"
