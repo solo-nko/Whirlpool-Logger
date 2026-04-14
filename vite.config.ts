@@ -3,7 +3,7 @@ import { fileURLToPath, URL } from "node:url";
 import path from "node:path";
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
-import vueDevTools from "vite-plugin-vue-devtools";
+// import vueDevTools from "vite-plugin-vue-devtools";
 import vuetify from "vite-plugin-vuetify";
 import tailwindcss from "@tailwindcss/vite";
 import { VitePWA } from "vite-plugin-pwa";
@@ -19,15 +19,15 @@ const dirname =
 	typeof __dirname !== "undefined" ? __dirname : path.dirname(fileURLToPath(import.meta.url));
 
 // https://github.com/storybookjs/storybook/issues/32462
-// The gist is that storybook and vuedevtools conflict. Storybook won't start correctly if vuedevtools is enabled
-const isStorybookProcess = process.env.npm_lifecycle_event === "storybook";
+// The gist is that storybook and vuedevtools conflict. Storybook won't start correctly if vuedevtools is enabled. I've decided to disable the vite plugin for now, because I don't prefer it over the browser version.
+// const isStorybookProcess = process.env.npm_lifecycle_event === "storybook";
 
 export default defineConfig({
 	plugins: [
 		vueRouter(),
 		vue(),
 		autoimport({ dts: true, imports: ["vue", "@vueuse/core", VueRouterAutoImports, "pinia"] }),
-		!isStorybookProcess && vueDevTools({ launchEditor: "webstorm" }),
+		// !isStorybookProcess && vueDevTools({ launchEditor: "webstorm" }),
 		vuetify({
 			autoImport: true,
 			styles: {
