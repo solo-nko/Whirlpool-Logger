@@ -7,7 +7,9 @@ export type ITag = {
 	/** Description of the tag's purpose. */
 	description?: string;
 	color?: string;
-	// TODO: consider making this a datetime
-	deleted: boolean | null;
-	updated: boolean | null;
+};
+
+export type IEditingTag = ITag & {
+	deleted: boolean;
+	updated: boolean;
 };

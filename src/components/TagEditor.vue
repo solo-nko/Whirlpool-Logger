@@ -1,27 +1,25 @@
 <script setup lang="ts">
 import { ulid } from "ulid";
-import type { ITag } from "@/utils/types/ITag.ts";
+import type { IEditingTag } from "@/utils/types/ITag.ts";
 
 type TagEditorProps = {
-	tags: ITag[];
+	tags: IEditingTag[];
 };
 
-const newTag: ITag = {
+const newTag: IEditingTag = {
 	id: "new",
 	label: "",
 	color: "",
 	description: "",
-	deleted: null,
-	updated: null
+	deleted: false,
+	updated: true
 };
 const { tags } = defineProps<TagEditorProps>();
 const emits = defineEmits(["updateTags"]);
 
-const displayedEditingTags = computed(() =>
-	tags.filter((tag) => tag.deleted === null || tag.deleted === undefined)
-);
-const selectedTag = ref<ITag>();
-const editingTag = ref<ITag>(newTag);
+const displayedEditingTags = computed(() => tags.filter((tag) => !tag.deleted));
+const selectedTag = ref<IEditingTag>();
+const editingTag = ref<IEditingTag>(newTag);
 
 const isEditingNewTag = computed<boolean>(() => {
 	return selectedTag.value === undefined;

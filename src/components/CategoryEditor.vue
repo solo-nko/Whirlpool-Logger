@@ -9,7 +9,7 @@ import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 import StatusEditor from "@/components/StatusEditor.vue";
 import TagEditor from "@/components/TagEditor.vue";
 import { DeepToRaw, TOAST_TIMEOUT, TransformWhirlpoolFieldName } from "@/utils/Utilities.ts";
-import type { ITag } from "@/utils/types/ITag.ts";
+import type { IEditingTag, ITag } from "@/utils/types/ITag.ts";
 import type { IStatus } from "@/utils/types/IStatus.ts";
 import { type DefaultField, DefaultFields } from "@/utils/types/DefaultFieldUtils.ts";
 import useSettingsStore from "@/stores/settings.ts";
@@ -21,14 +21,44 @@ type CategoryEditorProps = {
 const settingsStore = useSettingsStore();
 const whirlpoolStore = useWhirlpoolStore();
 
+interface EditingCategory extends Category {
+	tags: IEditingTag[];
+}
+
+function ConvertToEditingCategory(input: Category) {
+	return {
+		id: input.id,
+		name: input.name,
+		modifiedFields: input.modifiedFields,
+		extraFields: input.extraFields,
+		displayOrder: input.displayOrder,
+		availableStatuses: input.availableStatuses,
+		tags:
+			input.tags.length > 0
+				? input.tags.map((tag) => ({ ...tag, deleted: false, updated: false }))
+				: [],
+		color: input.color,
+		syncCode: input.syncCode,
+		unsyncedChanges: input.unsyncedChanges,
+		updatedOn: input.updatedOn,
+		createdOn: input.createdOn,
+		deletedOn: input.deletedOn
+	};
+}
+
 const { category } = defineProps<CategoryEditorProps>();
-const editingModel = ref<Category>(category);
+const editingModel = ref<EditingCategory>(ConvertToEditingCategory(category));
 const openPanels = ref([]);
 const addExtraField = (input: IField) => {
 	editingModel.value.extraFields.push(input);
 };
 const toastDisplayed = ref(false);
 const toastMessage = ref("Category Saved!");
+
+function DisplayToast(message: string) {
+	toastMessage.value = message;
+	toastDisplayed.value = true;
+}
 
 const updateExtraField = (input: IField) => {
 	const fieldIndexToUpdate = editingModel.value.extraFields.findIndex(
@@ -56,16 +86,18 @@ const updateDefaultField = (input: DefaultField) => {
 
 const updateStatuses = (newStatuses: IStatus[]) => {
 	editingModel.value.availableStatuses = newStatuses;
+	DisplayToast("Statuses updated. Save the category to save your changes.");
 };
 
-const updateTags = (newTags: ITag[]) => {
+const updateEditingTags = (newTags: IEditingTag[]) => {
 	editingModel.value.tags = newTags;
+	DisplayToast("Tags updated. Save the category to save your changes.");
 };
 
 /** Uses the `updated` and `deleted` flags to find existing Whirlpools in the database which have those tags attached. It then either removes the tags if they've been deleted, or modifies them if they've been updated. */
-async function UpdateTags() {
-	const deletedTags: ITag[] = editingModel.value.tags.filter((tag) => tag.deleted === true);
-	const updatedTags: ITag[] = editingModel.value.tags.filter((tag) => tag.updated === true);
+async function UpdateWhirlpoolTags() {
+	const deletedTags: IEditingTag[] = editingModel.value.tags.filter((tag) => tag.deleted === true);
+	const updatedTags: IEditingTag[] = editingModel.value.tags.filter((tag) => tag.updated === true);
 	// get whirlpools under this category
 	const getClientWhirlpools = whirlpoolStore.clientWhirlpools.filter(
 		(whirlpool) => whirlpool.category.id === editingModel.value.id
@@ -84,7 +116,7 @@ async function UpdateTags() {
 			...whirlpool,
 			tags: whirlpool.tags
 				// filter out deleted tags
-				.filter((tag) => deletedTags.some((deletedTag) => deletedTag.id === tag.id) === false)
+				.filter((tag) => !deletedTags.some((deletedTag) => deletedTag.id === tag.id))
 				// modify updated tags
 				.map((oldTag) => {
 					const newTag = updatedTags.find((updatedTag) => updatedTag.id === oldTag.id);
@@ -116,28 +148,33 @@ const updateCategory = async () => {
 			availableStatuses: editingModel.value.availableStatuses.map((status) =>
 				DatabaseStatus.ConvertStatusForDatabase(status)
 			),
-			tags: DeepToRaw(editingModel.value.tags),
+			tags: editingModel.value.tags.map(
+				(tag): ITag => ({
+					id: tag.id,
+					label: tag.label,
+					description: tag.description,
+					color: tag.color
+				})
+			),
 			deletedOn: editingModel.value.deletedOn ? editingModel.value.deletedOn.toJSDate() : undefined,
 			updatedOn: DateTime.now().toJSDate(),
 			createdOn: editingModel.value.createdOn.toJSDate(),
 			unsyncedChanges: true
 		});
 		settingsStore.UpdateDashboardsTable(editingModel.value);
-		toastMessage.value = "Category saved.";
-		toastDisplayed.value = true;
+		DisplayToast("Category saved.");
 	} catch (error) {
 		console.log(error);
-		toastMessage.value = "An error has occurred.";
-		toastDisplayed.value = true;
+		DisplayToast("An error has occurred.");
 	}
-	await UpdateTags();
+	await UpdateWhirlpoolTags();
 };
 
 watch(
 	() => category,
 	(newValue) => {
 		if (newValue) {
-			editingModel.value = { ...newValue };
+			editingModel.value = ConvertToEditingCategory(newValue);
 		}
 	}
 );
@@ -226,7 +263,7 @@ watch(
 							category, all deleted tags will be removed from any whirlpools they're attached
 							to.</VCardSubtitle
 						>
-						<TagEditor :tags="editingModel.tags" @update-tags="updateTags" />
+						<TagEditor :tags="editingModel.tags" @update-tags="updateEditingTags" />
 					</VCard>
 				</VCol>
 			</VRow>
