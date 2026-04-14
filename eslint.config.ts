@@ -21,6 +21,7 @@ export default defineConfigWithVueTs(
 		"**/dist-ssr/**",
 		"**/coverage/**",
 		".storybook/stories/",
+		"**/.vitepress/",
 		"*.d.ts",
 		"**/storybook-static/**"
 	]),

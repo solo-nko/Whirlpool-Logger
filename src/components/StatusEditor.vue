@@ -1,27 +1,29 @@
 <script setup lang="ts">
 import { ulid } from "ulid";
 import { DateTime } from "luxon";
-import type { IStatus } from "@/utils/types/IStatus.ts";
+import type { IEditingStatus } from "@/utils/types/IStatus.ts";
 
 type StatusEditorProps = {
-	statuses: IStatus[];
+	statuses: IEditingStatus[];
 };
 
-const newStatus: IStatus = {
+const newStatus: IEditingStatus = {
 	id: "new",
 	name: "",
 	createdOn: DateTime.now(),
-	deletedOn: null
+	deletedOn: null,
+	deleted: false,
+	updated: false
 };
 
 const emits = defineEmits(["updateStatuses"]);
 const { statuses } = defineProps<StatusEditorProps>();
 /** The component's own copy of the prop, for editing purposes. */
-const editingStatuses = ref(statuses.slice());
+const displayedEditingStatuses = computed(() => statuses.filter((status) => !status.deleted));
 /** ref for tracking which item is currently selected, if any */
-const selectedStatus = ref<IStatus[]>(editingStatuses.value.slice(0, 1) || [newStatus]);
+const selectedStatus = ref<IEditingStatus[]>([newStatus]);
 /** ref for holding data that's currently being edited */
-const editingStatus = ref<IStatus>(newStatus);
+const editingStatus = ref<IEditingStatus>(newStatus);
 
 // determine whether user is currently editing an existing status, or adding a new one
 const isNewStatus = computed<boolean>(() => {
@@ -30,35 +32,31 @@ const isNewStatus = computed<boolean>(() => {
 
 const addStatus = () => {
 	// ensure there's a unique id at point of adding
-	editingStatuses.value.push({ ...editingStatus.value, id: ulid() });
-	emits("updateStatuses", editingStatuses.value);
+	const newStatusesList = [
+		...displayedEditingStatuses.value,
+		{ ...editingStatus.value, id: ulid() }
+	];
+	emits("updateStatuses", newStatusesList);
 };
 
 const updateStatus = () => {
-	editingStatuses.value = editingStatuses.value.map((status) => {
-		if (status.id === editingStatus.value.id) return editingStatus.value;
+	const newStatusesList = displayedEditingStatuses.value.map((status) => {
+		if (status.id === editingStatus.value.id) return { ...editingStatus.value, updated: true };
 		return status;
 	});
-	emits("updateStatuses", editingStatuses.value);
+	emits("updateStatuses", newStatusesList);
 };
 
 const deleteStatus = () => {
-	editingStatuses.value = editingStatuses.value.filter((status) => {
-		return status.id !== editingStatus.value.id;
+	const newStatusesList = displayedEditingStatuses.value.map((status) => {
+		if (status.id === editingStatus.value.id) return { ...editingStatus.value, deleted: true };
 	});
-	emits("updateStatuses", editingStatuses.value);
+	editingStatus.value = newStatus;
+	selectedStatus.value = [newStatus];
+	emits("updateStatuses", newStatusesList);
 };
 
 // TODO: add form validation
-// TODO: something fishy's going on with the reactive object handling here. When a status is saved or selected, it changes from object to reactive.
-// When props change, refresh the editing status
-watch(
-	() => statuses,
-	(newStatuses) => {
-		editingStatuses.value = newStatuses.slice();
-		if (editingStatuses.value[0]) selectedStatus.value = [{ ...editingStatuses.value[0] }];
-	}
-);
 // When selected status changes, change the status being edited (for the input fields)
 watch(
 	() => selectedStatus.value,
@@ -81,11 +79,11 @@ watch(
 					class="border border-gray-200/50 rounded-lg max-h-60 overflow-y-auto"
 					mandatory
 				>
-					<VListItem v-for="status in editingStatuses" :key="status.id" :value="status">
+					<VListItem :value="newStatus">Add New</VListItem>
+					<VDivider />
+					<VListItem v-for="status in displayedEditingStatuses" :key="status.id" :value="status">
 						{{ status.name }}
 					</VListItem>
-					<VDivider></VDivider>
-					<VListItem :value="newStatus">Add New</VListItem>
 				</VList>
 			</VCol>
 			<VCol cols="12" md="9">

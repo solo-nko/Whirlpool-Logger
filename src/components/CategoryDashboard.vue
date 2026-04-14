@@ -3,7 +3,6 @@ import type { IDashboard } from "@/utils/types/IDashboard.ts";
 import useWhirlpoolStore from "@/stores/whirlpools.ts";
 import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import useCategoriesStore from "@/stores/categories.ts";
-import categories from "@/stores/categories.ts";
 
 type CategoryDashboardProps = {
 	dashboard: IDashboard;

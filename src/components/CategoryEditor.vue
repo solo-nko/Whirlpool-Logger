@@ -10,7 +10,7 @@ import StatusEditor from "@/components/StatusEditor.vue";
 import TagEditor from "@/components/TagEditor.vue";
 import { DeepToRaw, TOAST_TIMEOUT, TransformWhirlpoolFieldName } from "@/utils/Utilities.ts";
 import type { IEditingTag, ITag } from "@/utils/types/ITag.ts";
-import type { IStatus } from "@/utils/types/IStatus.ts";
+import type { IEditingStatus, IStatus } from "@/utils/types/IStatus.ts";
 import { type DefaultField, DefaultFields } from "@/utils/types/DefaultFieldUtils.ts";
 import useSettingsStore from "@/stores/settings.ts";
 import useWhirlpoolStore from "@/stores/whirlpools.ts";
@@ -22,6 +22,7 @@ const settingsStore = useSettingsStore();
 const whirlpoolStore = useWhirlpoolStore();
 
 interface EditingCategory extends Category {
+	availableStatuses: IEditingStatus[];
 	tags: IEditingTag[];
 }
 
@@ -32,7 +33,12 @@ function ConvertToEditingCategory(input: Category) {
 		modifiedFields: input.modifiedFields,
 		extraFields: input.extraFields,
 		displayOrder: input.displayOrder,
-		availableStatuses: input.availableStatuses,
+		availableStatuses:
+			input.availableStatuses.length > 0
+				? input.availableStatuses.map(
+						(status): IEditingStatus => ({ ...status, deleted: false, updated: false })
+					)
+				: [],
 		tags:
 			input.tags.length > 0
 				? input.tags.map((tag) => ({ ...tag, deleted: false, updated: false }))
@@ -84,7 +90,7 @@ const updateDefaultField = (input: DefaultField) => {
 	else editingModel.value.modifiedFields.push(input);
 };
 
-const updateStatuses = (newStatuses: IStatus[]) => {
+const updateEditingStatuses = (newStatuses: IEditingStatus[]) => {
 	editingModel.value.availableStatuses = newStatuses;
 	DisplayToast("Statuses updated. Save the category to save your changes.");
 };
@@ -111,6 +117,9 @@ async function UpdateWhirlpoolTags() {
 		)
 	);
 
+	// If no whirlpools exist with outdated tags, there's no point proceeding past this point.
+	if (whirlpoolsWithStaleTags.length === 0) return;
+
 	const postTagUpdateWhirlpools = whirlpoolsWithStaleTags.map((whirlpool) => {
 		return {
 			...whirlpool,
@@ -136,26 +145,81 @@ async function UpdateWhirlpoolTags() {
 	);
 }
 
+async function UpdateWhirlpoolStatuses() {
+	const deletedStatuses: IEditingStatus[] = editingModel.value.availableStatuses.filter(
+		(status) => status.deleted === true
+	);
+	const updatedStatuses: IEditingStatus[] = editingModel.value.availableStatuses.filter(
+		(status) => status.updated === true
+	);
+
+	const getClientWhirlpools = whirlpoolStore.clientWhirlpools.filter(
+		(whirlpool) => whirlpool.category.id === editingModel.value.id
+	);
+
+	const whirlpoolsWithStaleStatuses = getClientWhirlpools.filter(
+		(whirlpool) =>
+			deletedStatuses.some((status) => whirlpool.status?.id === status.id) ||
+			updatedStatuses.some((status) => whirlpool.status?.id === status.id)
+	);
+
+	// skip the rest of the function if there are no whirlpools with outdated statuses
+	if (whirlpoolsWithStaleStatuses.length === 0) return;
+
+	const getNewStatus = (existingStatus: IStatus | undefined) => {
+		if (existingStatus === undefined) return existingStatus;
+		const findDeleted = deletedStatuses.find(
+			(deletedStatus) => deletedStatus.id === existingStatus.id
+		);
+		if (findDeleted) return { ...existingStatus, deletedOn: DateTime.now() };
+		const findUpdated = updatedStatuses.find(
+			(updatedStatus) => updatedStatus.id === existingStatus.id
+		);
+		if (findUpdated) return findUpdated;
+		return existingStatus;
+	};
+
+	const postStatusUpdateWhirlpools = whirlpoolsWithStaleStatuses.map((whirlpool) => {
+		return {
+			...whirlpool,
+			status: getNewStatus(whirlpool.status)
+		};
+	});
+
+	await LoggerDatabase.whirlpools.bulkUpdate(
+		postStatusUpdateWhirlpools.map((whirlpool) => ({
+			key: whirlpool.id,
+			changes: {
+				status: whirlpool.status
+					? DatabaseStatus.ConvertStatusForDatabase(whirlpool.status)
+					: undefined
+			}
+		}))
+	);
+}
+
 const updateCategory = async () => {
-	// TODO: figure out what to do when user deletes fields or statuses that are attached to existing whirlpools
+	// TODO: clean up stale fields in existing whirlpools, like we currently do for statuses and tags
 	try {
+		// I'd actually prefer to update the whirlpools AFTER updating the category itself, but I found that inbetween the category update occurring and the whirlpool updates beginning, the category prop had already been refreshed, and the watcher below had already been triggered and consequently the "updated/deleted" flags had already been wiped clean.
+		await UpdateWhirlpoolTags();
+		await UpdateWhirlpoolStatuses();
 		await LoggerDatabase.categories.update(editingModel.value.id, {
 			// Dexie internally uses structuredClone for its put and add operations. structuredClone can't be used on Proxies, and Vue creates Proxies of object refs to maintain reactivity. Thus, when using a ref (or reactive) that refers to an object, it is likely necessary to use DeepRaw, or Vue's provided toRaw function to pull the object out from the reactive Proxy, or else Dexie won't be able to operate on it. This should not be an issue for refs based on primitive values such as strings and numbers, which is why name and displayOrder do not need this treatment.
 			name: editingModel.value.name,
 			displayOrder: editingModel.value.displayOrder,
 			modifiedFields: DeepToRaw(editingModel.value.modifiedFields),
 			extraFields: DeepToRaw(editingModel.value.extraFields),
-			availableStatuses: editingModel.value.availableStatuses.map((status) =>
-				DatabaseStatus.ConvertStatusForDatabase(status)
-			),
-			tags: editingModel.value.tags.map(
-				(tag): ITag => ({
-					id: tag.id,
-					label: tag.label,
-					description: tag.description,
-					color: tag.color
-				})
-			),
+			availableStatuses: editingModel.value.availableStatuses.map((status): DatabaseStatus => {
+				// eslint-disable-next-line @typescript-eslint/no-unused-vars
+				const { deleted, updated, ...normalStatus } = status;
+				return DatabaseStatus.ConvertStatusForDatabase(normalStatus);
+			}),
+			tags: editingModel.value.tags.map((tag): ITag => {
+				// eslint-disable-next-line @typescript-eslint/no-unused-vars
+				const { deleted, updated, ...normalTag } = tag;
+				return normalTag;
+			}),
 			deletedOn: editingModel.value.deletedOn ? editingModel.value.deletedOn.toJSDate() : undefined,
 			updatedOn: DateTime.now().toJSDate(),
 			createdOn: editingModel.value.createdOn.toJSDate(),
@@ -164,10 +228,10 @@ const updateCategory = async () => {
 		settingsStore.UpdateDashboardsTable(editingModel.value);
 		DisplayToast("Category saved.");
 	} catch (error) {
+		// eslint-disable-next-line no-console
 		console.log(error);
 		DisplayToast("An error has occurred.");
 	}
-	await UpdateWhirlpoolTags();
 };
 
 watch(
@@ -249,7 +313,7 @@ watch(
 						</VCardSubtitle>
 						<StatusEditor
 							:statuses="editingModel.availableStatuses"
-							@update-statuses="updateStatuses"
+							@update-statuses="updateEditingStatuses"
 						/>
 					</VCard>
 				</VCol>
