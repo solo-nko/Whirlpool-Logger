@@ -8,7 +8,7 @@
 		<VMain><RouterView /></VMain>
 		<VBottomNavigation grow order="-1" tag="footer">
 			<VBtn to="home">
-				<VIcon icon="$home" />
+				<VIcon icon="$spiral" />
 				<span>Home</span>
 			</VBtn>
 			<VBtn to="entry">

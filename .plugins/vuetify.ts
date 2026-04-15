@@ -33,6 +33,7 @@ import {
 	mdiDelete,
 	mdiPencil
 } from "@mdi/js";
+import SpiralIcon from "@/components/SpiralIcon.vue";
 
 export default createVuetify({
 	date: {
@@ -73,7 +74,8 @@ export default createVuetify({
 			check: mdiCheck,
 			revert: mdiArrowULeftTop,
 			trash: mdiDelete,
-			edit: mdiPencil
+			edit: mdiPencil,
+			spiral: SpiralIcon
 		},
 		sets: {
 			mdi
