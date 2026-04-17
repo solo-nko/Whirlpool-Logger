@@ -15,4 +15,5 @@ export type IField = {
 	hidden: boolean;
 	displayOrder?: number;
 	required?: boolean;
+	maxLength?: number;
 };

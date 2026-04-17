@@ -27,6 +27,10 @@ These are items I'm actively working on.
   - [x] Text color
   - [x] Test output size with HTML
 - [ ] Form validation
+  - [ ] Entry Form
+  - [x] Field Settings
+  - [ ] Status Settings
+  - [ ] Tag Settings
 - [x] Ratings field
 - [x] Additional table headers
 

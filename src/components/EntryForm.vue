@@ -10,7 +10,7 @@ import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import type { WhirlpoolFields } from "@/utils/types/DefaultFieldUtils";
 import { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
-import { DeepToRaw, TOAST_TIMEOUT } from "@/utils/Utilities.ts";
+import { DeepToRaw, HasValue, TOAST_TIMEOUT } from "@/utils/Utilities.ts";
 
 type EntryFormProps = {
 	category: Category;
@@ -44,13 +44,9 @@ const showCloseButton = computed(() => isEditMode.value);
 const formValidationStatus = ref<boolean | null>(null);
 const formRef = ref();
 const validationToastDisplayed = ref<boolean>(false);
-function hasValue(value: string, fieldName: string) {
-	if (value) return true;
-	return `${fieldName} is required.`;
-}
 
 const titleRules = {
-	hasValue: (value: string) => hasValue(value, "Title"),
+	hasValue: (value: string) => HasValue(value, "Title"),
 	maxLength: (value: string) => {
 		if (value.length <= 100) return true;
 		return "Please enter a title with less than 100 characters.";
@@ -64,7 +60,7 @@ const seriesRules = {
 	}
 };
 
-const genericHasValue = (value: string) => hasValue(value, "This field");
+const genericHasValue = (value: string) => HasValue(value, "This field");
 
 function GetModifiedField(input: WhirlpoolFields) {
 	return props.category?.modifiedFields.find((field) => {
@@ -386,9 +382,9 @@ watch(
 			<VBtn @click="onClickSave">Save</VBtn>
 			<VBtn v-if="showCloseButton" @click="$emit('close')">Close</VBtn>
 		</VCardActions>
-		<VSnackbar v-model="validationToastDisplayed" :timeout="TOAST_TIMEOUT"
-			>A required field is missing, or a field has invalid input.</VSnackbar
-		>
+		<VSnackbar v-model="validationToastDisplayed" :timeout="TOAST_TIMEOUT">
+			A required field is missing, or a field has invalid input.
+		</VSnackbar>
 	</VCard>
 </template>
 

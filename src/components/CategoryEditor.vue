@@ -26,6 +26,7 @@ interface EditingCategory extends Category {
 	tags: IEditingTag[];
 }
 
+/** Create a version of the category data just for editing within the component. */
 function ConvertToEditingCategory(input: Category) {
 	return {
 		id: input.id,
@@ -53,7 +54,10 @@ function ConvertToEditingCategory(input: Category) {
 }
 
 const { category } = defineProps<CategoryEditorProps>();
+/** The model used for making edits. This will be saved to the category when the save button is pressed. */
 const editingModel = ref<EditingCategory>(ConvertToEditingCategory(category));
+
+/** Tracks which field panels are open. */
 const openPanels = ref([]);
 const addExtraField = (input: IField) => {
 	editingModel.value.extraFields.push(input);
