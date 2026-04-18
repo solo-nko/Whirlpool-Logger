@@ -27,7 +27,7 @@ These are items I'm actively working on.
   - [x] Text color
   - [x] Test output size with HTML
 - [ ] Form validation
-  - [ ] Entry Form
+  - [x] Entry Form
   - [x] Field Settings
   - [ ] Status Settings
   - [ ] Tag Settings

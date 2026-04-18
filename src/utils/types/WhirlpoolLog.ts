@@ -10,6 +10,7 @@ import type { IFieldValue } from "@/utils/types/IFieldValue.ts";
 
 export class WhirlpoolLog {
 	id: ULID;
+	// TODO: switch back to category IDs. Storing the whole category in here, while it does make the client-side logic easier to execute, leads to duplication of data in the database.
 	/** Category this log belongs to. */
 	category: Category;
 	/** Title of the media. */

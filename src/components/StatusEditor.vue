@@ -32,15 +32,12 @@ const isNewStatus = computed<boolean>(() => {
 
 const addStatus = () => {
 	// ensure there's a unique id at point of adding
-	const newStatusesList = [
-		...displayedEditingStatuses.value,
-		{ ...editingStatus.value, id: ulid() }
-	];
+	const newStatusesList = [...statuses, { ...editingStatus.value, id: ulid() }];
 	emits("updateStatuses", newStatusesList);
 };
 
 const updateStatus = () => {
-	const newStatusesList = displayedEditingStatuses.value.map((status) => {
+	const newStatusesList = statuses.map((status) => {
 		if (status.id === editingStatus.value.id) return { ...editingStatus.value, updated: true };
 		return status;
 	});
@@ -48,8 +45,9 @@ const updateStatus = () => {
 };
 
 const deleteStatus = () => {
-	const newStatusesList = displayedEditingStatuses.value.map((status) => {
+	const newStatusesList = statuses.map((status) => {
 		if (status.id === editingStatus.value.id) return { ...editingStatus.value, deleted: true };
+		return status;
 	});
 	editingStatus.value = newStatus;
 	selectedStatus.value = [newStatus];
