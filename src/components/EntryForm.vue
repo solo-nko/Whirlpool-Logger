@@ -124,6 +124,12 @@ const extraFields = computed(() => {
 	return props.category.extraFields;
 });
 
+/** Searches through the whirlpool for a FieldValue that matches the given Field ID and gets the value attached to it */
+const getExtraFieldValue = (fieldId: string) => {
+	return entryModel.value.extraFieldValues.find((fieldValue) => fieldValue.fieldId === fieldId);
+};
+
+/** Assigns a new value to the FieldValue associated with the given Field ID on the whirlpool. */
 const updateExtraField = (value: unknown, fieldId: string, fieldType: FieldType) => {
 	const indexToUpdate = entryModel.value.extraFieldValues.findIndex(
 		(value) => value.fieldId === fieldId
@@ -148,7 +154,6 @@ function OnSaveEntry(whichType: "add" | "update") {
 }
 
 async function AddEntry() {
-	// TODO: add field validation check
 	await LoggerDatabase.whirlpools
 		.add({
 			...entryModel.value,
@@ -341,6 +346,7 @@ watch(
 										:label="extraField.label"
 										:placeholder="extraField.placeholder"
 										:rules="extraField.required ? [genericHasValue] : []"
+										:model-value="(getExtraFieldValue(extraField.id)?.value as string) || undefined"
 										@update:modelValue="
 											(value: unknown) => updateExtraField(value, extraField.id, extraField.type)
 										"
@@ -350,6 +356,7 @@ watch(
 										:label="extraField.label"
 										:rules="extraField.required ? [genericHasValue] : []"
 										control-variant="stacked"
+										:model-value="(getExtraFieldValue(extraField.id)?.value as number) || undefined"
 										@update:modelValue="
 											(value: unknown) => updateExtraField(value, extraField.id, extraField.type)
 										"
@@ -359,6 +366,7 @@ watch(
 										:label="extraField.label"
 										:rules="extraField.required ? [genericHasValue] : []"
 										type="date"
+										:model-value="(getExtraFieldValue(extraField.id)?.value as string) || undefined"
 										@update:modelValue="
 											(value: unknown) => updateExtraField(value, extraField.id, extraField.type)
 										"
@@ -366,6 +374,9 @@ watch(
 									<VCheckbox
 										v-else-if="extraField.type === FieldType.BOOL"
 										:label="extraField.label"
+										:model-value="
+											(getExtraFieldValue(extraField.id)?.value as boolean) || undefined
+										"
 										@update:modelValue="
 											(value: unknown) => updateExtraField(value, extraField.id, extraField.type)
 										"

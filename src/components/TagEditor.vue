@@ -15,6 +15,7 @@ const newTag: IEditingTag = {
 	updated: true
 };
 const { tags } = defineProps<TagEditorProps>();
+// TODO: switch to typed emits (see FieldEditor.vue)
 const emits = defineEmits(["updateTags"]);
 
 const displayedEditingTags = computed(() => tags.filter((tag) => !tag.deleted));

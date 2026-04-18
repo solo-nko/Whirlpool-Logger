@@ -1,26 +1,43 @@
 <script setup lang="ts">
 import { ulid } from "ulid";
-import { FieldType, type IField } from "@/utils/types/IField.ts";
+import { FieldType, type IEditingField } from "@/utils/types/IField.ts";
 import { GetFieldRules, HasValue, TOAST_TIMEOUT } from "@/utils/Utilities.ts";
 
 type FieldEditorProps = {
-	fieldData?: IField;
+	fieldData?: IEditingField;
 };
-const blankField: IField = {
-	id: ulid(),
+const blankField: IEditingField = {
+	id: "new",
 	label: "",
 	type: FieldType.TEXT,
 	placeholder: undefined,
 	hidden: false,
-	maxLength: undefined
+	maxLength: undefined,
+	deleted: false,
+	updated: true
 };
 
 const props = defineProps<FieldEditorProps>();
 const isNewField = computed(() => props.fieldData === undefined);
-const emits = defineEmits(["updateField", "addField", "removeField"]);
+const emits = defineEmits<{
+	updateField: [updated: IEditingField];
+	addField: [added: IEditingField];
+	removeField: [removed: IEditingField];
+}>();
 
-const fieldModel = ref<IField>(
-	props.fieldData ? structuredClone(toRaw(props.fieldData)) : blankField
+const fieldModel = ref<IEditingField>(
+	props.fieldData
+		? {
+				id: props.fieldData.id,
+				label: props.fieldData.label,
+				type: props.fieldData.type,
+				placeholder: props.fieldData.placeholder,
+				hidden: props.fieldData.hidden,
+				maxLength: props.fieldData.maxLength,
+				deleted: false,
+				updated: false
+			}
+		: blankField
 );
 const formValidationStatus = ref(false);
 const formRef = ref();
@@ -50,7 +67,18 @@ const translatedLabels = [
 ];
 
 const undoChanges = () => {
-	if (props.fieldData) fieldModel.value = structuredClone(toRaw(props.fieldData));
+	// return to the state of the initial prop value
+	if (props.fieldData)
+		fieldModel.value = {
+			id: props.fieldData.id,
+			label: props.fieldData.label,
+			type: props.fieldData.type,
+			placeholder: props.fieldData.placeholder,
+			hidden: props.fieldData.hidden,
+			maxLength: props.fieldData.maxLength,
+			deleted: false,
+			updated: false
+		};
 	deleteButtonStatus.value = "normal";
 };
 
@@ -60,7 +88,7 @@ const addField = async () => {
 		if (formRef.value) await formRef.value.validate();
 		return;
 	}
-	emits("addField", fieldModel.value);
+	emits("addField", { ...fieldModel.value, id: ulid() });
 	fieldModel.value = blankField;
 };
 
@@ -70,7 +98,8 @@ const updateField = async () => {
 		if (formRef.value) await formRef.value.validate();
 		return;
 	}
-	emits("updateField", fieldModel.value);
+	fieldModel.value.updated = true;
+	emits("updateField", { ...fieldModel.value, updated: true });
 };
 
 const removeField = () => {
@@ -78,7 +107,8 @@ const removeField = () => {
 };
 
 const reallyRemoveField = () => {
-	emits("removeField", fieldModel.value);
+	fieldModel.value.deleted = true;
+	emits("removeField", { ...fieldModel.value, deleted: true });
 	deleteButtonStatus.value = "normal";
 };
 </script>

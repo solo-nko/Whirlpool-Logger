@@ -17,3 +17,8 @@ export type IField = {
 	required?: boolean;
 	maxLength?: number;
 };
+
+export type IEditingField = IField & {
+	updated: boolean;
+	deleted: boolean;
+};

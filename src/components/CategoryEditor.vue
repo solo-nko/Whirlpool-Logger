@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import type { Category } from "@/utils/types/Category.ts";
 import FieldEditor from "@/components/FieldEditor.vue";
 import DefaultFieldEditor from "@/components/DefaultFieldEditor.vue";
-import type { IField } from "@/utils/types/IField.ts";
+import type { IEditingField, IField } from "@/utils/types/IField.ts";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 import StatusEditor from "@/components/StatusEditor.vue";
@@ -24,6 +24,7 @@ const whirlpoolStore = useWhirlpoolStore();
 interface EditingCategory extends Category {
 	availableStatuses: IEditingStatus[];
 	tags: IEditingTag[];
+	extraFields: IEditingField[];
 }
 
 /** Create a version of the category data just for editing within the component. */
@@ -32,7 +33,12 @@ function ConvertToEditingCategory(input: Category) {
 		id: input.id,
 		name: input.name,
 		modifiedFields: input.modifiedFields,
-		extraFields: input.extraFields,
+		extraFields:
+			input.extraFields.length > 0
+				? input.extraFields.map(
+						(field): IEditingField => ({ ...field, deleted: false, updated: false })
+					)
+				: [],
 		displayOrder: input.displayOrder,
 		availableStatuses:
 			input.availableStatuses.length > 0
@@ -58,10 +64,7 @@ const { category } = defineProps<CategoryEditorProps>();
 const editingModel = ref<EditingCategory>(ConvertToEditingCategory(category));
 
 /** Tracks which field panels are open. */
-const openPanels = ref([]);
-const addExtraField = (input: IField) => {
-	editingModel.value.extraFields.push(input);
-};
+const openPanel = ref<string>();
 const toastDisplayed = ref(false);
 const toastMessage = ref("Category Saved!");
 
@@ -69,20 +72,22 @@ function DisplayToast(message: string) {
 	toastMessage.value = message;
 	toastDisplayed.value = true;
 }
-
-const updateExtraField = (input: IField) => {
-	const fieldIndexToUpdate = editingModel.value.extraFields.findIndex(
-		(field) => field.id === input.id
-	);
-	if (fieldIndexToUpdate >= 0) editingModel.value.extraFields.splice(fieldIndexToUpdate, 1, input);
+const addExtraField = (input: IEditingField) => {
+	editingModel.value.extraFields.push(input);
+	DisplayToast("Custom field added. Save the category to save your changes.");
 };
 
-const removeExtraField = (input: string) => {
-	openPanels.value = [];
-	const fieldIndexToUpdate = editingModel.value.extraFields.findIndex(
-		(field) => field.id === input
+const updateExtraField = (updatedField: IEditingField) => {
+	const findFieldToUpdate = editingModel.value.extraFields.find(
+		(field) => field.id === updatedField.id
 	);
-	if (fieldIndexToUpdate >= 0) editingModel.value.extraFields.splice(fieldIndexToUpdate, 1);
+	if (findFieldToUpdate) {
+		editingModel.value.extraFields = editingModel.value.extraFields.map((field) => {
+			if (field.id === findFieldToUpdate.id) return updatedField;
+			return field;
+		});
+		DisplayToast("Custom fields updated. Save the category to save your changes.");
+	}
 };
 
 const updateDefaultField = (input: DefaultField) => {
@@ -149,6 +154,7 @@ async function UpdateWhirlpoolTags() {
 	);
 }
 
+/** Combs through whirlpools to remove statuses that have been deleted ('deleted' flag in IEditingStatus set to true) or updated ('updated' flag in IEditingStatus set to true). */
 async function UpdateWhirlpoolStatuses() {
 	const deletedStatuses: IEditingStatus[] = editingModel.value.availableStatuses.filter(
 		(status) => status.deleted === true
@@ -202,28 +208,75 @@ async function UpdateWhirlpoolStatuses() {
 	);
 }
 
+async function UpdateWhirlpoolExtraFields() {
+	const deletedFields: IEditingField[] = editingModel.value.extraFields.filter(
+		(field) => field.deleted === true
+	);
+
+	const getClientWhirlpools = whirlpoolStore.clientWhirlpools.filter(
+		(whirlpool) => whirlpool.category.id === editingModel.value.id
+	);
+
+	const whirlpoolsWithStaleFields = getClientWhirlpools.filter((whirlpool) =>
+		whirlpool.extraFieldValues.some((field) =>
+			deletedFields.some((deletedField) => deletedField.id === field.fieldId)
+		)
+	);
+
+	if (whirlpoolsWithStaleFields.length === 0) return;
+
+	const postFieldUpdateWhirlpools = whirlpoolsWithStaleFields.map((whirlpool) => {
+		return {
+			...whirlpool,
+			extraFieldValues: whirlpool.extraFieldValues.filter(
+				(field) => !deletedFields.some((deletedField) => deletedField.id === field.fieldId)
+			)
+		};
+	});
+
+	await LoggerDatabase.whirlpools.bulkUpdate(
+		postFieldUpdateWhirlpools.map((whirlpool) => ({
+			key: whirlpool.id,
+			changes: {
+				extraFieldValues: DeepToRaw(whirlpool.extraFieldValues)
+			}
+		}))
+	);
+}
+
 const updateCategory = async () => {
 	// TODO: clean up stale fields in existing whirlpools, like we currently do for statuses and tags
 	try {
-		// I'd actually prefer to update the whirlpools AFTER updating the category itself, but I found that inbetween the category update occurring and the whirlpool updates beginning, the category prop had already been refreshed, and the watcher below had already been triggered and consequently the "updated/deleted" flags had already been wiped clean.
+		// I'd actually prefer to update the whirlpools AFTER updating the category itself, but I found that in between the category update occurring and the whirlpool updates beginning, the category prop had already been refreshed. This meant the watcher below had already been triggered, and consequently the "updated/deleted" flags had already been wiped clean.
 		await UpdateWhirlpoolTags();
 		await UpdateWhirlpoolStatuses();
+		await UpdateWhirlpoolExtraFields();
 		await LoggerDatabase.categories.update(editingModel.value.id, {
-			// Dexie internally uses structuredClone for its put and add operations. structuredClone can't be used on Proxies, and Vue creates Proxies of object refs to maintain reactivity. Thus, when using a ref (or reactive) that refers to an object, it is likely necessary to use DeepRaw, or Vue's provided toRaw function to pull the object out from the reactive Proxy, or else Dexie won't be able to operate on it. This should not be an issue for refs based on primitive values such as strings and numbers, which is why name and displayOrder do not need this treatment.
+			// Dexie internally uses structuredClone for its put and add operations. structuredClone can't be used on Proxies, and Vue creates Proxies of object refs to maintain reactivity. Thus, when using a ref (or reactive) that refers to an object, it is likely necessary to use DeepRaw, or Vue's provided toRaw function to pull the object out from the reactive Proxy. Otherwise, Dexie won't be able to operate on it. This should not be an issue for refs based on primitive values such as strings and numbers, which is why name and displayOrder do not need this treatment.
 			name: editingModel.value.name,
 			displayOrder: editingModel.value.displayOrder,
 			modifiedFields: DeepToRaw(editingModel.value.modifiedFields),
-			extraFields: DeepToRaw(editingModel.value.extraFields),
-			availableStatuses: editingModel.value.availableStatuses.map((status): DatabaseStatus => {
-				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				const { deleted, updated, ...normalStatus } = status;
-				return DatabaseStatus.ConvertStatusForDatabase(normalStatus);
-			}),
-			tags: editingModel.value.tags.map((tag): ITag => {
-				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				const { deleted, updated, ...normalTag } = tag;
-				return normalTag;
-			}),
+			extraFields: editingModel.value.extraFields
+				.filter((extraField) => extraField.deleted === false)
+				.map((extraField): IField => {
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					const { deleted, updated, ...normalField } = extraField;
+					return normalField;
+				}),
+			availableStatuses: editingModel.value.availableStatuses
+				.filter((status) => status.deleted === false)
+				.map((status): DatabaseStatus => {
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					const { deleted, updated, ...normalStatus } = status;
+					return DatabaseStatus.ConvertStatusForDatabase(normalStatus);
+				}),
+			tags: editingModel.value.tags
+				.filter((tag) => tag.deleted === false)
+				.map((tag): ITag => {
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					const { deleted, updated, ...normalTag } = tag;
+					return normalTag;
+				}),
 			deletedOn: editingModel.value.deletedOn ? editingModel.value.deletedOn.toJSDate() : undefined,
 			updatedOn: DateTime.now().toJSDate(),
 			createdOn: editingModel.value.createdOn.toJSDate(),
@@ -268,8 +321,12 @@ watch(
 							Here you can modify the category's default fields by renaming or hiding them. You can
 							also add custom fields of your own.
 						</VCardSubtitle>
-						<VExpansionPanels v-model="openPanels">
-							<VExpansionPanel v-for="(defaultField, index) in DefaultFields" :key="index">
+						<VExpansionPanels v-model="openPanel">
+							<VExpansionPanel
+								v-for="(defaultField, index) in DefaultFields"
+								:key="index"
+								:value="`default-${defaultField.field}`"
+							>
 								<VExpansionPanelTitle>
 									{{ TransformWhirlpoolFieldName(defaultField.field) }}
 									&nbsp;
@@ -286,13 +343,20 @@ watch(
 									/>
 								</VExpansionPanelText>
 							</VExpansionPanel>
-							<VExpansionPanel v-for="field in editingModel.extraFields" :key="field.id">
-								<VExpansionPanelTitle>{{ field.label }}</VExpansionPanelTitle>
+							<VExpansionPanel
+								v-for="customField in editingModel.extraFields"
+								:key="customField.id"
+								:value="`custom-${customField.label}`"
+							>
+								<VExpansionPanelTitle>
+									<s v-if="customField.deleted">{{ customField.label }}</s>
+									<span v-else>{{ customField.label }}</span>
+								</VExpansionPanelTitle>
 								<VExpansionPanelText>
 									<FieldEditor
-										:field-data="field"
+										:field-data="customField"
 										@update-field="updateExtraField"
-										@remove-field="removeExtraField"
+										@remove-field="updateExtraField"
 									/>
 								</VExpansionPanelText>
 							</VExpansionPanel>

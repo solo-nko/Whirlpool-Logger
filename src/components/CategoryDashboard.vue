@@ -17,7 +17,8 @@ const statusOneWhirlpools = computed(() =>
 	whirlpoolStore.clientWhirlpools.filter(
 		(whirlpool) =>
 			whirlpool.category.id === dashboard.categoryId &&
-			whirlpool.status?.id === dashboard.selectedStatusOne.id
+			whirlpool.status?.id === dashboard.selectedStatusOne.id &&
+			whirlpool.deletedOn === null
 	)
 );
 
@@ -25,7 +26,8 @@ const statusTwoWhirlpools = computed(() =>
 	whirlpoolStore.clientWhirlpools.filter(
 		(whirlpool) =>
 			whirlpool.category.id === dashboard.categoryId &&
-			whirlpool.status?.id === dashboard.selectedStatusTwo.id
+			whirlpool.status?.id === dashboard.selectedStatusTwo.id &&
+			whirlpool.deletedOn === null
 	)
 );
 
