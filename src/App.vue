@@ -1,11 +1,23 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import useSettingsStore from "./stores/settings";
+import { TOAST_TIMEOUT } from "./utils/Utilities";
+
+const settingsStore = useSettingsStore();
+</script>
 
 <template>
 	<VApp>
 		<VAppBar>
 			<VAppBarTitle>Whirlpool Logger</VAppBarTitle>
 		</VAppBar>
-		<VMain><RouterView /></VMain>
+		<VMain>
+			<RouterView />
+			<VSnackbar
+				v-model="settingsStore.isToastDisplayed"
+				:text="settingsStore.toastMessage"
+				:timeout="TOAST_TIMEOUT"
+			/>
+		</VMain>
 		<VBottomNavigation grow order="-1" tag="footer">
 			<VBtn to="home">
 				<VIcon icon="$spiral" />

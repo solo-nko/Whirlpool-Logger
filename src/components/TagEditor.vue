@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ulid } from "ulid";
 import type { IEditingTag } from "@/utils/types/ITag.ts";
+import useSettingsStore from "@/stores/settings";
+import { HasValue } from "@/utils/Utilities";
 
 type TagEditorProps = {
 	tags: IEditingTag[];
@@ -14,6 +16,9 @@ const newTag: IEditingTag = {
 	deleted: false,
 	updated: true
 };
+
+const settingsStore = useSettingsStore();
+
 const { tags } = defineProps<TagEditorProps>();
 // TODO: switch to typed emits (see FieldEditor.vue)
 const emits = defineEmits(["updateTags"]);
@@ -21,18 +26,29 @@ const emits = defineEmits(["updateTags"]);
 const displayedEditingTags = computed(() => tags.filter((tag) => !tag.deleted));
 const selectedTag = ref<IEditingTag>();
 const editingTag = ref<IEditingTag>(newTag);
+const formRef = ref();
+const formValidationStatus = ref<boolean>(false);
 
 const isEditingNewTag = computed<boolean>(() => {
 	return selectedTag.value === undefined;
 });
 
 const addTag = () => {
+	if (!formValidationStatus.value) {
+		settingsStore.DisplayToast("A required field is missing, or a field has invalid input.");
+		if (formRef.value) formRef.value.validate();
+		return;
+	}
 	const newTagsList = [...displayedEditingTags.value, { ...editingTag.value, id: ulid() }];
 	emits("updateTags", newTagsList);
 };
 
-// TODO: add form validation
 const updateTag = () => {
+	if (!formValidationStatus.value) {
+		settingsStore.DisplayToast("A required field is missing, or a field has invalid input.");
+		if (formRef.value) formRef.value.validate();
+		return;
+	}
 	const newTagsList = displayedEditingTags.value.map((tag) => {
 		if (editingTag.value.id === tag.id) return { ...editingTag.value, updated: true };
 		return tag;
@@ -88,22 +104,28 @@ watch(selectedTag, (newSelection) => {
 			</VCol>
 			<VCol cols="12" md="9">
 				<VCard>
-					<VCardTitle>{{ isEditingNewTag ? "Add Tag" : "Edit Tag" }}</VCardTitle>
-					<VTextField v-model="editingTag.label" label="Label" />
-					<VTextField v-model="editingTag.description" label="Description (Optional)" />
-					<VExpansionPanels>
-						<VExpansionPanel title="Color (Optional)">
-							<VExpansionPanelText>
-								<VColorPicker
-									v-model="editingTag.color"
-									landscape
-									mode="hex"
-									:modes="['hex']"
-									label="Color"
-								/>
-							</VExpansionPanelText>
-						</VExpansionPanel>
-					</VExpansionPanels>
+					<VForm ref="formRef" v-model="formValidationStatus">
+						<VCardTitle>{{ isEditingNewTag ? "Add Tag" : "Edit Tag" }}</VCardTitle>
+						<VTextField
+							v-model="editingTag.label"
+							label="Label"
+							:rules="[(value: string) => HasValue(value, 'Label')]"
+						/>
+						<VTextField v-model="editingTag.description" label="Description (Optional)" />
+						<VExpansionPanels>
+							<VExpansionPanel title="Color (Optional)">
+								<VExpansionPanelText>
+									<VColorPicker
+										v-model="editingTag.color"
+										landscape
+										mode="hex"
+										:modes="['hex']"
+										label="Color"
+									/>
+								</VExpansionPanelText>
+							</VExpansionPanel>
+						</VExpansionPanels>
+					</VForm>
 					<VCardActions>
 						<VBtn v-if="!isEditingNewTag" @click="deleteTag">
 							<template v-slot:prepend> <VIcon icon="$close" /></template>

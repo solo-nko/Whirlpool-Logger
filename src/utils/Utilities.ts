@@ -60,7 +60,7 @@ function SortWhirlpoolByUpdated(a: WhirlpoolLog, b: WhirlpoolLog) {
 }
 
 function HasValue(value: string, fieldName: string) {
-	if (value) return true;
+	if (value && value.length > 0) return true;
 	return `${fieldName} is required.`;
 }
 

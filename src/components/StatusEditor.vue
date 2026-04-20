@@ -2,10 +2,14 @@
 import { ulid } from "ulid";
 import { DateTime } from "luxon";
 import type { IEditingStatus } from "@/utils/types/IStatus.ts";
+import { HasValue } from "@/utils/Utilities";
+import useSettingsStore from "@/stores/settings";
 
 type StatusEditorProps = {
 	statuses: IEditingStatus[];
 };
+
+const settingsStore = useSettingsStore();
 
 const newStatus: IEditingStatus = {
 	id: "new",
@@ -24,6 +28,8 @@ const displayedEditingStatuses = computed(() => statuses.filter((status) => !sta
 const selectedStatus = ref<IEditingStatus[]>([newStatus]);
 /** ref for holding data that's currently being edited */
 const editingStatus = ref<IEditingStatus>(newStatus);
+const formValidationStatus = ref<boolean>(false);
+const formRef = ref();
 
 // determine whether user is currently editing an existing status, or adding a new one
 const isNewStatus = computed<boolean>(() => {
@@ -31,12 +37,22 @@ const isNewStatus = computed<boolean>(() => {
 });
 
 const addStatus = () => {
+	if (!formValidationStatus.value) {
+		settingsStore.DisplayToast("A required field is missing, or a field has invalid input.");
+		if (formRef.value) formRef.value.validate();
+		return;
+	}
 	// ensure there's a unique id at point of adding
 	const newStatusesList = [...statuses, { ...editingStatus.value, id: ulid() }];
 	emits("updateStatuses", newStatusesList);
 };
 
 const updateStatus = () => {
+	if (!formValidationStatus.value) {
+		settingsStore.DisplayToast("A required field is missing, or a field has invalid input.");
+		if (formRef.value) formRef.value.validate();
+		return;
+	}
 	const newStatusesList = statuses.map((status) => {
 		if (status.id === editingStatus.value.id) return { ...editingStatus.value, updated: true };
 		return status;
@@ -86,15 +102,21 @@ watch(
 			</VCol>
 			<VCol cols="12" md="9">
 				<VCard>
-					<VTextField v-model="editingStatus.name" label="Name" />
-					<VTextarea
-						v-model="editingStatus.description"
-						label="Description (Optional)"
-						placeholder="What does this status mean?"
-						rows="2"
-						row-height="20"
-						no-resize
-					/>
+					<VForm ref="formRef" v-model="formValidationStatus">
+						<VTextField
+							v-model="editingStatus.name"
+							label="Name"
+							:rules="[(value) => HasValue(value, 'Name')]"
+						/>
+						<VTextarea
+							v-model="editingStatus.description"
+							label="Description (Optional)"
+							placeholder="What does this status mean?"
+							rows="2"
+							row-height="20"
+							no-resize
+						/>
+					</VForm>
 					<VCardActions>
 						<VBtn v-if="!isNewStatus" @click="deleteStatus">
 							<template v-slot:prepend> <VIcon icon="$close" /></template>

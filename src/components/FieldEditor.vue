@@ -2,6 +2,7 @@
 import { ulid } from "ulid";
 import { FieldType, type IEditingField } from "@/utils/types/IField.ts";
 import { GetFieldRules, HasValue, TOAST_TIMEOUT } from "@/utils/Utilities.ts";
+import useSettingsStore from "@/stores/settings";
 
 type FieldEditorProps = {
 	fieldData?: IEditingField;
@@ -16,6 +17,8 @@ const blankField: IEditingField = {
 	deleted: false,
 	updated: true
 };
+
+const settingsStore = useSettingsStore();
 
 const props = defineProps<FieldEditorProps>();
 const isNewField = computed(() => props.fieldData === undefined);
@@ -41,12 +44,7 @@ const fieldModel = ref<IEditingField>(
 );
 const formValidationStatus = ref(false);
 const formRef = ref();
-const validationToastDisplayed = ref(false);
-
-const maxLengthApplicable = computed(() => fieldModel.value.type === FieldType.TEXT);
-
 const deleteButtonStatus = ref<"normal" | "confirm">("normal");
-
 const translatedLabels = [
 	{
 		type: FieldType.TEXT,
@@ -66,6 +64,9 @@ const translatedLabels = [
 	}
 ];
 
+const maxLengthApplicable = computed(() => fieldModel.value.type === FieldType.TEXT);
+
+
 const undoChanges = () => {
 	// return to the state of the initial prop value
 	if (props.fieldData)
@@ -84,7 +85,7 @@ const undoChanges = () => {
 
 const addField = async () => {
 	if (!formValidationStatus.value) {
-		validationToastDisplayed.value = true;
+		settingsStore.DisplayToast("A required field is missing, or a field has invalid input.");
 		if (formRef.value) await formRef.value.validate();
 		return;
 	}
@@ -94,7 +95,7 @@ const addField = async () => {
 
 const updateField = async () => {
 	if (!formValidationStatus.value) {
-		validationToastDisplayed.value = true;
+		settingsStore.DisplayToast("A required field is missing, or a field has invalid input.");
 		if (formRef.value) await formRef.value.validate();
 		return;
 	}
@@ -225,9 +226,6 @@ const reallyRemoveField = () => {
 			</VBtn>
 		</div>
 	</VContainer>
-	<VSnackbar v-model="validationToastDisplayed" :timeout="TOAST_TIMEOUT">
-		A required field is missing, or a field has invalid input.
-	</VSnackbar>
 </template>
 
 <style scoped></style>

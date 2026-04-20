@@ -7,10 +7,13 @@ import LocalStorageKeys from "@/utils/config/LocalStorageKeys.ts";
 const useSettingsStore = defineStore("settings-store", () => {
 	const categoryStore = useCategoriesStore();
 
+	/** ID of category to show by default when creating a new whirlpool. */
 	const defaultEntryCategory = ref<string | undefined>();
+	/** ID of category to show by default when viewing the database table. */
 	const defaultTableCategory = ref<string | undefined>();
 	const display = useDisplay();
 
+	/** How many items to show per page on the database table. */
 	const itemsPerPage = ref<number>(10);
 
 	function SetDefaultEntryToLocalStorage(categoryId: string) {
@@ -20,6 +23,18 @@ const useSettingsStore = defineStore("settings-store", () => {
 	function SetDefaultTableToLocalStorage(categoryId: string) {
 		localStorage.setItem(LocalStorageKeys.DefaultTable, categoryId);
 	}
+
+	// Snackbar settings
+	const isToastDisplayed = ref<boolean>(false)
+	const toastMessage = ref<string>('')
+	/** 
+	 * Displays the toast message popup. The message will go away on its own after a preset number of seconds.
+	 * @param message Text to display.
+	 */
+	function DisplayToast(message: string) {
+		toastMessage.value = message;
+		isToastDisplayed.value = true;
+	} 
 
 	// Dashboard settings
 	// TODO: sort order according to category.displayOrder
@@ -105,6 +120,9 @@ const useSettingsStore = defineStore("settings-store", () => {
 		defaultTableCategory,
 		SetDefaultEntryToLocalStorage,
 		SetDefaultTableToLocalStorage,
+		isToastDisplayed,
+		toastMessage,
+		DisplayToast,
 		display,
 		itemsPerPage,
 		dashboards,

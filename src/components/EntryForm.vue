@@ -11,12 +11,15 @@ import type { WhirlpoolFields } from "@/utils/types/DefaultFieldUtils";
 import { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 import { DeepToRaw, HasValue, TOAST_TIMEOUT } from "@/utils/Utilities.ts";
+import useSettingsStore from "@/stores/settings";
 
 type EntryFormProps = {
 	category: Category;
 	existingEntry?: WhirlpoolLog;
 	demoOnly?: boolean;
 };
+
+const settingsStore = useSettingsStore();
 
 const props = defineProps<EntryFormProps>();
 const emits = defineEmits(["close", "save"]);
@@ -43,7 +46,6 @@ const showCloseButton = computed(() => isEditMode.value);
 // Validation
 const formValidationStatus = ref<boolean | null>(null);
 const formRef = ref();
-const validationToastDisplayed = ref<boolean>(false);
 
 const titleRules = {
 	hasValue: (value: string) => HasValue(value, "Title"),
@@ -199,8 +201,9 @@ async function UpdateEntry() {
 const onClickSave = async () => {
 	if (props.demoOnly) return;
 	if (!formValidationStatus.value) {
-		validationToastDisplayed.value = true;
+		settingsStore.DisplayToast("A required field is missing, or a field has invalid input.");
 		if (formRef.value) await formRef.value.validate();
+		return;
 	}
 	if (isEditMode.value) await UpdateEntry();
 	else await AddEntry();
@@ -393,9 +396,6 @@ watch(
 			<VBtn @click="onClickSave">Save</VBtn>
 			<VBtn v-if="showCloseButton" @click="$emit('close')">Close</VBtn>
 		</VCardActions>
-		<VSnackbar v-model="validationToastDisplayed" :timeout="TOAST_TIMEOUT">
-			A required field is missing, or a field has invalid input.
-		</VSnackbar>
 	</VCard>
 </template>
 

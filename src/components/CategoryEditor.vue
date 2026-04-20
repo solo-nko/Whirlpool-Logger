@@ -65,16 +65,10 @@ const editingModel = ref<EditingCategory>(ConvertToEditingCategory(category));
 
 /** Tracks which field panels are open. */
 const openPanel = ref<string>();
-const toastDisplayed = ref(false);
-const toastMessage = ref("Category Saved!");
 
-function DisplayToast(message: string) {
-	toastMessage.value = message;
-	toastDisplayed.value = true;
-}
 const addExtraField = (input: IEditingField) => {
 	editingModel.value.extraFields.push(input);
-	DisplayToast("Custom field added. Save the category to save your changes.");
+	settingsStore.DisplayToast("Custom field added. Save the category to save your changes.");
 };
 
 const updateExtraField = (updatedField: IEditingField) => {
@@ -86,7 +80,7 @@ const updateExtraField = (updatedField: IEditingField) => {
 			if (field.id === findFieldToUpdate.id) return updatedField;
 			return field;
 		});
-		DisplayToast("Custom fields updated. Save the category to save your changes.");
+		settingsStore.DisplayToast("Custom fields updated. Save the category to save your changes.");
 	}
 };
 
@@ -101,12 +95,12 @@ const updateDefaultField = (input: DefaultField) => {
 
 const updateEditingStatuses = (newStatuses: IEditingStatus[]) => {
 	editingModel.value.availableStatuses = newStatuses;
-	DisplayToast("Statuses updated. Save the category to save your changes.");
+	settingsStore.DisplayToast("Statuses updated. Save the category to save your changes.");
 };
 
 const updateEditingTags = (newTags: IEditingTag[]) => {
 	editingModel.value.tags = newTags;
-	DisplayToast("Tags updated. Save the category to save your changes.");
+	settingsStore.DisplayToast("Tags updated. Save the category to save your changes.");
 };
 
 /** Uses the `updated` and `deleted` flags to find existing Whirlpools in the database which have those tags attached. It then either removes the tags if they've been deleted, or modifies them if they've been updated. */
@@ -283,11 +277,11 @@ const updateCategory = async () => {
 			unsyncedChanges: true
 		});
 		settingsStore.UpdateDashboardsTable(editingModel.value);
-		DisplayToast("Category saved.");
+		settingsStore.DisplayToast("Category saved.");
 	} catch (error) {
 		// eslint-disable-next-line no-console
 		console.log(error);
-		DisplayToast("An error has occurred.");
+		settingsStore.DisplayToast("An error has occurred.");
 	}
 };
 
@@ -403,7 +397,6 @@ watch(
 		<VCardActions>
 			<VBtn @click="updateCategory">Save Category</VBtn>
 		</VCardActions>
-		<VSnackbar v-model="toastDisplayed" :timeout="TOAST_TIMEOUT">{{ toastMessage }}</VSnackbar>
 	</VCard>
 </template>
 
