@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import useSettingsStore from "@/stores/settings.ts";
-import CategoryDashboard from "@/components/CategoryDashboard.vue";
+import CategoryDashboard from "@/components/settings/general/CategoryDashboard.vue";
 import { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import type { Category } from "@/utils/types/Category.ts";
 import EntryForm from "@/components/EntryForm.vue";
-import SpiralGraphic from "@/components/SpiralGraphic.vue";
+import SpiralGraphic from "@/components/home/SpiralGraphic.vue";
 const settingsStore = useSettingsStore();
 
 const isEditModalOpen = ref(false);

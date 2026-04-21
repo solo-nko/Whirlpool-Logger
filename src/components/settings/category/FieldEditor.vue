@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ulid } from "ulid";
 import { FieldType, type IEditingField } from "@/utils/types/IField.ts";
-import { GetFieldRules, HasValue, TOAST_TIMEOUT } from "@/utils/Utilities.ts";
-import useSettingsStore from "@/stores/settings";
+import { GetFieldRules, HasValue } from "@/utils/MiscUtils.ts";
+import useSettingsStore from "@/stores/settings.ts";
 
 type FieldEditorProps = {
 	fieldData?: IEditingField;
@@ -65,7 +65,6 @@ const translatedLabels = [
 ];
 
 const maxLengthApplicable = computed(() => fieldModel.value.type === FieldType.TEXT);
-
 
 const undoChanges = () => {
 	// return to the state of the initial prop value

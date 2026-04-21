@@ -2,8 +2,8 @@
 import { ulid } from "ulid";
 import { DateTime } from "luxon";
 import type { IEditingStatus } from "@/utils/types/IStatus.ts";
-import { HasValue } from "@/utils/Utilities";
-import useSettingsStore from "@/stores/settings";
+import { HasValue } from "@/utils/MiscUtils.ts";
+import useSettingsStore from "@/stores/settings.ts";
 
 type StatusEditorProps = {
 	statuses: IEditingStatus[];

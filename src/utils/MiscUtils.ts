@@ -83,15 +83,11 @@ function GetFieldRules(fieldInfo: IField): ((value: string | undefined) => boole
 	return rules;
 }
 
-/** Toast duration in milliseconds. */
-const TOAST_TIMEOUT = 3000;
-
 export {
 	TransformVariableName,
 	TransformWhirlpoolFieldName,
 	DeepToRaw,
 	SortWhirlpoolByUpdated,
 	HasValue,
-	GetFieldRules,
-	TOAST_TIMEOUT
+	GetFieldRules
 };

@@ -25,16 +25,16 @@ const useSettingsStore = defineStore("settings-store", () => {
 	}
 
 	// Snackbar settings
-	const isToastDisplayed = ref<boolean>(false)
-	const toastMessage = ref<string>('')
-	/** 
+	const isToastDisplayed = ref<boolean>(false);
+	const toastMessage = ref<string>("");
+	/**
 	 * Displays the toast message popup. The message will go away on its own after a preset number of seconds.
 	 * @param message Text to display.
 	 */
 	function DisplayToast(message: string) {
 		toastMessage.value = message;
 		isToastDisplayed.value = true;
-	} 
+	}
 
 	// Dashboard settings
 	// TODO: sort order according to category.displayOrder

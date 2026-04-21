@@ -7,10 +7,10 @@ import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { FieldType } from "@/utils/types/IField.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
-import type { WhirlpoolFields } from "@/utils/types/DefaultFieldUtils";
+import type { WhirlpoolFields } from "@/utils/DefaultFieldUtils.ts";
 import { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
-import { DeepToRaw, HasValue, TOAST_TIMEOUT } from "@/utils/Utilities.ts";
+import { DeepToRaw, HasValue } from "@/utils/MiscUtils.ts";
 import useSettingsStore from "@/stores/settings";
 
 type EntryFormProps = {

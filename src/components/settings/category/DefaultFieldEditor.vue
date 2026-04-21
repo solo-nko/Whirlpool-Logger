@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { DefaultField } from "@/utils/types/DefaultFieldUtils.ts";
-import { HasValue } from "@/utils/Utilities";
+import type { DefaultField } from "@/utils/DefaultFieldUtils.ts";
+import { HasValue } from "@/utils/MiscUtils.ts";
 
 type FieldEditorProps = {
 	fieldData: DefaultField;

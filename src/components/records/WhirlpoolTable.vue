@@ -6,9 +6,9 @@ import { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import useCategoriesStore from "@/stores/categories.ts";
 import EntryForm from "@/components/EntryForm.vue";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
-import ConfirmCard from "@/components/ConfirmCard.vue";
+import ConfirmCard from "@/components/common/ConfirmCard.vue";
 import type { IHeaderItem } from "@/utils/types/IHeaderItem.ts";
-import { SortWhirlpoolByUpdated } from "@/utils/Utilities.ts";
+import { SortWhirlpoolByUpdated } from "@/utils/MiscUtils.ts";
 import type { ISortItem } from "@/utils/types/ISortItem.ts";
 
 const settings = useSettingsStore();

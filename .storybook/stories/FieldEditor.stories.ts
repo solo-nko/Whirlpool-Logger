@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/vue3-vite";
-import FieldEditor from "../../src/components/FieldEditor.vue";
+import FieldEditor from "../../src/components/settings/category/FieldEditor.vue";
 import { FieldType, IField } from "../../src/utils/types/IField";
 import { ulid } from "ulid";
 

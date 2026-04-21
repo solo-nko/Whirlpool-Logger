@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import { DateTime } from "luxon";
 import type { Category } from "@/utils/types/Category.ts";
-import FieldEditor from "@/components/FieldEditor.vue";
-import DefaultFieldEditor from "@/components/DefaultFieldEditor.vue";
+import FieldEditor from "@/components/settings/category/FieldEditor.vue";
+import DefaultFieldEditor from "@/components/settings/category/DefaultFieldEditor.vue";
 import type { IEditingField, IField } from "@/utils/types/IField.ts";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
-import StatusEditor from "@/components/StatusEditor.vue";
-import TagEditor from "@/components/TagEditor.vue";
-import { DeepToRaw, TOAST_TIMEOUT, TransformWhirlpoolFieldName } from "@/utils/Utilities.ts";
+import StatusEditor from "@/components/settings/category/StatusEditor.vue";
+import TagEditor from "@/components/settings/category/TagEditor.vue";
+import { DeepToRaw, TransformWhirlpoolFieldName } from "@/utils/MiscUtils.ts";
 import type { IEditingTag, ITag } from "@/utils/types/ITag.ts";
 import type { IEditingStatus, IStatus } from "@/utils/types/IStatus.ts";
-import { type DefaultField, DefaultFields } from "@/utils/types/DefaultFieldUtils.ts";
+import { type DefaultField, DefaultFields } from "@/utils/DefaultFieldUtils.ts";
 import useSettingsStore from "@/stores/settings.ts";
 import useWhirlpoolStore from "@/stores/whirlpools.ts";
 

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ulid } from "ulid";
 import type { IEditingTag } from "@/utils/types/ITag.ts";
-import useSettingsStore from "@/stores/settings";
-import { HasValue } from "@/utils/Utilities";
+import useSettingsStore from "@/stores/settings.ts";
+import { HasValue } from "@/utils/MiscUtils.ts";
 
 type TagEditorProps = {
 	tags: IEditingTag[];

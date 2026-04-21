@@ -26,18 +26,18 @@ These are items I'm actively working on.
   - [x] Link insertion
   - [x] Text color
   - [x] Test output size with HTML
-- [X] Form validation
+- [x] Form validation
   - [x] Entry Form
   - [x] Field Settings
-  - [X] Status Settings
-  - [X] Tag Settings
+  - [x] Status Settings
+  - [x] Tag Settings
 - [x] Ratings field
 - [x] Additional table headers
 
 **Minor**
 
 - [ ] Tweak app styles
-- [X] Set up toast messages
+- [x] Set up toast messages
 - [ ] Test PWA functionality
 - [x] Records search
 

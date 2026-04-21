@@ -33,7 +33,7 @@ import {
 	mdiDelete,
 	mdiPencil
 } from "@mdi/js";
-import SpiralIcon from "@/components/SpiralIcon.vue";
+import SpiralIcon from "@/components/common/SpiralIcon.vue";
 import { lizardMint, royalCobalt, wineSplash } from "@/utils/config/themes/darkThemes.ts";
 
 export default createVuetify({

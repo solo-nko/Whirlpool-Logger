@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import useSettingsStore from "./stores/settings";
-import { TOAST_TIMEOUT } from "./utils/Utilities";
+import { TOAST_TIMEOUT } from "@/utils/Constants.ts";
 
 const settingsStore = useSettingsStore();
 </script>
