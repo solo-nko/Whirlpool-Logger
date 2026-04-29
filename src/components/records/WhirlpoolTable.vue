@@ -10,6 +10,7 @@ import ConfirmCard from "@/components/common/ConfirmCard.vue";
 import type { IHeaderItem } from "@/utils/types/IHeaderItem.ts";
 import { SortWhirlpoolByUpdated } from "@/utils/MiscUtils.ts";
 import type { ISortItem } from "@/utils/types/ISortItem.ts";
+import type { ITag } from "@/utils/types/ITag.ts";
 
 const settings = useSettingsStore();
 
@@ -40,6 +41,16 @@ const itemsPerPageOptions: { title: string; value: number }[] = [
 	{ title: "50", value: 50 }
 ];
 
+/**
+ * Custom filter function for handling tags.
+ * Useful StackExchange thread on the topic: https://stackoverflow.com/questions/64405434/vuetify-data-table-how-are-header-filter-functions-applied
+ * */
+function filterTags(value: ITag[], query: string) {
+	if (value.length === 0 || query === null) return false;
+	const tagLabels = value.map((tag) => tag.label.toLowerCase());
+	return tagLabels.some((tagLabel) => tagLabel.includes(query.toLowerCase()));
+}
+
 const tableHeaders = ref<IHeaderItem[]>([
 	{
 		...basicHeader,
@@ -49,7 +60,7 @@ const tableHeaders = ref<IHeaderItem[]>([
 		cellProps: { class: "text-left" }
 	},
 	{ ...basicHeader, title: "Status", value: "status", sortable: true },
-	{ ...basicHeader, title: "Tags (3 Max)", value: "tags", sortable: false },
+	{ ...basicHeader, title: "Tags (3 Max)", value: "tags", sortable: false, filter: filterTags },
 	{
 		...basicHeader,
 		title: "Last Updated",
@@ -114,6 +125,8 @@ const getDate = (item: WhirlpoolLog, type: "updated" | "created") => {
 		:items="tableItems"
 		:sort-by="defaultSortOrder"
 		:search="searchValue"
+		:filter-keys="['title', 'status.name', 'tags']"
+		:filter-mode="'union'"
 	>
 		<!--	 eslint-disable vue/valid-v-slot -->
 		<template v-slot:item.status="{ item }">
@@ -150,11 +163,11 @@ const getDate = (item: WhirlpoolLog, type: "updated" | "created") => {
 						v-model="searchValue"
 						class="px-4"
 						density="compact"
-						label="Search"
-						variant="outlined"
+						label="Search (title, status, tags)"
 						clearable
 						hide-details
-				/></VCol>
+					/>
+				</VCol>
 				<VCol> <VDataTableFooter :items-per-page-options="itemsPerPageOptions" /> </VCol>
 			</VRow>
 		</template>
