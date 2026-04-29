@@ -41,13 +41,13 @@ const onEditClick = (editingWhirlpool: WhirlpoolLog) => {
 </script>
 
 <template>
-	<VCard>
+	<VCard class="min-w-50">
 		<VCardTitle>{{ dashboard.categoryName }}</VCardTitle>
 		<VCardSubtitle>{{ dashboard.selectedStatusOne.name }}</VCardSubtitle>
 		<VList>
 			<VListItem v-for="item in statusOneWhirlpools" :key="item.id">
-				<div class="flex items-center justify-between">
-					<p class="m-0">{{ item.title }}</p>
+				<div class="flex flex-nowrap items-center justify-between">
+					<p class="m-0 font-bold">{{ item.title }}</p>
 					<VBtn icon="$edit" variant="text" @click="onEditClick(item)" />
 				</div>
 			</VListItem>
@@ -58,8 +58,8 @@ const onEditClick = (editingWhirlpool: WhirlpoolLog) => {
 		}}</VCardSubtitle>
 		<VList v-if="statusTwoWhirlpools.length > 0">
 			<VListItem v-for="item in statusTwoWhirlpools" :key="item.id">
-				<div class="flex items-center justify-between">
-					<p class="m-0">{{ item.title }}</p>
+				<div class="flex flex-nowrap items-center justify-between">
+					<p class="m-0 font-bold">{{ item.title }}</p>
 					<VBtn icon="$edit" variant="text" @click="onEditClick(item)" />
 				</div>
 			</VListItem>
