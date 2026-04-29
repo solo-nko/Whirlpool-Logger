@@ -247,7 +247,7 @@ watch(
 							v-if="ratingFieldMods?.hidden !== true"
 							v-model="entryModel.rating"
 							:label="ratingFieldMods?.rename || 'Rating'"
-							control-variant="stacked"
+							control-variant="split"
 							:min="1"
 							:max="10"
 							:loading="entryModel.rating !== undefined"
@@ -402,5 +402,9 @@ watch(
 <style scoped>
 ::v-deep(.v-progress-linear) {
 	cursor: pointer;
+}
+
+::v-deep(.v-number-input--split) {
+	font-weight: bold;
 }
 </style>
