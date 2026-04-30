@@ -10,3 +10,8 @@ export type IStatus = {
 	deletedOn: DateTime | null;
 	createdOn: DateTime;
 };
+
+export type IEditingStatus = IStatus & {
+	updated: boolean;
+	deleted: boolean;
+};

@@ -15,4 +15,10 @@ export type IField = {
 	hidden: boolean;
 	displayOrder?: number;
 	required?: boolean;
+	maxLength?: number;
+};
+
+export type IEditingField = IField & {
+	updated: boolean;
+	deleted: boolean;
 };

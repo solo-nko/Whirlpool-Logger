@@ -8,3 +8,8 @@ export type ITag = {
 	description?: string;
 	color?: string;
 };
+
+export type IEditingTag = ITag & {
+	deleted: boolean;
+	updated: boolean;
+};

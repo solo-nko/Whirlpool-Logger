@@ -34,7 +34,10 @@ Input boxes for filling out the Whirlpool log entry.
 ### Title
 
 - **Element/Component:** Text Field
-- **Required:** Yes
+- **Validation:**
+  - **Required:** Yes
+  - **Max Length:** 100
+  - **Other:** N/A
 - **Display:** Yes
 - **Usable:** Yes
 - **Label:** "Title"
@@ -45,18 +48,24 @@ Input boxes for filling out the Whirlpool log entry.
 ### Status
 
 - **Element/Component**: VAutoComplete
-- **Required:** No
+- **Validation:**
+  - **Required:** No
+  - **Max Length:** 50
 - **Display:** Yes
 - **Usable:** Yes
 - **Label:** "Status"
 - **Placeholder:** N/A
 - **Actions:**
+  - Must select an existing option. No free input.
   - On input, set `editingModel.status`
 
 ### Chapter
 
 - **Element/Component**: NumericalInput
-- **Required:** No
+- **Validation:**
+  - **Required:** No
+  - **Max Length:** N/A
+  - **Other:** Must be a number
 - **Display:**
   - If `entry.modifiedFields` contains a Chapter field where `hidden` is `true`, No
   - Otherwise, Yes
@@ -73,7 +82,10 @@ Input boxes for filling out the Whirlpool log entry.
 ### Volume
 
 - **Element/Component**: NumericalInput
-- **Required:** No
+- **Validation:**
+  - **Required:** No
+  - **Max Length:** 50
+  - Must be a number
 - **Display:**
   - If `entry.modifiedFields` contains a Volume field where `hidden` is `true`, No
   - Otherwise, Yes
@@ -89,8 +101,28 @@ Input boxes for filling out the Whirlpool log entry.
 
 ### Rating
 
-- **Element/Component**: Stars
-- **Required:** No
+- **Element/Component**: Select
+- **Validation:**
+  - **Required:** No
+  - **Max Length:** N/A
+  - Must be a number
+- **Display:**
+  - If `entry.modifiedFields` contains a Rating field where `hidden` is `true`, No
+  - Otherwise, Yes
+- **Usable:** Yes
+- **Label:**
+  - If `entry.modifiedFields` contains a Rating field, use that field's `rename` value.
+  - Otherwise, "Rating"
+- **Placeholder:** N/A
+- **Actions:**
+  - On input, set `editingModel.rating`
+
+### Series
+
+- **Element/Component**: TextField
+- **Validation:**
+  - **Required:** No
+  - **Max Length:** 50
 - **Display:**
   - If `entry.modifiedFields` contains a Rating field where `hidden` is `true`, No
   - Otherwise, Yes
@@ -165,11 +197,17 @@ Input boxes for filling out the Whirlpool log entry.
 
 ### Save
 
+- **Element/Component:** Button
+- **Display:** Yes
+- **Usable:** Yes
+- **Contents:** "Save"
+- **Actions:** [OnSave](#on-save)
+
 ### Cancel
 
 - **Element/Component:** Button
 - **Display:**
-  - If Entry is defined, Yes
+  - If [Entry](#entry) is defined, Yes
   - Otherwise, No
 - **Usable:** Yes
 - **Contents:** "Cancel"
@@ -190,6 +228,12 @@ Input boxes for filling out the Whirlpool log entry.
     - `tags`: Set to an empty array of [Tag](/design/client/models/tag.md)
 
 ### On Save
+
+- Validate Entries
+  - Ensure all required entries have values.
+    - Title
+    - Any fields in `extraFields` where `extraField.required` is `true`.
+  -
 
 ### On Cancel
 

@@ -4,9 +4,9 @@ import type DatabaseConfig from "@/utils/database/DatabaseConfig";
 import type { IField } from "@/utils/types/IField";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
-import type { DefaultField } from "@/utils/types/DefaultFieldUtils.ts";
+import type { DefaultField } from "@/utils/DefaultFieldUtils.ts";
 import type { Category } from "@/utils/types/Category.ts";
-import { DeepToRaw } from "@/utils/Utilities.ts";
+import { DeepToRaw } from "@/utils/MiscUtils.ts";
 
 class DatabaseCategory {
 	id!: string;

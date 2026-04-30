@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { EditorContent, useEditor, type JSONContent, type HTMLContent } from "@tiptap/vue-3";
+import { EditorContent, type HTMLContent, type JSONContent, useEditor } from "@tiptap/vue-3";
 import { StarterKit } from "@tiptap/starter-kit";
 import type { VBtn } from "vuetify/components";
 import { Placeholder } from "@tiptap/extensions";
 import { Color, TextStyle } from "@tiptap/extension-text-style";
+import { Highlight } from "@tiptap/extension-highlight";
+import useSettingsStore from "@/stores/settings.ts";
 
 type TipTapEditorProps = {
 	modelValue?: JSONContent | HTMLContent;
@@ -14,6 +16,10 @@ const buttonFormatting: Pick<VBtn, "density" | "size"> = {
 	density: "comfortable",
 	size: "large"
 };
+
+const settingsStore = useSettingsStore();
+
+const { mdAndUp } = settingsStore.display;
 
 const {
 	modelValue = {
@@ -28,7 +34,11 @@ const {
 } = defineProps<TipTapEditorProps>();
 const emits = defineEmits(["update:modelValue"]);
 
+const textSelected = ref<boolean>(false);
+const linkText = ref<string>("");
+
 // TODO: overwrite tab shortcut for lists: https://tiptap.dev/docs/editor/core-concepts/keyboard-shortcuts#overwrite-keyboard-shortcuts
+// Editor instance
 const editor = useEditor({
 	extensions: [
 		StarterKit.configure({
@@ -52,25 +62,37 @@ const editor = useEditor({
 			placeholder: "Write down your thoughts..."
 		}),
 		TextStyle,
-		Color
+		Color,
+		Highlight.configure({
+			multicolor: true
+		})
 	],
 	content: modelValue,
 	onUpdate({ editor }) {
 		if (contentType === "json") emits("update:modelValue", editor.getJSON());
 		else if (contentType === "html") emits("update:modelValue", editor.getHTML());
 	},
+	onSelectionUpdate(selectionProps) {
+		textSelected.value =
+			selectionProps.editor.state.selection.$from.pos !==
+			selectionProps.editor.state.selection.$to.pos;
+	},
 	editorProps: {
 		attributes: {
-			class: "editor-container min-h-15 m-2"
+			class: "editor-container min-h-25 m-2"
 		}
 	}
 });
 
+const currentTextColor = computed(() => editor.value?.getAttributes("textStyle").color ?? "");
+const currentHighlightColor = computed(() => editor.value?.getAttributes("highlight").color ?? "");
 const canUndo = computed(() => editor.value?.can().undo());
 const canRedo = computed(() => editor.value?.can().redo());
-const currentColor = computed(() => editor.value?.getAttributes("textStyle").color);
 
-const textColor = ref<string | undefined>();
+const isBold = computed(() => editor.value?.isActive("bold"));
+const isItalics = computed(() => editor.value?.isActive("italic"));
+const isUnderline = computed(() => editor.value?.isActive("underline"));
+const isStrikeThrough = computed(() => editor.value?.isActive("strike"));
 
 const toggleBold = () => {
 	editor.value?.chain().focus().toggleBold().run();
@@ -104,6 +126,31 @@ const executeRedo = () => {
 	editor.value?.chain().focus().redo().run();
 };
 
+const setLink = () => {
+	editor.value?.commands.toggleLink({ href: linkText.value, target: "_blank" });
+	linkText.value = "";
+};
+
+const hasLink = computed(() => {
+	return editor.value?.getAttributes("link").href;
+});
+
+const onClickLinkButton = () => {
+	if (!textSelected.value) return;
+	if (editor.value?.getAttributes("link").href) editor.value.commands.unsetLink();
+	else setLink();
+};
+
+const onChangeTextColor = (color: string) => {
+	if (color === "#FFFFFF00") editor.value?.commands.unsetColor();
+	else editor.value?.commands.setColor(color);
+};
+
+const onChangeHighlightColor = (color: string) => {
+	if (color === "#FFFFFF00") editor.value?.commands.unsetHighlight();
+	else editor.value?.commands.setHighlight({ color: color });
+};
+
 watch(
 	() => modelValue,
 	(newValue) => {
@@ -116,15 +163,6 @@ watch(
 	}
 );
 
-// TODO: figure out a way to unset color/remove formatting
-watch(textColor, (newColor, oldColor) => {
-	if (newColor !== undefined) {
-		editor.value?.commands.setColor(newColor);
-	}
-	console.log("previous:", oldColor);
-	console.log("new:", newColor);
-});
-
 onBeforeUnmount(() => {
 	editor.value?.destroy();
 });
@@ -134,13 +172,14 @@ onBeforeUnmount(() => {
 	<div class="border-2 border-gray-200/50 rounded-lg w-full">
 		<!--		Toolbar wrapper -->
 		<div class="border-b-1 border-gray-200/50 flex justify-center">
-			<VBtnToggle multiple>
+			<VBtnGroup multiple class="grid grid-cols-6 md:flex">
+				<!--	Undo -->
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
-							icon="mdi-undo"
+							icon="$undo"
 							v-bind="activatorProps"
 							:disabled="!canUndo"
 							variant="text"
@@ -150,12 +189,13 @@ onBeforeUnmount(() => {
 					</template>
 					<span>Undo</span>
 				</VTooltip>
+				<!--	Redo -->
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
-							icon="mdi-redo"
+							icon="$redo"
 							v-bind="activatorProps"
 							:disabled="!canRedo"
 							variant="text"
@@ -165,65 +205,73 @@ onBeforeUnmount(() => {
 					</template>
 					<span>Redo</span>
 				</VTooltip>
-				<VDivider vertical gradient thickness="2" />
-
+				<VDivider v-if="mdAndUp" vertical gradient thickness="2" />
+				<!--	Bold -->
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
-							icon="mdi-format-bold"
+							icon="$bold"
 							v-bind="activatorProps"
 							variant="text"
+							:active="isBold"
 							@click="toggleBold"
 						>
 						</VBtn>
 					</template>
 					<span>Bold</span>
 				</VTooltip>
+				<!--	Italics -->
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
-							icon="mdi-format-italic"
+							icon="$italic"
 							v-bind="activatorProps"
 							variant="text"
+							:active="isItalics"
 							@click="toggleItalic"
 						/>
 					</template>
 					<span>Italic</span>
 				</VTooltip>
+				<!--	Underline -->
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
-							icon="mdi-format-underline"
+							icon="$underline"
 							v-bind="activatorProps"
 							variant="text"
+							:active="isUnderline"
 							@click="toggleUnderline"
 						/>
 					</template>
 					<span>Underline</span>
 				</VTooltip>
-
+				<!--	Strikethrough -->
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
-							icon="mdi-format-strikethrough-variant"
+							icon="$strike"
 							v-bind="activatorProps"
 							variant="text"
+							:active="isStrikeThrough"
 							@click="toggleStrikethrough"
 						/>
 					</template>
 					<span>Strikethrough</span>
 				</VTooltip>
-				<VMenu location="top">
+				<!--	Text Color -->
+				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
+							id="btn-text-color"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							v-bind="activatorProps"
@@ -231,29 +279,57 @@ onBeforeUnmount(() => {
 							class="v-btn--icon"
 						>
 							<div class="color-icon-container">
-								<VIcon class="color-icon-text" icon="mdi-format-color-text"></VIcon>
-								<VIcon class="color-icon-bar" icon="mdi-color-helper" :color="currentColor"></VIcon>
+								<VIcon class="color-icon-text" icon="$textColor"></VIcon>
+								<VIcon class="color-icon-bar" icon="$colorBar" :color="currentTextColor"></VIcon>
 							</div>
 						</VBtn>
 					</template>
-					<VColorPicker
-						v-model="textColor"
-						title="Text Color"
-						show-swatches
-						:hide-title="false"
-						hide-canvas
-						hide-eye-dropper
-						hide-sliders
-						hide-inputs
-					/>
-				</VMenu>
-				<VDivider vertical gradient thickness="2" />
+					<span>Text Color</span>
+				</VTooltip>
+				<!--	Highlight Color -->
+				<VTooltip location="top">
+					<template v-slot:activator="{ props: activatorProps }">
+						<VBtn
+							id="btn-text-highlight"
+							:density="buttonFormatting.density"
+							:size="buttonFormatting.size"
+							v-bind="activatorProps"
+							variant="text"
+							class="v-btn--icon"
+						>
+							<div class="color-icon-container">
+								<VIcon class="color-icon-text" icon="$highlightColor"></VIcon>
+								<VIcon
+									class="color-icon-bar"
+									icon="$colorBar"
+									:color="currentHighlightColor"
+								></VIcon>
+							</div>
+						</VBtn>
+					</template>
+					<span>Text Highlight</span>
+				</VTooltip>
+				<VDivider v-if="mdAndUp" vertical gradient thickness="2" />
+				<!--	Text Align -->
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
-							icon="mdi-format-list-bulleted"
+							icon="$alignText"
+							v-bind="activatorProps"
+							variant="text"
+						/>
+					</template>
+					<span>Text Align</span>
+				</VTooltip>
+				<!--	Bulleted List -->
+				<VTooltip location="top">
+					<template v-slot:activator="{ props: activatorProps }">
+						<VBtn
+							:density="buttonFormatting.density"
+							:size="buttonFormatting.size"
+							icon="$bulletList"
 							v-bind="activatorProps"
 							variant="text"
 							@click="toggleBulletList"
@@ -261,13 +337,13 @@ onBeforeUnmount(() => {
 					</template>
 					<span>Bulleted List</span>
 				</VTooltip>
-
+				<!--	Numbered List -->
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
-							icon="mdi-format-list-numbered"
+							icon="$numberList"
 							v-bind="activatorProps"
 							variant="text"
 							@click="toggleOrderedList"
@@ -275,12 +351,97 @@ onBeforeUnmount(() => {
 					</template>
 					<span>Numbered List</span>
 				</VTooltip>
-			</VBtnToggle>
+				<VDivider v-if="mdAndUp" vertical gradient thickness="2" />
+				<!--	Link -->
+				<VTooltip location="top">
+					<template v-slot:activator="{ props: activatorProps }">
+						<VBtn
+							v-if="!hasLink"
+							id="link-button"
+							:density="buttonFormatting.density"
+							:size="buttonFormatting.size"
+							icon="$link"
+							variant="text"
+							class="v-btn--icon"
+							:disabled="!textSelected"
+							v-bind="activatorProps"
+						/>
+						<VBtn
+							v-else
+							id="link-button"
+							:density="buttonFormatting.density"
+							:size="buttonFormatting.size"
+							icon="$link"
+							variant="text"
+							class="v-btn--icon"
+							:disabled="!textSelected"
+							v-bind="activatorProps"
+							@click="onClickLinkButton"
+						/>
+					</template>
+					<span>Add Link</span>
+				</VTooltip>
+				<!--	Clear Formatting	-->
+				<VTooltip location="top">
+					<template v-slot:activator="{ props: activatorProps }">
+						<VBtn
+							:density="buttonFormatting.density"
+							:size="buttonFormatting.size"
+							icon="$removeFormatting"
+							v-bind="activatorProps"
+							variant="text"
+						/>
+					</template>
+					<span>Clear Formatting</span>
+				</VTooltip>
+			</VBtnGroup>
 		</div>
-		<!--		Editor wrapper-->
+		<!--	Editor wrapper-->
 		<div class="overflow-y-auto max-h-120 min-h-30 px-2">
 			<EditorContent :editor="editor" />
 		</div>
+		<!--	Toolbar Menus-->
+		<!--	Text Color Menu -->
+		<!-- eslint-disable		vue/v-on-event-hyphenation-->
+		<VMenu location="top" activator="#btn-text-color">
+			<VColorPicker
+				title="Text Color"
+				show-swatches
+				:hide-title="false"
+				hide-canvas
+				hide-eye-dropper
+				hide-sliders
+				hide-inputs
+				@update:modelValue="onChangeTextColor"
+			/>
+		</VMenu>
+		<!-- Text Highlight Menu	-->
+		<VMenu location="top" activator="#btn-text-highlight">
+			<VColorPicker
+				title="Highlight Color"
+				show-swatches
+				:hide-title="false"
+				hide-canvas
+				hide-eye-dropper
+				hide-sliders
+				hide-inputs
+				@update:modelValue="onChangeHighlightColor"
+			/>
+		</VMenu>
+		<!-- eslint-enable		vue/v-on-event-hyphenation-->
+		<!-- Link Menu -->
+		<VMenu location="top" :close-on-content-click="false" activator="#link-button">
+			<VCard class="w-60">
+				<VCardTitle>Set Link</VCardTitle>
+				<VRow>
+					<VTextField v-model="linkText" density="compact" variant="outlined">
+						<template v-slot:append>
+							<VBtn @click="setLink">Set</VBtn>
+						</template>
+					</VTextField>
+				</VRow>
+			</VCard>
+		</VMenu>
 	</div>
 </template>
 

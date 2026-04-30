@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import type { IField } from "@/utils/types/IField";
 import type { IStatus } from "@/utils/types/IStatus.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
-import type { DefaultField } from "@/utils/types/DefaultFieldUtils.ts";
+import type { DefaultField } from "@/utils/DefaultFieldUtils.ts";
 
 class Category {
 	id: ULID;

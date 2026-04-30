@@ -56,3 +56,10 @@ storybook-static
 # drawio backup files
 *.drawio.bkp
 *.drawio.dtmp
+
+# vitepress stuff
+docs/.vitepress/dist
+docs/.vitepress/cache
+
+# affinity stuff
+*.afdesign~lock~

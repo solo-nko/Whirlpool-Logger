@@ -32,7 +32,10 @@ A conceptual overview of this component.
 #### Title Field
 
 - **Element/Component:** Text Field
-- **Required:** Yes
+- **Validation:**
+  - **Required:** No
+  - **Max Length:** 50
+  - **Other:** N/A
 - **Display:** Yes
 - **Usable:** Yes
 - **Label:** "Title"

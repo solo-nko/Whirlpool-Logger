@@ -1,5 +1,5 @@
 import { Meta, StoryObj } from "@storybook/vue3-vite";
-import CategoryEditor from "../../src/components/CategoryEditor.vue";
+import CategoryEditor from "../../src/components/settings/category/CategoryEditor.vue";
 import { GamesCategory } from "./sampledata";
 
 const meta: Meta = {

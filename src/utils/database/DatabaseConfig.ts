@@ -206,7 +206,7 @@ class DatabaseConfig extends Dexie {
 		super("LoggerDB");
 		this.version(1).stores({
 			whirlpools:
-				"id, category, title, status, chapter, volume, series, progress, rating, notes, syncCode, unsyncedChanges, extraFieldValues, tags, deletedOn, userUpdatedOn, updatedOn, createdOn",
+				"id, categoryId, title, status, chapter, volume, series, progress, rating, notes, syncCode, unsyncedChanges, extraFieldValues, tags, deletedOn, userUpdatedOn, updatedOn, createdOn",
 			categories:
 				"id, name, modifiedFields, extraFields, displayOrder, availableStatuses, tags, color, syncCode, unsyncedChanges, updatedOn, createdOn, deletedOn"
 		});

@@ -21,27 +21,31 @@ These are items I'm actively working on.
 
 - [ ] Light/Dark Theme
 - [ ] Cloud Sync
-- [ ] Home Screen/Dashboard
-- [ ] TipTap Editor
-  - [ ] Link insertion
-  - [ ] Text color
-  - [ ] Test output size with HTML
-- [ ] Form validation
-- [ ] Ratings field
-- [ ] Additional table headers
+- [x] Home Screen/Dashboard
+- [x] TipTap Editor
+  - [x] Link insertion
+  - [x] Text color
+  - [x] Test output size with HTML
+- [x] Form validation
+  - [x] Entry Form
+  - [x] Field Settings
+  - [x] Status Settings
+  - [x] Tag Settings
+- [x] Ratings field
+- [x] Additional table headers
 
 **Minor**
 
 - [ ] Tweak app styles
-- [ ] Set up toast messages
+- [x] Set up toast messages
 - [ ] Test PWA functionality
+- [x] Records search
 
 #### Planned
 
 These are items I plan to include, but are not currently in development.
 
 - Recycle Bin
-- Records search
 - Additional themes
 - Tag and status descriptions
 
@@ -60,6 +64,11 @@ These are items I'm considering/investigating including in the future.
 - Add and delete categories
 - Change ratings scale
 - Modify date created
+- Rich Editor Features
+  - Font Family
+  - Font Size/Headers
+  - Tables
+  - Task List
 
 ## Development
 
