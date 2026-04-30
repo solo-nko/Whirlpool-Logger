@@ -3,6 +3,7 @@ import type { IDashboard } from "@/utils/types/IDashboard.ts";
 import useWhirlpoolStore from "@/stores/whirlpools.ts";
 import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import useCategoriesStore from "@/stores/categories.ts";
+import useSettingsStore from "@/stores/settings.ts";
 
 type CategoryDashboardProps = {
 	dashboard: IDashboard;
@@ -10,13 +11,14 @@ type CategoryDashboardProps = {
 
 const whirlpoolStore = useWhirlpoolStore();
 const categoriesStore = useCategoriesStore();
+const settingsStore = useSettingsStore();
 const { dashboard } = defineProps<CategoryDashboardProps>();
-const emits = defineEmits(["edit-whirlpoool"]);
+const emits = defineEmits(["edit-whirlpool"]);
 
 const statusOneWhirlpools = computed(() =>
 	whirlpoolStore.clientWhirlpools.filter(
 		(whirlpool) =>
-			whirlpool.category.id === dashboard.categoryId &&
+			whirlpool.categoryId === dashboard.categoryId &&
 			whirlpool.status?.id === dashboard.selectedStatusOne.id &&
 			whirlpool.deletedOn === null
 	)
@@ -25,7 +27,7 @@ const statusOneWhirlpools = computed(() =>
 const statusTwoWhirlpools = computed(() =>
 	whirlpoolStore.clientWhirlpools.filter(
 		(whirlpool) =>
-			whirlpool.category.id === dashboard.categoryId &&
+			whirlpool.categoryId === dashboard.categoryId &&
 			whirlpool.status?.id === dashboard.selectedStatusTwo.id &&
 			whirlpool.deletedOn === null
 	)
@@ -35,8 +37,8 @@ const onEditClick = (editingWhirlpool: WhirlpoolLog) => {
 	const getCategory = categoriesStore.clientCategories.find(
 		(category) => category.id === dashboard.categoryId
 	);
-	if (getCategory) emits("edit-whirlpoool", { whirlpool: editingWhirlpool, category: getCategory });
-	// TODO: else, float toast that category couldn't be found
+	if (getCategory) emits("edit-whirlpool", { whirlpool: editingWhirlpool, category: getCategory });
+	else settingsStore.DisplayToast("There was an issue opening this whirlpool.");
 };
 </script>
 

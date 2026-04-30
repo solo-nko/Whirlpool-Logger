@@ -5,7 +5,6 @@ import { liveQuery } from "dexie";
 import type { DatabaseWhirlpool } from "@/utils/database/models/DatabaseWhirlpool.ts";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
-import { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 
 const useWhirlpoolStore = defineStore("whirlpool-store", () => {
@@ -20,7 +19,7 @@ const useWhirlpoolStore = defineStore("whirlpool-store", () => {
 				return {
 					...log,
 					status: log.status ? DatabaseStatus.ConvertStatusesFromDatabase(log.status) : undefined,
-					category: DatabaseCategory.ConvertCategoryFromDatabase(log.category),
+					categoryId: log.categoryId,
 					deletedOn: log.deletedOn ? DateTime.fromJSDate(log.deletedOn) : null,
 					updatedOn: DateTime.fromJSDate(log.updatedOn),
 					createdOn: DateTime.fromJSDate(log.createdOn)

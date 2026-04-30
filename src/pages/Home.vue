@@ -27,7 +27,7 @@ const closeEditModal = () => {
 	<VContainer class="relative z-10">
 		<VRow>
 			<VCol v-for="(dash, index) in settingsStore.displayedDashboards" :key="index">
-				<CategoryDashboard :dashboard="dash" @edit-whirlpoool="openEditModal" />
+				<CategoryDashboard :dashboard="dash" @edit-whirlpool="openEditModal" />
 			</VCol>
 		</VRow>
 	</VContainer>
@@ -38,6 +38,10 @@ const closeEditModal = () => {
 		scrollable
 		:fullscreen="settingsStore.display.mobile"
 	>
-		<EntryForm :category="modalCategory" :existing-entry="modalEntry" @close="closeEditModal" />
+		<EntryForm
+			:category-id="modalCategory.id"
+			:existing-entry="modalEntry"
+			@close="closeEditModal"
+		/>
 	</VDialog>
 </template>

@@ -70,7 +70,6 @@ const deleteStatus = () => {
 	emits("updateStatuses", newStatusesList);
 };
 
-// TODO: add form validation
 // When selected status changes, change the status being edited (for the input fields)
 watch(
 	() => selectedStatus.value,

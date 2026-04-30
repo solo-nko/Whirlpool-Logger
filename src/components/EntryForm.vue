@@ -2,34 +2,36 @@
 import { DateTime } from "luxon";
 import { ulid } from "ulid";
 import TipTapEditor from "@/components/TipTapEditor.vue";
-import type { Category } from "@/utils/types/Category.ts";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { FieldType } from "@/utils/types/IField.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import type { WhirlpoolFields } from "@/utils/DefaultFieldUtils.ts";
-import { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 import { DeepToRaw, HasValue } from "@/utils/MiscUtils.ts";
 import useSettingsStore from "@/stores/settings";
+import useCategoriesStore from "@/stores/categories.ts";
 
 type EntryFormProps = {
-	category: Category;
+	/** Id of the category this whirlpool belongs to. */
+	categoryId: string;
+	/** If this component is being used to edit an existing entry, pass that entry information to this prop. The entry's category ID must match the value given to the categoryId prop, or there will be problems. */
 	existingEntry?: WhirlpoolLog;
 	demoOnly?: boolean;
 };
 
 const settingsStore = useSettingsStore();
+const categoryStore = useCategoriesStore();
 
 const props = defineProps<EntryFormProps>();
 const emits = defineEmits(["close", "save"]);
 
-function GenerateNewWhirlpool(category: Category): WhirlpoolLog {
+function GenerateNewWhirlpool(categoryId: string): WhirlpoolLog {
 	const now = DateTime.now();
 	return {
 		id: ulid(),
 		title: "",
-		category,
+		categoryId,
 		unsyncedChanges: true,
 		extraFieldValues: [],
 		tags: [],
@@ -40,6 +42,9 @@ function GenerateNewWhirlpool(category: Category): WhirlpoolLog {
 	};
 }
 
+const entryCategory = computed(() =>
+	categoryStore.clientCategories.find((category) => category.id === props.categoryId)
+);
 const isEditMode = computed(() => props.existingEntry !== undefined);
 const showCloseButton = computed(() => isEditMode.value);
 
@@ -65,65 +70,66 @@ const seriesRules = {
 const genericHasValue = (value: string) => HasValue(value, "This field");
 
 function GetModifiedField(input: WhirlpoolFields) {
-	return props.category?.modifiedFields.find((field) => {
+	if (entryCategory.value === undefined) return undefined;
+	return entryCategory.value.modifiedFields.find((field) => {
 		return field.field === input;
 	});
 }
 
 // Modified Default Fields
 const statusFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("status") || null;
 });
 
 const chapterFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("chapter") || null;
 });
 
 const volumeFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("volume") || null;
 });
 
 const seriesFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("series") || null;
 });
 
 const ratingFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("rating") || null;
 });
 
 const notesFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("notes") || null;
 });
 
 const tagsFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("tags") || null;
 });
 
 const userUpdatedFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("userUpdatedOn") || null;
 });
 
 const availableTags = computed<ITag[]>(() => {
-	if (!props.category || props.category.tags.length === 0) return [];
-	return props.category.tags;
+	if (!entryCategory.value || entryCategory.value.tags.length === 0) return [];
+	return entryCategory.value.tags;
 });
 
 // somewhat annoying thing with Vue refs is that in the case of objects, if you pass props to them directly, they will take the reference value, which leads to them mutating the props.
 const entryModel = ref<WhirlpoolLog>(
-	props.existingEntry ? { ...props.existingEntry } : GenerateNewWhirlpool(props.category)
+	props.existingEntry ? { ...props.existingEntry } : GenerateNewWhirlpool(props.categoryId)
 );
 
 const extraFields = computed(() => {
-	if (!props.category || props.category.extraFields.length === 0) return null;
-	return props.category.extraFields;
+	if (!entryCategory.value || entryCategory.value.extraFields.length === 0) return null;
+	return entryCategory.value.extraFields;
 });
 
 /** Searches through the whirlpool for a FieldValue that matches the given Field ID and gets the value attached to it */
@@ -148,7 +154,8 @@ const setToToday = () => {
 };
 
 function ResetFields() {
-	entryModel.value = GenerateNewWhirlpool(props.category);
+	if (entryCategory.value === undefined) return;
+	entryModel.value = GenerateNewWhirlpool(props.categoryId);
 }
 
 function OnSaveEntry(whichType: "add" | "update") {
@@ -159,7 +166,7 @@ async function AddEntry() {
 	await LoggerDatabase.whirlpools
 		.add({
 			...entryModel.value,
-			category: DatabaseCategory.ConvertCategoryForDatabase({ input: props.category, toRaw: true }),
+			categoryId: entryModel.value.categoryId,
 			status: entryModel.value.status
 				? DatabaseStatus.ConvertStatusForDatabase(entryModel.value.status)
 				: undefined,
@@ -172,6 +179,7 @@ async function AddEntry() {
 		})
 		.then(() => {
 			ResetFields();
+			settingsStore.DisplayToast("Entry added!");
 		});
 	OnSaveEntry("add");
 }
@@ -180,7 +188,7 @@ async function UpdateEntry() {
 	await LoggerDatabase.whirlpools
 		.update(entryModel.value.id, {
 			...entryModel.value,
-			category: DatabaseCategory.ConvertCategoryForDatabase({ input: props.category, toRaw: true }),
+			categoryId: entryCategory.value?.id || props.categoryId,
 			status: entryModel.value.status
 				? DatabaseStatus.ConvertStatusForDatabase(entryModel.value.status)
 				: undefined,
@@ -193,6 +201,7 @@ async function UpdateEntry() {
 		})
 		.then(() => {
 			ResetFields();
+			settingsStore.DisplayToast("Entry updated!");
 		});
 	OnSaveEntry("update");
 	emits("close");
@@ -216,6 +225,14 @@ watch(
 		if (newRating === null) entryModel.value.rating = undefined;
 	}
 );
+
+onMounted(() => {
+	if (props.existingEntry !== undefined && props.existingEntry.categoryId !== props.categoryId) {
+		settingsStore.DisplayToast(
+			"There is a mismatch between the loaded whirlpool and the indicated whirlpool category. Upon saving, the whirlpool's category will be forcibly updated to correct this."
+		);
+	}
+});
 </script>
 
 <template>
@@ -237,7 +254,7 @@ watch(
 							v-if="statusFieldMods?.hidden !== true"
 							v-model="entryModel.status"
 							:label="statusFieldMods?.rename || 'Status'"
-							:items="props.category?.availableStatuses ?? []"
+							:items="entryCategory?.availableStatuses ?? []"
 							item-title="name"
 							return-object
 						/>

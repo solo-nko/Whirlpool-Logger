@@ -1,5 +1,4 @@
 import { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
-import { Category } from "@/utils/types/Category.ts";
 
 export type WhirlpoolFields = keyof Omit<
 	WhirlpoolLog,
@@ -14,9 +13,7 @@ export type WhirlpoolFields = keyof Omit<
 	| "createdOn"
 >;
 
-export const DefaultFields: DefaultField[] = Object.keys(
-	new WhirlpoolLog("placeholder", new Category("placeholderCategory"))
-)
+export const DefaultFields: DefaultField[] = Object.keys(new WhirlpoolLog("placeholder", "unknown"))
 	.filter((key) => {
 		return (
 			key !== "id" &&

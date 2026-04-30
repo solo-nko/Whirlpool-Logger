@@ -109,7 +109,7 @@ async function UpdateWhirlpoolTags() {
 	const updatedTags: IEditingTag[] = editingModel.value.tags.filter((tag) => tag.updated === true);
 	// get whirlpools under this category
 	const getClientWhirlpools = whirlpoolStore.clientWhirlpools.filter(
-		(whirlpool) => whirlpool.category.id === editingModel.value.id
+		(whirlpool) => whirlpool.categoryId === editingModel.value.id
 	);
 	// find whirlpools with at least one tag that has either been deleted or modified
 	const whirlpoolsWithStaleTags = getClientWhirlpools.filter((whirlpool) =>
@@ -158,7 +158,7 @@ async function UpdateWhirlpoolStatuses() {
 	);
 
 	const getClientWhirlpools = whirlpoolStore.clientWhirlpools.filter(
-		(whirlpool) => whirlpool.category.id === editingModel.value.id
+		(whirlpool) => whirlpool.categoryId === editingModel.value.id
 	);
 
 	const whirlpoolsWithStaleStatuses = getClientWhirlpools.filter(
@@ -208,7 +208,7 @@ async function UpdateWhirlpoolExtraFields() {
 	);
 
 	const getClientWhirlpools = whirlpoolStore.clientWhirlpools.filter(
-		(whirlpool) => whirlpool.category.id === editingModel.value.id
+		(whirlpool) => whirlpool.categoryId === editingModel.value.id
 	);
 
 	const whirlpoolsWithStaleFields = getClientWhirlpools.filter((whirlpool) =>
@@ -239,7 +239,6 @@ async function UpdateWhirlpoolExtraFields() {
 }
 
 const updateCategory = async () => {
-	// TODO: clean up stale fields in existing whirlpools, like we currently do for statuses and tags
 	try {
 		// I'd actually prefer to update the whirlpools AFTER updating the category itself, but I found that in between the category update occurring and the whirlpool updates beginning, the category prop had already been refreshed. This meant the watcher below had already been triggered, and consequently the "updated/deleted" flags had already been wiped clean.
 		await UpdateWhirlpoolTags();

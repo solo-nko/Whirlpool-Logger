@@ -1,7 +1,6 @@
 import { DateTime } from "luxon";
 import { type ULID, ulid } from "ulid";
 import type { HTMLContent } from "@tiptap/vue-3";
-import type { Category } from "@/utils/types/Category.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { IStatus } from "@/utils/types/IStatus.ts";
 import type { IFieldValue } from "@/utils/types/IFieldValue.ts";
@@ -10,9 +9,8 @@ import type { IFieldValue } from "@/utils/types/IFieldValue.ts";
 
 export class WhirlpoolLog {
 	id: ULID;
-	// TODO: switch back to category IDs. Storing the whole category in here, while it does make the client-side logic easier to execute, leads to duplication of data in the database.
 	/** Category this log belongs to. */
-	category: Category;
+	categoryId: string;
 	/** Title of the media. */
 	title: string;
 	/** Status applied to this log. */
@@ -46,10 +44,10 @@ export class WhirlpoolLog {
 	/** When this log was created. */
 	createdOn: DateTime;
 
-	constructor(inputTitle: string, inputCategory: Category) {
+	constructor(inputTitle: string, inputCategoryId: string) {
 		this.id = ulid();
 		this.title = inputTitle;
-		this.category = inputCategory;
+		this.categoryId = inputCategoryId;
 		this.unsyncedChanges = true;
 		this.extraFieldValues = [];
 		this.tags = [];

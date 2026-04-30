@@ -24,7 +24,7 @@ const categoryStore = useCategoriesStore();
 const whirlpoolsStore = useWhirlpoolStore();
 const tableItems = computed(() => {
 	return whirlpoolsStore.clientWhirlpools.filter(
-		(whirlpool) => whirlpool.category.id === categoryId && whirlpool.deletedOn === null
+		(whirlpool) => whirlpool.categoryId === categoryId && whirlpool.deletedOn === null
 	);
 });
 
@@ -180,7 +180,7 @@ const getDate = (item: WhirlpoolLog, type: "updated" | "created") => {
 		scrollable
 		:fullscreen="settings.display.mobile"
 	>
-		<EntryForm :existing-entry="modalEntry" :category="tableCategory" @close="closeModal" />
+		<EntryForm :existing-entry="modalEntry" :category-id="tableCategory.id" @close="closeModal" />
 	</VDialog>
 	<VDialog v-model="isConfirmModalOpen">
 		<ConfirmCard

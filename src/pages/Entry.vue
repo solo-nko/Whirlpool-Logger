@@ -40,7 +40,7 @@ watch(
 						:key="category.id"
 						:value="category"
 					>
-						<EntryForm :category="category" />
+						<EntryForm :category-id="category.id" />
 					</VTabsWindowItem>
 				</VTabsWindow>
 			</VCol>
