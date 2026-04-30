@@ -26,17 +26,21 @@ interface OldRow {
 export default class QuillImporter {
 	static quill = reactive<{ instance: Quill | null }>({ instance: null });
 
-	static async ImportOldFormat(oldDb: File) {
+	static async ImportOldFormat(oldDb: File): Promise<{ ok: boolean; errorMessage: string | null }> {
+		const finalResult: { ok: boolean; errorMessage: null | string } = {
+			ok: true,
+			errorMessage: null
+		};
 		const stringifiedDb = await oldDb.text();
 		let oldDatabase: DexieExportJsonStructure;
 		try {
 			const tryParse = await JSON.parse(stringifiedDb);
 			if ("formatName" in tryParse && tryParse.formatName === "dexie")
 				oldDatabase = tryParse as DexieExportJsonStructure;
-			else return;
+			else return { ok: false, errorMessage: "Unknown format" };
 		} catch (error) {
 			console.log(error);
-			return;
+			return { ok: false, errorMessage: "An error occurred while parsing the JSON." };
 		}
 		const { data } = oldDatabase;
 
@@ -158,7 +162,7 @@ export default class QuillImporter {
 						const shapedStatus = deriveStatus(shapedRow.status, "Games");
 						return {
 							id: ulid(),
-							category: gamesCategory,
+							categoryId: gamesCategory.id,
 							title: shapedRow.title,
 							status: shapedStatus,
 							series:
@@ -176,20 +180,30 @@ export default class QuillImporter {
 						};
 					}
 				);
-				await LoggerDatabase.whirlpools.bulkAdd(
-					gamesImports.map((gameImport) => {
-						return {
-							...gameImport,
-							createdOn: gameImport.createdOn,
-							updatedOn: gameImport.updatedOn,
-							deletedOn: gameImport.deletedOn === null ? null : gameImport.deletedOn
-						};
-					})
-				);
+				await LoggerDatabase.whirlpools
+					.bulkAdd(
+						gamesImports.map((gameImport) => {
+							return {
+								...gameImport,
+								createdOn: gameImport.createdOn,
+								updatedOn: gameImport.updatedOn,
+								deletedOn: gameImport.deletedOn === null ? null : gameImport.deletedOn
+							};
+						})
+					)
+					.catch((error) => {
+						console.log("Error: ", error);
+						finalResult.ok = false;
+						finalResult.errorMessage = "There was an error parsing the games data.";
+					});
 			} else {
 				console.log("Couldn't find games category");
+				finalResult.ok = false;
+				finalResult.errorMessage = "There was an error parsing the games data.";
 			}
 		}
+
+		if (!finalResult.ok) return finalResult;
 
 		// import tv
 		const tvEntries = data.data.find((element) => element.tableName === "television");
@@ -207,7 +221,7 @@ export default class QuillImporter {
 
 					return {
 						id: ulid(),
-						category: tvCategory,
+						categoryId: tvCategory.id,
 						title: shapedRow.title,
 						status: shapedStatus,
 						progress: shapedRow.progress || undefined,
@@ -224,20 +238,30 @@ export default class QuillImporter {
 						volume: deriveChapterOrVolume(shapedRow.season)
 					};
 				});
-				await LoggerDatabase.whirlpools.bulkAdd(
-					tvImports.map((tvImport) => {
-						return {
-							...tvImport,
-							createdOn: tvImport.createdOn,
-							updatedOn: tvImport.updatedOn,
-							deletedOn: tvImport.deletedOn === null ? null : tvImport.deletedOn
-						};
-					})
-				);
+				await LoggerDatabase.whirlpools
+					.bulkAdd(
+						tvImports.map((tvImport) => {
+							return {
+								...tvImport,
+								createdOn: tvImport.createdOn,
+								updatedOn: tvImport.updatedOn,
+								deletedOn: tvImport.deletedOn === null ? null : tvImport.deletedOn
+							};
+						})
+					)
+					.catch((error) => {
+						console.log("Error: ", error);
+						finalResult.ok = false;
+						finalResult.errorMessage = "There was an error parsing the television data.";
+					});
 			} else {
 				console.log("Couldn't find TV category");
+				finalResult.ok = false;
+				finalResult.errorMessage = "There was an error parsing the television data.";
 			}
 		}
+
+		if (!finalResult.ok) return finalResult;
 
 		// import movies
 		const movieEntries = data.data.find((element) => element.tableName === "movies");
@@ -250,7 +274,7 @@ export default class QuillImporter {
 
 						return {
 							id: ulid(),
-							category: moviesCategory,
+							categoryId: moviesCategory.id,
 							title: shapedRow.title,
 							status: undefined,
 							progress: shapedRow.progress || undefined,
@@ -265,20 +289,30 @@ export default class QuillImporter {
 						};
 					}
 				);
-				await LoggerDatabase.whirlpools.bulkAdd(
-					movieImports.map((movieImport) => {
-						return {
-							...movieImport,
-							createdOn: movieImport.createdOn,
-							updatedOn: movieImport.updatedOn,
-							deletedOn: movieImport.deletedOn === null ? null : movieImport.deletedOn
-						};
-					})
-				);
+				await LoggerDatabase.whirlpools
+					.bulkAdd(
+						movieImports.map((movieImport) => {
+							return {
+								...movieImport,
+								createdOn: movieImport.createdOn,
+								updatedOn: movieImport.updatedOn,
+								deletedOn: movieImport.deletedOn === null ? null : movieImport.deletedOn
+							};
+						})
+					)
+					.catch((error) => {
+						console.log("Error: ", error);
+						finalResult.ok = false;
+						finalResult.errorMessage = "There was an error parsing the movies data.";
+					});
 			} else {
 				console.log("Couldn't find Movies category");
+				finalResult.ok = false;
+				finalResult.errorMessage = "There was an error parsing the movies data.";
 			}
 		}
+
+		if (!finalResult.ok) return finalResult;
 
 		// import books
 		const booksEntries = data.data.find((element) => element.tableName === "books");
@@ -291,7 +325,7 @@ export default class QuillImporter {
 						const shapedStatus = deriveStatus(shapedRow.status, "Books");
 						return {
 							id: ulid(),
-							category: booksCategory,
+							categoryId: booksCategory.id,
 							status: shapedStatus,
 							title: shapedRow.title,
 							progress: shapedRow.progress || undefined,
@@ -307,17 +341,29 @@ export default class QuillImporter {
 						};
 					}
 				);
-				await LoggerDatabase.whirlpools.bulkAdd(
-					booksImports.map((bookImport) => {
-						return {
-							...bookImport,
-							createdOn: bookImport.createdOn,
-							updatedOn: bookImport.updatedOn,
-							deletedOn: bookImport.deletedOn === null ? null : bookImport.deletedOn
-						};
-					})
-				);
+				await LoggerDatabase.whirlpools
+					.bulkAdd(
+						booksImports.map((bookImport) => {
+							return {
+								...bookImport,
+								createdOn: bookImport.createdOn,
+								updatedOn: bookImport.updatedOn,
+								deletedOn: bookImport.deletedOn === null ? null : bookImport.deletedOn
+							};
+						})
+					)
+					.catch((error) => {
+						console.log("Error: ", error);
+						finalResult.ok = false;
+						finalResult.errorMessage = "There was an error parsing the games data.";
+					});
+			} else {
+				console.log("Couldn't find Books category");
+				finalResult.ok = false;
+				finalResult.errorMessage = "There was an error parsing the books data.";
 			}
 		}
+
+		return finalResult;
 	}
 }

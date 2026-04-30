@@ -56,5 +56,11 @@ export default defineConfigWithVueTs(
 		rules: {
 			"vue/multi-word-component-names": "off"
 		}
+	},
+	{
+		files: ["src/utils/QuillImporter.ts"],
+		rules: {
+			"no-console": "off"
+		}
 	}
 );
