@@ -47,6 +47,10 @@ const entryCategory = computed(() =>
 );
 const isEditMode = computed(() => props.existingEntry !== undefined);
 const showCloseButton = computed(() => isEditMode.value);
+const statusDescription = computed(() => {
+	if (entryCategory.value === undefined) return undefined;
+	if (entryModel.value.status) return entryModel.value.status.description ?? undefined;
+});
 
 // Validation
 const formValidationStatus = ref<boolean | null>(null);
@@ -256,6 +260,7 @@ onMounted(() => {
 							:label="statusFieldMods?.rename || 'Status'"
 							:items="entryCategory?.availableStatuses ?? []"
 							item-title="name"
+							:messages="statusDescription"
 							return-object
 						/>
 					</VCol>
