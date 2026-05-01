@@ -47,6 +47,10 @@ const entryCategory = computed(() =>
 );
 const isEditMode = computed(() => props.existingEntry !== undefined);
 const showCloseButton = computed(() => isEditMode.value);
+const statusDescription = computed(() => {
+	if (entryCategory.value === undefined) return undefined;
+	if (entryModel.value.status) return entryModel.value.status.description ?? undefined;
+});
 
 // Validation
 const formValidationStatus = ref<boolean | null>(null);
@@ -163,6 +167,7 @@ function OnSaveEntry(whichType: "add" | "update") {
 }
 
 async function AddEntry() {
+	const now = DateTime.now();
 	await LoggerDatabase.whirlpools
 		.add({
 			...entryModel.value,
@@ -173,9 +178,9 @@ async function AddEntry() {
 			notes: toRaw(entryModel.value.notes),
 			extraFieldValues: DeepToRaw(entryModel.value.extraFieldValues),
 			tags: DeepToRaw(entryModel.value.tags),
-			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toJSDate(),
-			updatedOn: entryModel.value.updatedOn.toJSDate(),
-			createdOn: entryModel.value.createdOn.toJSDate()
+			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toISO(),
+			updatedOn: now.toISO(),
+			createdOn: now.toISO()
 		})
 		.then(() => {
 			ResetFields();
@@ -185,6 +190,7 @@ async function AddEntry() {
 }
 
 async function UpdateEntry() {
+	const now = DateTime.now();
 	await LoggerDatabase.whirlpools
 		.update(entryModel.value.id, {
 			...entryModel.value,
@@ -195,9 +201,9 @@ async function UpdateEntry() {
 			notes: toRaw(entryModel.value.notes),
 			extraFieldValues: DeepToRaw(entryModel.value.extraFieldValues),
 			tags: DeepToRaw(entryModel.value.tags),
-			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toJSDate(),
-			updatedOn: entryModel.value.updatedOn.toJSDate(),
-			createdOn: entryModel.value.createdOn.toJSDate()
+			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toISO(),
+			updatedOn: now.toISO(),
+			createdOn: entryModel.value.createdOn.toISO() ?? "unknown"
 		})
 		.then(() => {
 			ResetFields();
@@ -256,6 +262,7 @@ onMounted(() => {
 							:label="statusFieldMods?.rename || 'Status'"
 							:items="entryCategory?.availableStatuses ?? []"
 							item-title="name"
+							:messages="statusDescription"
 							return-object
 						/>
 					</VCol>

@@ -270,9 +270,9 @@ const updateCategory = async () => {
 					const { deleted, updated, ...normalTag } = tag;
 					return normalTag;
 				}),
-			deletedOn: editingModel.value.deletedOn ? editingModel.value.deletedOn.toJSDate() : undefined,
-			updatedOn: DateTime.now().toJSDate(),
-			createdOn: editingModel.value.createdOn.toJSDate(),
+			deletedOn: editingModel.value.deletedOn ? editingModel.value.deletedOn.toISO() : null,
+			updatedOn: DateTime.now().toISO(),
+			createdOn: editingModel.value.createdOn.toISO() ?? "unknown",
 			unsyncedChanges: true
 		});
 		settingsStore.UpdateDashboardsTable(editingModel.value);
@@ -280,7 +280,7 @@ const updateCategory = async () => {
 	} catch (error) {
 		// eslint-disable-next-line no-console
 		console.log(error);
-		settingsStore.DisplayToast("An error has occurred.");
+		settingsStore.DisplayToast("An error has occurred. Please check the console.");
 	}
 };
 

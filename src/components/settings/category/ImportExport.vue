@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ExportDatabase, ImportDatabase } from "@/utils/ImportExportUtils.ts";
+import useSettingsStore from "@/stores/settings.ts";
 import QuillImporter from "@/utils/QuillImporter.ts";
 
+const settingsStore = useSettingsStore();
 const uploadedFile = ref<File | null>(null);
 const oldVersion = ref<boolean>(false);
 
@@ -13,9 +15,9 @@ const onClickImport = async () => {
 	if (oldVersion.value === true) {
 		await QuillImporter.ImportOldFormat(uploadedFile.value);
 	} else {
-		await ImportDatabase(uploadedFile.value);
+		const result = await ImportDatabase(uploadedFile.value);
+		if (result.message) settingsStore.DisplayToast(result.message);
 	}
-
 };
 </script>
 

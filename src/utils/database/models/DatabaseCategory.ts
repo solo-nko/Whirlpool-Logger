@@ -19,9 +19,9 @@ class DatabaseCategory {
 	color?: string;
 	syncCode?: string;
 	unsyncedChanges!: boolean;
-	updatedOn!: Date;
-	createdOn!: Date;
-	deletedOn!: Date | null;
+	updatedOn!: string;
+	createdOn!: string;
+	deletedOn!: string | null;
 
 	static ConvertCategoryForDatabase(params: {
 		input: Category;
@@ -36,9 +36,10 @@ class DatabaseCategory {
 				availableStatuses: params.input.availableStatuses.map((status) =>
 					DatabaseStatus.ConvertStatusForDatabase(status)
 				),
-				updatedOn: params.input.updatedOn.toJSDate(),
-				createdOn: params.input.createdOn.toJSDate(),
-				deletedOn: params.input.deletedOn === null ? null : params.input.deletedOn.toJSDate()
+				updatedOn: params.input.updatedOn.toISO() ?? "unknown",
+				createdOn: params.input.createdOn.toISO() ?? "unknown",
+				deletedOn:
+					params.input.deletedOn === null ? null : (params.input.deletedOn.toISODate() ?? "")
 			};
 		}
 		return {
@@ -46,9 +47,9 @@ class DatabaseCategory {
 			availableStatuses: params.input.availableStatuses.map((status) =>
 				DatabaseStatus.ConvertStatusForDatabase(status)
 			),
-			updatedOn: params.input.updatedOn.toJSDate(),
-			createdOn: params.input.createdOn.toJSDate(),
-			deletedOn: params.input.deletedOn === null ? null : params.input.deletedOn.toJSDate()
+			updatedOn: params.input.updatedOn.toISODate() ?? "unknown",
+			createdOn: params.input.createdOn.toISODate() ?? "unknown",
+			deletedOn: params.input.deletedOn === null ? null : (params.input.deletedOn.toISO() ?? "")
 		};
 	}
 
@@ -58,9 +59,9 @@ class DatabaseCategory {
 			availableStatuses: input.availableStatuses.map((status) =>
 				DatabaseStatus.ConvertStatusesFromDatabase(status)
 			),
-			updatedOn: DateTime.fromJSDate(input.updatedOn),
-			deletedOn: input.deletedOn === null ? input.deletedOn : DateTime.fromJSDate(input.deletedOn),
-			createdOn: DateTime.fromJSDate(input.createdOn)
+			updatedOn: DateTime.fromISO(input.updatedOn),
+			deletedOn: input.deletedOn === null ? input.deletedOn : DateTime.fromISO(input.deletedOn),
+			createdOn: DateTime.fromISO(input.createdOn)
 		};
 	}
 }
@@ -77,9 +78,9 @@ class InternalDatabaseCategory extends Entity<DatabaseConfig> implements Databas
 	color?: string;
 	syncCode?: string;
 	unsyncedChanges!: boolean;
-	updatedOn!: Date;
-	createdOn!: Date;
-	deletedOn!: Date | null;
+	updatedOn!: string;
+	createdOn!: string;
+	deletedOn!: string | null;
 }
 
 export { DatabaseCategory, InternalDatabaseCategory };

@@ -10,7 +10,6 @@ import {
 	InternalDatabaseCategory
 } from "@/utils/database/models/DatabaseCategory";
 import type { Category } from "@/utils/types/Category.ts";
-import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 
 const now = DateTime.now();
 const defaultCategories: Category[] = [
@@ -19,7 +18,7 @@ const defaultCategories: Category[] = [
 		name: "Games",
 		modifiedFields: [],
 		extraFields: [],
-		displayOrder: 5,
+		displayOrder: 1,
 		availableStatuses: [
 			{
 				id: ulid(),
@@ -61,9 +60,13 @@ const defaultCategories: Category[] = [
 	{
 		id: ulid(),
 		name: "TV",
-		modifiedFields: [{ field: "series", hidden: true }],
+		modifiedFields: [
+			{ field: "series", hidden: true },
+			{ field: "chapter", rename: "Episode", hidden: false },
+			{ field: "volume", rename: "Season", hidden: false }
+		],
 		extraFields: [],
-		displayOrder: 5,
+		displayOrder: 2,
 		availableStatuses: [
 			{
 				id: ulid(),
@@ -110,7 +113,7 @@ const defaultCategories: Category[] = [
 			{ field: "volume", hidden: true }
 		],
 		extraFields: [],
-		displayOrder: 5,
+		displayOrder: 3,
 		availableStatuses: [
 			{
 				id: ulid(),
@@ -153,11 +156,11 @@ const defaultCategories: Category[] = [
 		id: ulid(),
 		name: "Books",
 		modifiedFields: [
-			{ field: "volume", rename: "book", hidden: false },
+			{ field: "volume", rename: "Book", hidden: false },
 			{ field: "chapter", hidden: true }
 		],
 		extraFields: [],
-		displayOrder: 5,
+		displayOrder: 4,
 		availableStatuses: [
 			{
 				id: ulid(),
@@ -213,14 +216,7 @@ class DatabaseConfig extends Dexie {
 
 		this.on("populate", function (transaction) {
 			const convertedDefaults = defaultCategories.map((category) => {
-				return {
-					...category,
-					availableStatuses: category.availableStatuses.map((status) =>
-						DatabaseStatus.ConvertStatusForDatabase(status)
-					),
-					updatedOn: category.updatedOn.toJSDate(),
-					createdOn: category.createdOn.toJSDate()
-				};
+				return DatabaseCategory.ConvertCategoryForDatabase({ input: category, toRaw: true });
 			});
 			transaction.table("categories").bulkAdd(convertedDefaults);
 		});
