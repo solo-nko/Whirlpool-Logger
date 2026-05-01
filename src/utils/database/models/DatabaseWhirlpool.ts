@@ -21,10 +21,10 @@ class DatabaseWhirlpool {
 	unsyncedChanges!: boolean;
 	extraFieldValues!: IFieldValue[];
 	tags!: ITag[];
-	deletedOn!: Date | null;
+	deletedOn!: string | null;
 	userUpdatedOn?: string;
-	updatedOn!: Date;
-	createdOn!: Date;
+	updatedOn!: string;
+	createdOn!: string;
 }
 
 class InternalDatabaseWhirlpool extends Entity<DatabaseConfig> implements DatabaseWhirlpool {
@@ -42,10 +42,10 @@ class InternalDatabaseWhirlpool extends Entity<DatabaseConfig> implements Databa
 	unsyncedChanges!: boolean;
 	extraFieldValues!: IFieldValue[];
 	tags!: ITag[];
-	deletedOn!: Date | null;
+	deletedOn!: string | null;
 	userUpdatedOn?: string;
-	updatedOn!: Date;
-	createdOn!: Date;
+	updatedOn!: string;
+	createdOn!: string;
 }
 
 export { DatabaseWhirlpool, InternalDatabaseWhirlpool };

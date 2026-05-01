@@ -20,9 +20,9 @@ const useWhirlpoolStore = defineStore("whirlpool-store", () => {
 					...log,
 					status: log.status ? DatabaseStatus.ConvertStatusesFromDatabase(log.status) : undefined,
 					categoryId: log.categoryId,
-					deletedOn: log.deletedOn ? DateTime.fromJSDate(log.deletedOn) : null,
-					updatedOn: DateTime.fromJSDate(log.updatedOn),
-					createdOn: DateTime.fromJSDate(log.createdOn)
+					deletedOn: log.deletedOn ? DateTime.fromISO(log.deletedOn) : null,
+					updatedOn: DateTime.fromISO(log.updatedOn),
+					createdOn: DateTime.fromISO(log.createdOn)
 				};
 			});
 		}

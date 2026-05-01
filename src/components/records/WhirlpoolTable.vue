@@ -105,7 +105,7 @@ const deleteEntry = async () => {
 	if (preparedToDelete.value) {
 		await LoggerDatabase.whirlpools.update(preparedToDelete.value.id, {
 			unsyncedChanges: true,
-			deletedOn: DateTime.now().toJSDate()
+			deletedOn: DateTime.now().toISO()
 		});
 	}
 	isConfirmModalOpen.value = false;
