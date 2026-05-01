@@ -280,7 +280,7 @@ const updateCategory = async () => {
 	} catch (error) {
 		// eslint-disable-next-line no-console
 		console.log(error);
-		settingsStore.DisplayToast("An error has occurred.");
+		settingsStore.DisplayToast("An error has occurred. Please check the console.");
 	}
 };
 

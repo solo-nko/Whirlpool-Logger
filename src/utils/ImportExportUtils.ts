@@ -3,6 +3,7 @@ import { peakImportFile } from "dexie-export-import";
 import { DateTime } from "luxon";
 
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
+import type { IProcessResult } from "@/utils/types/IProcessResult.ts";
 
 /** converts the dexie database to a JSON blob and then generates a request for the browser to download the JSON file. */
 async function ExportDatabase() {
@@ -31,14 +32,17 @@ async function PeekAtFile(importFile: Blob) {
  * @param importFile
  * @constructor
  */
-async function ImportDatabase(importFile: Blob) {
+async function ImportDatabase(importFile: Blob): Promise<IProcessResult> {
 	const peekResult = await PeekAtFile(importFile);
-	if (peekResult === null || peekResult.formatName !== "dexie") return;
+	if (peekResult === null || peekResult.formatName !== "dexie")
+		return { result: "error", message: "Database is in unknown format." };
 	try {
 		await LoggerDatabase.import(importFile, { clearTablesBeforeImport: true });
 	} catch (error) {
-		console.error(`function ImportDatabase: `, error);
+		console.error(error);
+		return { result: "error", message: "An error occurred during import." };
 	}
+	return { result: "ok", message: "Database import successful." };
 }
 
 export { ExportDatabase, PeekAtFile, ImportDatabase };
