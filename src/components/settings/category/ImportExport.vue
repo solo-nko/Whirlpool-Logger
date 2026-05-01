@@ -2,6 +2,7 @@
 import { ExportDatabase, ImportDatabase } from "@/utils/ImportExportUtils.ts";
 import useSettingsStore from "@/stores/settings.ts";
 import QuillImporter from "@/utils/QuillImporter.ts";
+import type { IProcessResult } from "@/utils/types/IProcessResult.ts";
 
 const settingsStore = useSettingsStore();
 const uploadedFile = ref<File | null>(null);
@@ -11,13 +12,14 @@ const onClickExport = async () => {
 	await ExportDatabase();
 };
 const onClickImport = async () => {
+	let result: IProcessResult = { result: "ok" };
 	if (uploadedFile.value === null) return;
 	if (oldVersion.value === true) {
-		await QuillImporter.ImportOldFormat(uploadedFile.value);
+		result = await QuillImporter.ImportOldFormat(uploadedFile.value);
 	} else {
-		const result = await ImportDatabase(uploadedFile.value);
-		if (result.message) settingsStore.DisplayToast(result.message);
+		result = await ImportDatabase(uploadedFile.value);
 	}
+	if (result.message) settingsStore.DisplayToast(result.message);
 };
 </script>
 
@@ -45,7 +47,7 @@ const onClickImport = async () => {
 				<VCol cols="12" md="9">
 					<VCheckboxBtn v-model="oldVersion">
 						<template v-slot:label
-						><span>I'm importing from the old version of the app!</span></template
+							><span>I'm importing from the old version of the app!</span></template
 						>
 					</VCheckboxBtn>
 					<VFileInput
