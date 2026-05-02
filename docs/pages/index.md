@@ -3,25 +3,27 @@
 layout: home
 
 hero:
-  name: "Whirlpool Logger User Guide"
-  text: "Learn how to use the Whirlpool Logger here."
-  tagline: My great project tagline
+  name: "Whirlpool Logger"
+  text: "Local-first media journaling"
+  tagline: Stay on top of your whirlpool of thoughts
   actions:
     - theme: brand
-      text: Markdown Examples
+      text: Learn More
       link: /markdown-examples
     - theme: alt
-      text: API Examples
+      text: User Guide
       link: /api-examples
-    - theme: alt
-      text: Get Started
-      link: /screens/home
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Sophisticated Sync Engine
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - title: Local First
+    details: By default, everything is stored only in your browser's local storage. Your data only leaves your machine if you want it to.
+  - title: Accessible anywhere
+    icon: 🌐
+    details: Designed with both desktop and mobile in mind, you can use it from any device with a web browser. You can even install it as an app!
+  - title: Free and open source!
+    details: Made with Vue and Typescript, you can check out the source code on Github.
+  - title: Backup and Restore
+    details: Export your data as a small JSON file, then import it back whenever you like.
+  - title: Optional cloud sync
+    details: You can optionally choose to 
 ---

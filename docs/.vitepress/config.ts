@@ -4,26 +4,48 @@ import { defineConfig } from "vitepress";
 export default defineConfig({
 	srcDir: "pages",
 
-	title: "Whirlpool Logger User Guide",
+	title: "Whirlpool Logger",
 	description: "Learn how to use the Whirlpool Logger here.",
 	themeConfig: {
 		// https://vitepress.dev/reference/default-theme-config
 		nav: [
 			{ text: "Home", link: "/" },
-			{ text: "Examples", link: "/markdown-examples" }
+			{ text: "User Guide", link: "/user-guide-main" }
 		],
 
 		sidebar: [
 			{
-				text: "Examples",
+				text: "User Interface",
 				items: [
-					{ text: "Markdown Examples", link: "/markdown-examples" },
-					{ text: "Runtime API Examples", link: "/api-examples" }
+					{ text: "Home Screen", link: "/markdown-examples" },
+					{ text: "Entry Screen" },
+					{ text: "Records Table" },
+					{
+						text: "Settings Screen",
+						items: [
+							{
+								text: "General Settings"
+							},
+							{
+								text: "Theme Settings"
+							},
+							{
+								text: "Import/Export"
+							},
+							{
+								text: "Category Settings"
+							}
+						]
+					}
 				]
 			},
 			{
-				text: "Main Pages",
-				items: [{ text: "Home" }, { text: "Entry" }, { text: "Records" }, { text: "Settings" }]
+				text: "Other",
+				items: [
+					{
+						text: "Progressive Web App"
+					}
+				]
 			}
 		],
 
