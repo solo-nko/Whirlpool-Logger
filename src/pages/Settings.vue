@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import CategorySettings from "@/components/settings/CategorySettings.vue";
+import CategorySettings from "@/components/settings/category/CategorySettings.vue";
 import AboutSettings from "@/components/settings/AboutSettings.vue";
-import GeneralSettings from "@/components/settings/GeneralSettings.vue";
-import ImportExportSettings from "@/components/settings/ImportExportSettings.vue";
+import GeneralSettings from "@/components/settings/general/GeneralSettings.vue";
+import ImportExportSettings from "@/components/settings/category/ImportExportSettings.vue";
 import ThemeSettings from "@/components/settings/ThemeSettings.vue";
 
 const settingsPages = {

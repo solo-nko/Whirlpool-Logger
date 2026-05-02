@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import useCategoriesStore from "@/stores/categories.ts";
 import useSettingsStore from "@/stores/settings.ts";
-import WhirlpoolTable from "@/components/WhirlpoolTable.vue";
+import WhirlpoolTable from "@/components/records/WhirlpoolTable.vue";
 
 const categoriesStore = useCategoriesStore();
 const settingsStore = useSettingsStore();
@@ -10,8 +10,10 @@ const currentTab = ref();
 watch(
 	() => settingsStore.defaultTableCategory,
 	(loadedDefault) => {
-		if (loadedDefault && !currentTab.value) {
-			currentTab.value = loadedDefault;
+		if (loadedDefault && categoriesStore.clientCategories.length > 0 && !currentTab.value) {
+			currentTab.value =
+				categoriesStore.clientCategories.find((category) => category.id === loadedDefault) ??
+				categoriesStore.clientCategories[0];
 		}
 	},
 	{ immediate: true }

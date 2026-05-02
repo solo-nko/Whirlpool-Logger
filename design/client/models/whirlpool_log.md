@@ -115,6 +115,9 @@ The user may input a rating of the media.
 
 - **Name:** `syncCode`
 - **Type:** string
+- **Validation:**
+  - Must be 8 characters
+  - Must fit the following RegEx pattern: `^[a-zA-Z0-9]+$`
 
 #### Unsynced Changes
 

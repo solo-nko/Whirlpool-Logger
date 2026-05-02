@@ -8,30 +8,31 @@ export class DatabaseStatus {
 	description?: string;
 	displayOrder?: number;
 	color?: string;
-	deletedOn: Date | null;
-	createdOn: Date;
+	deletedOn: string | null;
+	createdOn: string;
 
 	constructor(name: string) {
 		this.id = ulid();
 		this.name = name;
-		this.createdOn = new Date();
+		this.createdOn = DateTime.now().toISO();
 		this.deletedOn = null;
 	}
 
+	// TODO: the conversion methods/functions may not be necessary anymore due to the switch to string-based dates.
 	/** Takes an array of IStatus objects and coverts their date properties for storage in the IndexedDB. This is necessary because IndexedDB cannot store DateTime objects. */
 	static ConvertStatusForDatabase(input: IStatus): DatabaseStatus {
 		return {
 			...input,
-			deletedOn: input.deletedOn === null ? input.deletedOn : input.deletedOn.toJSDate(),
-			createdOn: input.createdOn.toJSDate()
+			deletedOn: input.deletedOn === null ? input.deletedOn : input.deletedOn.toISO(),
+			createdOn: input.createdOn.toISO() ?? "unknown"
 		};
 	}
 
 	static ConvertStatusesFromDatabase(input: DatabaseStatus): IStatus {
 		return {
 			...input,
-			deletedOn: input.deletedOn === null ? input.deletedOn : DateTime.fromJSDate(input.deletedOn),
-			createdOn: DateTime.fromJSDate(input.createdOn)
+			deletedOn: input.deletedOn === null ? input.deletedOn : DateTime.fromISO(input.deletedOn),
+			createdOn: DateTime.fromISO(input.createdOn)
 		};
 	}
 }

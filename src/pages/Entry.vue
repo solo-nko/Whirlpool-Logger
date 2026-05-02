@@ -9,8 +9,10 @@ const currentTab = ref();
 watch(
 	() => settingsStore.defaultEntryCategory,
 	(loadedDefault) => {
-		if (loadedDefault && !currentTab.value) {
-			currentTab.value = loadedDefault;
+		if (loadedDefault && categoriesStore.clientCategories.length > 0 && !currentTab.value) {
+			currentTab.value =
+				categoriesStore.clientCategories.find((category) => category.id === loadedDefault) ??
+				categoriesStore.clientCategories[0];
 		}
 	},
 	{ immediate: true }
@@ -38,7 +40,7 @@ watch(
 						:key="category.id"
 						:value="category"
 					>
-						<EntryForm :category="category" />
+						<EntryForm :category-id="category.id" />
 					</VTabsWindowItem>
 				</VTabsWindow>
 			</VCol>

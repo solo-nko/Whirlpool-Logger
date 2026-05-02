@@ -2,31 +2,36 @@
 import { DateTime } from "luxon";
 import { ulid } from "ulid";
 import TipTapEditor from "@/components/TipTapEditor.vue";
-import type { Category } from "@/utils/types/Category.ts";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { FieldType } from "@/utils/types/IField.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
-import type { WhirlpoolFields } from "@/utils/types/DefaultFieldUtils";
-import { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.ts";
+import type { WhirlpoolFields } from "@/utils/DefaultFieldUtils.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
-import { DeepToRaw, TOAST_TIMEOUT } from "@/utils/Utilities.ts";
+import { DeepToRaw, HasValue } from "@/utils/MiscUtils.ts";
+import useSettingsStore from "@/stores/settings";
+import useCategoriesStore from "@/stores/categories.ts";
 
 type EntryFormProps = {
-	category: Category;
+	/** Id of the category this whirlpool belongs to. */
+	categoryId: string;
+	/** If this component is being used to edit an existing entry, pass that entry information to this prop. The entry's category ID must match the value given to the categoryId prop, or there will be problems. */
 	existingEntry?: WhirlpoolLog;
 	demoOnly?: boolean;
 };
 
+const settingsStore = useSettingsStore();
+const categoryStore = useCategoriesStore();
+
 const props = defineProps<EntryFormProps>();
 const emits = defineEmits(["close", "save"]);
 
-function GenerateNewWhirlpool(category: Category): WhirlpoolLog {
+function GenerateNewWhirlpool(categoryId: string): WhirlpoolLog {
 	const now = DateTime.now();
 	return {
 		id: ulid(),
 		title: "",
-		category,
+		categoryId,
 		unsyncedChanges: true,
 		extraFieldValues: [],
 		tags: [],
@@ -37,20 +42,22 @@ function GenerateNewWhirlpool(category: Category): WhirlpoolLog {
 	};
 }
 
+const entryCategory = computed(() =>
+	categoryStore.clientCategories.find((category) => category.id === props.categoryId)
+);
 const isEditMode = computed(() => props.existingEntry !== undefined);
 const showCloseButton = computed(() => isEditMode.value);
+const statusDescription = computed(() => {
+	if (entryCategory.value === undefined) return undefined;
+	if (entryModel.value.status) return entryModel.value.status.description ?? undefined;
+});
 
 // Validation
 const formValidationStatus = ref<boolean | null>(null);
 const formRef = ref();
-const validationToastDisplayed = ref<boolean>(false);
-function hasValue(value: string, fieldName: string) {
-	if (value) return true;
-	return `${fieldName} is required.`;
-}
 
 const titleRules = {
-	hasValue: (value: string) => hasValue(value, "Title"),
+	hasValue: (value: string) => HasValue(value, "Title"),
 	maxLength: (value: string) => {
 		if (value.length <= 100) return true;
 		return "Please enter a title with less than 100 characters.";
@@ -64,70 +71,77 @@ const seriesRules = {
 	}
 };
 
-const genericHasValue = (value: string) => hasValue(value, "This field");
+const genericHasValue = (value: string) => HasValue(value, "This field");
 
 function GetModifiedField(input: WhirlpoolFields) {
-	return props.category?.modifiedFields.find((field) => {
+	if (entryCategory.value === undefined) return undefined;
+	return entryCategory.value.modifiedFields.find((field) => {
 		return field.field === input;
 	});
 }
 
 // Modified Default Fields
 const statusFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("status") || null;
 });
 
 const chapterFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("chapter") || null;
 });
 
 const volumeFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("volume") || null;
 });
 
 const seriesFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("series") || null;
 });
 
 const ratingFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("rating") || null;
 });
 
 const notesFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("notes") || null;
 });
 
 const tagsFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("tags") || null;
 });
 
 const userUpdatedFieldMods = computed(() => {
-	if (!props.category) return null;
+	if (!entryCategory.value) return null;
 	return GetModifiedField("userUpdatedOn") || null;
 });
 
 const availableTags = computed<ITag[]>(() => {
-	if (!props.category || props.category.tags.length === 0) return [];
-	return props.category.tags;
+	if (!entryCategory.value || entryCategory.value.tags.length === 0) return [];
+	return entryCategory.value.tags;
 });
 
 // somewhat annoying thing with Vue refs is that in the case of objects, if you pass props to them directly, they will take the reference value, which leads to them mutating the props.
 const entryModel = ref<WhirlpoolLog>(
-	props.existingEntry ? { ...props.existingEntry } : GenerateNewWhirlpool(props.category)
+	props.existingEntry ? { ...props.existingEntry } : GenerateNewWhirlpool(props.categoryId)
 );
 
 const extraFields = computed(() => {
-	if (!props.category || props.category.extraFields.length === 0) return null;
-	return props.category.extraFields;
+	if (!entryCategory.value || entryCategory.value.extraFields.length === 0) return null;
+	return entryCategory.value.extraFields;
 });
 
+/** Searches through the whirlpool for a FieldValue that matches the given Field ID and gets the value attached to it */
+const getExtraFieldValue = (fieldId: string) => {
+	return entryModel.value.extraFieldValues.find((fieldValue) => fieldValue.fieldId === fieldId);
+};
+
+/** Assigns a new value to the FieldValue associated with the given Field ID on the whirlpool. */
 const updateExtraField = (value: unknown, fieldId: string, fieldType: FieldType) => {
 	const indexToUpdate = entryModel.value.extraFieldValues.findIndex(
 		(value) => value.fieldId === fieldId
@@ -144,7 +158,8 @@ const setToToday = () => {
 };
 
 function ResetFields() {
-	entryModel.value = GenerateNewWhirlpool(props.category);
+	if (entryCategory.value === undefined) return;
+	entryModel.value = GenerateNewWhirlpool(props.categoryId);
 }
 
 function OnSaveEntry(whichType: "add" | "update") {
@@ -152,44 +167,47 @@ function OnSaveEntry(whichType: "add" | "update") {
 }
 
 async function AddEntry() {
-	// TODO: add field validation check
+	const now = DateTime.now();
 	await LoggerDatabase.whirlpools
 		.add({
 			...entryModel.value,
-			category: DatabaseCategory.ConvertCategoryForDatabase({ input: props.category, toRaw: true }),
+			categoryId: entryModel.value.categoryId,
 			status: entryModel.value.status
 				? DatabaseStatus.ConvertStatusForDatabase(entryModel.value.status)
 				: undefined,
 			notes: toRaw(entryModel.value.notes),
 			extraFieldValues: DeepToRaw(entryModel.value.extraFieldValues),
 			tags: DeepToRaw(entryModel.value.tags),
-			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toJSDate(),
-			updatedOn: entryModel.value.updatedOn.toJSDate(),
-			createdOn: entryModel.value.createdOn.toJSDate()
+			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toISO(),
+			updatedOn: now.toISO(),
+			createdOn: now.toISO()
 		})
 		.then(() => {
 			ResetFields();
+			settingsStore.DisplayToast("Entry added!");
 		});
 	OnSaveEntry("add");
 }
 
 async function UpdateEntry() {
+	const now = DateTime.now();
 	await LoggerDatabase.whirlpools
 		.update(entryModel.value.id, {
 			...entryModel.value,
-			category: DatabaseCategory.ConvertCategoryForDatabase({ input: props.category, toRaw: true }),
+			categoryId: entryCategory.value?.id || props.categoryId,
 			status: entryModel.value.status
 				? DatabaseStatus.ConvertStatusForDatabase(entryModel.value.status)
 				: undefined,
 			notes: toRaw(entryModel.value.notes),
 			extraFieldValues: DeepToRaw(entryModel.value.extraFieldValues),
 			tags: DeepToRaw(entryModel.value.tags),
-			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toJSDate(),
-			updatedOn: entryModel.value.updatedOn.toJSDate(),
-			createdOn: entryModel.value.createdOn.toJSDate()
+			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toISO(),
+			updatedOn: now.toISO(),
+			createdOn: entryModel.value.createdOn.toISO() ?? "unknown"
 		})
 		.then(() => {
 			ResetFields();
+			settingsStore.DisplayToast("Entry updated!");
 		});
 	OnSaveEntry("update");
 	emits("close");
@@ -198,8 +216,9 @@ async function UpdateEntry() {
 const onClickSave = async () => {
 	if (props.demoOnly) return;
 	if (!formValidationStatus.value) {
-		validationToastDisplayed.value = true;
+		settingsStore.DisplayToast("A required field is missing, or a field has invalid input.");
 		if (formRef.value) await formRef.value.validate();
+		return;
 	}
 	if (isEditMode.value) await UpdateEntry();
 	else await AddEntry();
@@ -212,6 +231,14 @@ watch(
 		if (newRating === null) entryModel.value.rating = undefined;
 	}
 );
+
+onMounted(() => {
+	if (props.existingEntry !== undefined && props.existingEntry.categoryId !== props.categoryId) {
+		settingsStore.DisplayToast(
+			"There is a mismatch between the loaded whirlpool and the indicated whirlpool category. Upon saving, the whirlpool's category will be forcibly updated to correct this."
+		);
+	}
+});
 </script>
 
 <template>
@@ -233,8 +260,9 @@ watch(
 							v-if="statusFieldMods?.hidden !== true"
 							v-model="entryModel.status"
 							:label="statusFieldMods?.rename || 'Status'"
-							:items="props.category?.availableStatuses ?? []"
+							:items="entryCategory?.availableStatuses ?? []"
 							item-title="name"
+							:messages="statusDescription"
 							return-object
 						/>
 					</VCol>
@@ -243,7 +271,7 @@ watch(
 							v-if="ratingFieldMods?.hidden !== true"
 							v-model="entryModel.rating"
 							:label="ratingFieldMods?.rename || 'Rating'"
-							control-variant="stacked"
+							control-variant="split"
 							:min="1"
 							:max="10"
 							:loading="entryModel.rating !== undefined"
@@ -345,6 +373,7 @@ watch(
 										:label="extraField.label"
 										:placeholder="extraField.placeholder"
 										:rules="extraField.required ? [genericHasValue] : []"
+										:model-value="(getExtraFieldValue(extraField.id)?.value as string) || undefined"
 										@update:modelValue="
 											(value: unknown) => updateExtraField(value, extraField.id, extraField.type)
 										"
@@ -354,6 +383,7 @@ watch(
 										:label="extraField.label"
 										:rules="extraField.required ? [genericHasValue] : []"
 										control-variant="stacked"
+										:model-value="(getExtraFieldValue(extraField.id)?.value as number) || undefined"
 										@update:modelValue="
 											(value: unknown) => updateExtraField(value, extraField.id, extraField.type)
 										"
@@ -363,6 +393,7 @@ watch(
 										:label="extraField.label"
 										:rules="extraField.required ? [genericHasValue] : []"
 										type="date"
+										:model-value="(getExtraFieldValue(extraField.id)?.value as string) || undefined"
 										@update:modelValue="
 											(value: unknown) => updateExtraField(value, extraField.id, extraField.type)
 										"
@@ -370,6 +401,9 @@ watch(
 									<VCheckbox
 										v-else-if="extraField.type === FieldType.BOOL"
 										:label="extraField.label"
+										:model-value="
+											(getExtraFieldValue(extraField.id)?.value as boolean) || undefined
+										"
 										@update:modelValue="
 											(value: unknown) => updateExtraField(value, extraField.id, extraField.type)
 										"
@@ -386,14 +420,15 @@ watch(
 			<VBtn @click="onClickSave">Save</VBtn>
 			<VBtn v-if="showCloseButton" @click="$emit('close')">Close</VBtn>
 		</VCardActions>
-		<VSnackbar v-model="validationToastDisplayed" :timeout="TOAST_TIMEOUT"
-			>A required field is missing, or a field has invalid input.</VSnackbar
-		>
 	</VCard>
 </template>
 
 <style scoped>
 ::v-deep(.v-progress-linear) {
 	cursor: pointer;
+}
+
+::v-deep(.v-number-input--split) {
+	font-weight: bold;
 }
 </style>

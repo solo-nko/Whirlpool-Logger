@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ExportDatabase, ImportDatabase } from "@/utils/ImportExportUtils.ts";
+import useSettingsStore from "@/stores/settings.ts";
 
+const settingsStore = useSettingsStore();
 const uploadedFile = ref<File | null>(null);
 
 const onClickExport = async () => {
@@ -8,7 +10,8 @@ const onClickExport = async () => {
 };
 const onClickImport = async () => {
 	if (uploadedFile.value === null) return;
-	await ImportDatabase(uploadedFile.value);
+	const result = await ImportDatabase(uploadedFile.value);
+	if (result.message) settingsStore.DisplayToast(result.message);
 };
 </script>
 

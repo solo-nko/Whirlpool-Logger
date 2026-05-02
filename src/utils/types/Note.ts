@@ -9,11 +9,12 @@ export default class Note {
 	/** Actual notes content. Should be formatted in HTML. */
 	content: string;
 
-	constructor(inputContent: string) {
+	constructor(inputContent: string, inputTitle: string | undefined) {
 		this.content = inputContent;
 		const now = DateTime.now();
 		this.id = now.toSeconds();
 		this.createdOn = now;
 		this.updatedOn = now;
+		this.title = inputTitle;
 	}
 }

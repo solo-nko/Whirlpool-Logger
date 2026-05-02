@@ -26,9 +26,9 @@ const useCategoriesStore = defineStore("category-store", () => {
 						deletedOn:
 							category.deletedOn === null
 								? category.deletedOn
-								: DateTime.fromJSDate(category.deletedOn),
-						updatedOn: DateTime.fromJSDate(category.updatedOn),
-						createdOn: DateTime.fromJSDate(category.createdOn)
+								: DateTime.fromISO(category.deletedOn),
+						updatedOn: DateTime.fromISO(category.updatedOn),
+						createdOn: DateTime.fromISO(category.createdOn)
 					};
 				})
 				.sort((cat1, cat2) => {

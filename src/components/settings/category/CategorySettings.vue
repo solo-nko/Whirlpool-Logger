@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import useCategoriesStore from "@/stores/categories.ts";
-import CategoryEditor from "@/components/CategoryEditor.vue";
+import CategoryEditor from "@/components/settings/category/CategoryEditor.vue";
 
 const categoryStore = useCategoriesStore();
 const settingCategoryId = ref<string>();

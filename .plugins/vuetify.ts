@@ -33,14 +33,21 @@ import {
 	mdiDelete,
 	mdiPencil
 } from "@mdi/js";
+import SpiralIcon from "@/components/common/SpiralIcon.vue";
+import { lizardMint, royalCobalt, wineSplash } from "@/utils/config/themes/darkThemes.ts";
 
 export default createVuetify({
 	date: {
 		adapter: luxonAdaptor
 	},
 	theme: {
-		defaultTheme: "system",
-		utilities: false
+		defaultTheme: "lizardMint",
+		utilities: false,
+		themes: {
+			royalCobalt,
+			wineSplash,
+			lizardMint
+		}
 	},
 	icons: {
 		defaultSet: "mdi",
@@ -73,7 +80,8 @@ export default createVuetify({
 			check: mdiCheck,
 			revert: mdiArrowULeftTop,
 			trash: mdiDelete,
-			edit: mdiPencil
+			edit: mdiPencil,
+			spiral: SpiralIcon
 		},
 		sets: {
 			mdi
