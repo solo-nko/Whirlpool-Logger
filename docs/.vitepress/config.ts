@@ -30,7 +30,8 @@ export default defineConfig({
 								text: "Theme Settings"
 							},
 							{
-								text: "Import/Export"
+								text: "Import/Export",
+								link: "/screens/settings/import-export"
 							},
 							{
 								text: "Category Settings",
