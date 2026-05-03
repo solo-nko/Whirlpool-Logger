@@ -33,7 +33,8 @@ export default defineConfig({
 								text: "Import/Export"
 							},
 							{
-								text: "Category Settings"
+								text: "Category Settings",
+								link: "/screens/settings/category"
 							}
 						]
 					}
