@@ -18,6 +18,8 @@ const onClickImport = async () => {
 <template>
 	<VRow>
 		<VCol>
+			<h2>Local Import and Export</h2>
+			<p>For people who prefer to move their data around the old-fashioned way.</p>
 			<VLabel>Export Whirlpool Logs to a local file.</VLabel>
 			<p>
 				Export your entire database to a small JSON file. You can later use the import area below to
