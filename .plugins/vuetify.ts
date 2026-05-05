@@ -37,11 +37,31 @@ import SpiralIcon from "@/components/common/SpiralIcon.vue";
 import { lizardMint, royalCobalt, wineSplash } from "@/utils/config/themes/darkThemes.ts";
 
 export default createVuetify({
+	defaults: {
+		VTextField: {
+			variant: "outlined"
+		},
+		VAutocomplete: {
+			variant: "outlined"
+		},
+		VNumberInput: {
+			variant: "outlined"
+		},
+		VSelect: {
+			variant: "outlined"
+		},
+		VTextarea: {
+			variant: "outlined"
+		},
+		VFileInput: {
+			variant: "outlined"
+		}
+	},
 	date: {
 		adapter: luxonAdaptor
 	},
 	theme: {
-		defaultTheme: "lizardMint",
+		defaultTheme: "royalCobalt",
 		utilities: false,
 		themes: {
 			royalCobalt,

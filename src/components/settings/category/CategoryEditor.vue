@@ -308,13 +308,13 @@ watch(
 			</VRow>
 			<VRow>
 				<VCol>
-					<VCard>
+					<VCard variant="outlined">
 						<VCardTitle>Field Settings</VCardTitle>
 						<VCardSubtitle>
 							Here you can modify the category's default fields by renaming or hiding them. You can
 							also add custom fields of your own.
 						</VCardSubtitle>
-						<VExpansionPanels v-model="openPanel">
+						<VExpansionPanels v-model="openPanel" variant="inset">
 							<VExpansionPanel
 								v-for="(defaultField, index) in DefaultFields"
 								:key="index"
@@ -365,7 +365,7 @@ watch(
 			</VRow>
 			<VRow>
 				<VCol>
-					<VCard>
+					<VCard variant="flat">
 						<VCardTitle>Status Settings</VCardTitle>
 						<VCardSubtitle
 							>Here you can modify the status fields attached to the category. Warning: Upon saving
@@ -381,7 +381,7 @@ watch(
 			</VRow>
 			<VRow>
 				<VCol>
-					<VCard>
+					<VCard variant="flat">
 						<VCardTitle>Tag Settings</VCardTitle>
 						<VCardSubtitle
 							>Here you can modify the tags attached to the category. Warning: Upon saving the

@@ -3,7 +3,7 @@ import CategorySettings from "@/components/settings/category/CategorySettings.vu
 import AboutSettings from "@/components/settings/AboutSettings.vue";
 import GeneralSettings from "@/components/settings/general/GeneralSettings.vue";
 import ImportExportSettings from "@/components/settings/importexport/ImportExportSettings.vue";
-import ThemeSettings from "@/components/settings/ThemeSettings.vue";
+import ThemeSettings from "@/components/settings/theme/ThemeSettings.vue";
 
 const settingsPages = {
 	AboutSettings,
