@@ -14,7 +14,8 @@
 		"lint": "eslint . --cache",
 		"format": "prettier --write .",
 		"storybook": "storybook dev -p 6006",
-		"build-storybook": "storybook build"
+		"build-storybook": "storybook build",
+		"build-icons": "pwa-assets-generator"
 	},
 	"dependencies": {
 		"@date-io/luxon": "^3.2.0",
