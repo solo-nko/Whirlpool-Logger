@@ -1,19 +1,25 @@
 <script setup lang="ts">
+import { DateTime } from "luxon";
 import useSyncStore from "@/stores/sync.ts";
 import useSettingsStore from "@/stores/settings.ts";
 
 const syncStore = useSyncStore();
 const settingsStore = useSettingsStore();
-const syncCodeValid = ref(false);
+const syncCodeInputValid = ref<boolean>(false);
 
 const requestButtonLoading = ref(false);
 const validateButtonLoading = ref(false);
 const syncButtonLoading = ref(false);
 
-function ValidateSyncCode(code: string) {
-	const testCondition = /^[a-zA-Z0-9]{10}$/;
-	return testCondition.test(code);
-}
+const lastSyncedMessage = computed(() => {
+	const lastSynced = syncStore.lastSynced;
+	if (lastSynced === null) return "Last Synced: Unknown";
+	return lastSynced.toLocaleString(DateTime.DATETIME_FULL);
+});
+
+const syncPossible = computed(() => {
+	return syncStore.CheckAuth() && syncCodeInputValid.value;
+});
 
 const syncCodeRules = {
 	hasValue: (value: string) => {
@@ -25,7 +31,7 @@ const syncCodeRules = {
 		return "Sync Code must be 10 characters.";
 	},
 	regex: (value: string) => {
-		if (ValidateSyncCode(value)) return true;
+		if (syncStore.ValidateSyncCode(value)) return true;
 		return "Sync Code contains invalid characters.";
 	}
 };
@@ -47,7 +53,7 @@ const getNewSyncCode = async () => {
 const sync = async () => {
 	syncButtonLoading.value = true;
 	const syncCode = syncStore.syncCode;
-	if (syncCode && ValidateSyncCode(syncCode)) {
+	if (syncCode && syncStore.ValidateSyncCode(syncCode)) {
 		await syncStore.SyncWithServer(syncCode);
 	}
 	syncButtonLoading.value = false;
@@ -66,7 +72,7 @@ const sync = async () => {
 	</VRow>
 	<VRow>
 		<VCol>
-			<VForm v-model="syncCodeValid">
+			<VForm v-model="syncCodeInputValid">
 				<VTextField
 					v-model="syncStore.syncCode"
 					label="Sync Code"
@@ -74,6 +80,9 @@ const sync = async () => {
 				/>
 			</VForm>
 		</VCol>
+	</VRow>
+	<VRow>
+		<VLabel>Last Synced: {{ lastSyncedMessage }}</VLabel>
 	</VRow>
 	<VRow>
 		<VCol class="flex-grow-0 h-full self-center">
@@ -84,21 +93,19 @@ const sync = async () => {
 			<VBtn
 				v-else
 				:loading="validateButtonLoading"
-				:disabled="syncCodeValid !== true"
+				:disabled="syncCodeInputValid !== true"
 				@click="login"
 			>
 				Validate Sync Code
 			</VBtn>
 		</VCol>
 		<VCol class="flex-grow-0 h-full self-center">
-			<VBtn :loading="syncButtonLoading" :disabled="!syncStore.syncPossible" @click="sync"
-				>Sync</VBtn
-			>
+			<VBtn :loading="syncButtonLoading" :disabled="!syncPossible" @click="sync">Sync</VBtn>
 		</VCol>
 		<VCol cols="12" md="8">
 			<VCheckbox
 				v-model="syncStore.autoSyncEnabled"
-				:disabled="!syncStore.syncPossible"
+				:disabled="!syncPossible"
 				label="Sync Automatically"
 				:hide-details="true"
 			></VCheckbox>

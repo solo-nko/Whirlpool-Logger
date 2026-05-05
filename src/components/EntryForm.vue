@@ -11,6 +11,7 @@ import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
 import { DeepToRaw, HasValue } from "@/utils/MiscUtils.ts";
 import useSettingsStore from "@/stores/settings";
 import useCategoriesStore from "@/stores/categories.ts";
+import useSyncStore from "@/stores/sync.ts";
 
 type EntryFormProps = {
 	/** Id of the category this whirlpool belongs to. */
@@ -22,6 +23,7 @@ type EntryFormProps = {
 
 const settingsStore = useSettingsStore();
 const categoryStore = useCategoriesStore();
+const syncStore = useSyncStore();
 
 const props = defineProps<EntryFormProps>();
 const emits = defineEmits(["close", "save"]);
@@ -38,7 +40,8 @@ function GenerateNewWhirlpool(categoryId: string): WhirlpoolLog {
 		userUpdatedOn: now.toISODate(),
 		updatedOn: now,
 		createdOn: now,
-		deletedOn: null
+		deletedOn: null,
+		syncCode: syncStore.syncCode ?? undefined
 	};
 }
 
@@ -222,6 +225,7 @@ const onClickSave = async () => {
 	}
 	if (isEditMode.value) await UpdateEntry();
 	else await AddEntry();
+	if (syncStore.autoSyncEnabled) await syncStore.AutoSync();
 };
 
 // when manually deleting the value from this input box, the NumberInput component sets it to null. We intercept that and change it to undefined instead, to prevent any unexpected behavior later (rating is only supposed to be a number or undefined)

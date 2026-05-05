@@ -7,14 +7,21 @@ import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import type { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.ts";
 import type { DatabaseWhirlpool } from "@/utils/database/models/DatabaseWhirlpool.ts";
 import type { IProcessResult } from "@/utils/types/IProcessResult.ts";
+import useSettingsStore from "@/stores/settings.ts";
 
 const useSyncStore = defineStore("sync-store", () => {
+	const getLocalStorageSyncCode = localStorage.getItem(LocalStorageKeys.SyncCode);
+	const getLocalStorageLastSynced = localStorage.getItem(LocalStorageKeys.LastSynced);
 	const whirlpoolStore = useWhirlpoolStore();
 	const categoryStore = useCategoriesStore();
+	const settingsStore = useSettingsStore();
 	const api = ref(new WhirlpoolAPI());
-	const syncCode = ref<string | null>(localStorage.getItem(LocalStorageKeys.SyncCode));
-	const syncPossible = ref(false);
-	const autoSyncEnabled = ref(false);
+	const syncCode = ref<string | null>(getLocalStorageSyncCode);
+	const autoSyncEnabled = ref(Boolean(localStorage.getItem(LocalStorageKeys.AutoSync)) || false);
+	const syncInProgress = ref(false);
+	const lastSynced = ref<DateTime | null>(
+		getLocalStorageLastSynced ? DateTime.fromISO(getLocalStorageLastSynced) : null
+	);
 	const MAX_BATCH_LENGTH = 50;
 
 	async function SetUnsyncedChanges(ids: string[], setting = false) {
@@ -24,6 +31,14 @@ const useSyncStore = defineStore("sync-store", () => {
 				changes: { unsyncedChanges: setting }
 			}))
 		);
+	}
+
+	function CheckAuth() {
+		if (!api.value.instance.authStore.isValid) return false;
+		// disallow auth more than two days old
+		if (lastSynced.value === null || !lastSynced.value.isValid) return false;
+		if (lastSynced.value.diffNow(["hours"]).hours < -48) return false;
+		return true;
 	}
 
 	async function ApplySyncCodeToWhirlpools(newSyncCode: string) {
@@ -44,6 +59,11 @@ const useSyncStore = defineStore("sync-store", () => {
 				changes: { syncCode: newSyncCode }
 			}))
 		);
+	}
+
+	function ValidateSyncCode(code: string) {
+		const testCondition = /^[a-zA-Z0-9]{10}$/;
+		return testCondition.test(code);
 	}
 
 	async function SyncCategories(
@@ -105,17 +125,13 @@ const useSyncStore = defineStore("sync-store", () => {
 				}
 
 				const getServerCategory = serverCategoriesMap.get(clientCategory[0]);
-				// If server is missing any categories that the client has, create them (via upsert)
-				// TODO: there's a logical issue here, which is that when the app first starts up, it creates its own set of categories. These will not be on the server, but as currently written they will get sent to the server. Meanwhile, the app will also pull down categories from the server, which can result in duplicates.
-				if (getServerCategory === undefined) {
+				// Skip client categories that don't exist on the server (because it's not currently possible for the user to create categories, the only way this should happen is via categories created at db initialization)
+				if (getServerCategory === undefined) continue;
+				const serverUpdatedOn = DateTime.fromISO(getServerCategory.updatedOn);
+				const clientUpdatedOn = DateTime.fromISO(clientCategory[1].updatedOn);
+				// If server category is outdated, update it.
+				if (serverUpdatedOn < clientUpdatedOn) {
 					upsertBatch.push({ ...clientCategory[1] });
-				} else {
-					const serverUpdatedOn = DateTime.fromISO(getServerCategory.updatedOn);
-					const clientUpdatedOn = DateTime.fromISO(clientCategory[1].updatedOn);
-					// If server category is outdated, update it.
-					if (serverUpdatedOn < clientUpdatedOn) {
-						upsertBatch.push({ ...clientCategory[1] });
-					}
 				}
 			}
 			// add final batch
@@ -285,6 +301,12 @@ const useSyncStore = defineStore("sync-store", () => {
 	}
 
 	async function SyncWithServer(inputSyncCode: string) {
+		syncInProgress.value = true;
+
+		// make sure current sync code is properly applied to data
+		await ApplySyncCodeToWhirlpools(inputSyncCode);
+		await ApplySyncCodeToCategories(inputSyncCode);
+
 		// Get server records
 		const serverWhirlpools = await api.value.instance
 			.collection("whirlpools")
@@ -315,6 +337,26 @@ const useSyncStore = defineStore("sync-store", () => {
 		// Sync categories first
 		await SyncCategories(clientCategories, serverCategories);
 		await SyncWhirlpools(clientWhirlpools, serverWhirlpools);
+
+		// set lastSynced
+		const now = DateTime.now();
+		lastSynced.value = now;
+		localStorage.setItem(LocalStorageKeys.LastSynced, now.toISO());
+
+		// last step: delete any categories that don't have whirlpools attached to them.
+		const categoriesToDelete: string[] = [];
+		for (const category of clientCategories) {
+			const getAttachedWhirlpool = clientWhirlpools.find(
+				(whirlpool) => whirlpool.categoryId === category.id
+			);
+			if (getAttachedWhirlpool === undefined) {
+				categoriesToDelete.push(category.id);
+			}
+		}
+		await LoggerDatabase.categories.bulkDelete(categoriesToDelete);
+		// TODO: This code assumes that the user does not create any whirlpools before their first sync. We should create a dialog or other UI that lets the user migrate orphaned whirlpools to the synced ones.
+
+		syncInProgress.value = false;
 	}
 
 	async function RequestSyncCode(): Promise<IProcessResult> {
@@ -345,28 +387,59 @@ const useSyncStore = defineStore("sync-store", () => {
 	async function ValidateUser(): Promise<IProcessResult> {
 		if (!syncCode.value) return { result: "error", message: "Sync Code is missing or incorrect." };
 		try {
-			const response = await api.value.Authenticate(syncCode.value);
-			syncPossible.value = true;
+			await api.value.Authenticate(syncCode.value);
+			localStorage.setItem(LocalStorageKeys.SyncCode, syncCode.value);
 			return {
 				result: "ok",
 				message: "Sync Code successfully validated. You can now initiate a sync."
 			};
 		} catch (error) {
 			console.error("Authentication Error: ", error);
+			localStorage.removeItem(LocalStorageKeys.SyncCode);
 			return { result: "error", message: "Failed to authenticate. Please check the Sync Code." };
 		}
 	}
 
+	async function AutoSync() {
+		if (!syncCode.value || !ValidateSyncCode(syncCode.value)) {
+			autoSyncEnabled.value = false;
+			settingsStore.DisplayToast(
+				"There was a problem with the sync code. Auto sync has been disabled."
+			);
+			return;
+		}
+		if (!CheckAuth()) {
+			const validation = await ValidateUser();
+			if (validation.result !== "ok") {
+				autoSyncEnabled.value = false;
+				settingsStore.DisplayToast(
+					"There was a problem with authentication. Auto sync has been disabled."
+				);
+				return;
+			}
+		}
+		await SyncWithServer(syncCode.value);
+	}
+
+	watch(
+		() => autoSyncEnabled.value,
+		(newValue) => {
+			localStorage.setItem(LocalStorageKeys.AutoSync, String(newValue));
+		}
+	);
+
 	return {
 		api,
 		syncCode,
-		ApplySyncCodeToCategories,
-		ApplySyncCodeToWhirlpools,
-		syncPossible,
+		lastSynced,
+		CheckAuth,
+		ValidateSyncCode,
 		autoSyncEnabled,
 		SyncWithServer,
 		RequestSyncCode,
-		ValidateUser
+		ValidateUser,
+		syncInProgress,
+		AutoSync
 	};
 });
 

@@ -13,6 +13,8 @@ const onClickImport = async () => {
 	const result = await ImportDatabase(uploadedFile.value);
 	if (result.message) settingsStore.DisplayToast(result.message);
 };
+
+// TODO: add option to choose between "overwrite" and "add", basically whether to add on top of existing database, or replace it with what's imported in the json.
 </script>
 
 <template>

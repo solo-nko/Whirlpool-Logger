@@ -63,3 +63,5 @@ docs/.vitepress/cache
 
 # affinity stuff
 *.afdesign~lock~
+
+/src/server-hooks/types.d.ts

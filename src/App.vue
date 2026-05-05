@@ -1,14 +1,34 @@
 <script setup lang="ts">
 import useSettingsStore from "./stores/settings";
 import { TOAST_TIMEOUT } from "@/utils/Constants.ts";
+import useSyncStore from "@/stores/sync.ts";
 
 const settingsStore = useSettingsStore();
+const syncStore = useSyncStore();
+
+onMounted(async () => {
+	// sync stuff
+	if (syncStore.autoSyncEnabled && syncStore.syncCode) {
+		await syncStore.AutoSync();
+	}
+});
 </script>
 
 <template>
 	<VApp>
 		<VAppBar>
 			<VAppBarTitle>Whirlpool Logger</VAppBarTitle>
+			<VProgressLinear
+				:active="syncStore.syncInProgress"
+				location="bottom"
+				indeterminate
+				absolute
+			/>
+			<template v-slot:append>
+				<VFadeTransition>
+					<VLabel v-if="syncStore.syncInProgress">Sync in progress...</VLabel>
+				</VFadeTransition>
+			</template>
 		</VAppBar>
 		<VMain>
 			<RouterView />

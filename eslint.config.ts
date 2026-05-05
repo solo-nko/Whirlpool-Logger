@@ -23,6 +23,7 @@ export default defineConfigWithVueTs(
 		".storybook/stories/",
 		"**/.vitepress/",
 		"*.d.ts",
+		"src/server-hooks/types.d.ts",
 		"**/storybook-static/**"
 	]),
 	// rules per-filetype
