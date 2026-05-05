@@ -8,7 +8,7 @@ const syncStore = useSyncStore();
 
 onMounted(async () => {
 	// sync stuff
-	if (syncStore.autoSyncEnabled && syncStore.syncCode) {
+	if (syncStore.autoSyncEnabled === true && syncStore.syncCode) {
 		await syncStore.AutoSync();
 	}
 });

@@ -12,12 +12,13 @@ import useSettingsStore from "@/stores/settings.ts";
 const useSyncStore = defineStore("sync-store", () => {
 	const getLocalStorageSyncCode = localStorage.getItem(LocalStorageKeys.SyncCode);
 	const getLocalStorageLastSynced = localStorage.getItem(LocalStorageKeys.LastSynced);
+	const getLocalStorageAutoSync = localStorage.getItem(LocalStorageKeys.AutoSync);
 	const whirlpoolStore = useWhirlpoolStore();
 	const categoryStore = useCategoriesStore();
 	const settingsStore = useSettingsStore();
 	const api = ref(new WhirlpoolAPI());
 	const syncCode = ref<string | null>(getLocalStorageSyncCode);
-	const autoSyncEnabled = ref(Boolean(localStorage.getItem(LocalStorageKeys.AutoSync)) || false);
+	const autoSyncEnabled = ref(getLocalStorageAutoSync === "true" || false);
 	const syncInProgress = ref(false);
 	const lastSynced = ref<DateTime | null>(
 		getLocalStorageLastSynced ? DateTime.fromISO(getLocalStorageLastSynced) : null
