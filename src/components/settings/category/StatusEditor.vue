@@ -104,8 +104,8 @@ watch(
 					<VCardTitle>{{ isNewStatus ? "Add Status" : "Edit Status" }}</VCardTitle>
 					<VForm ref="formRef" v-model="formValidationStatus">
 						<VTextField
-							class="mb-5"
 							v-model="editingStatus.name"
+							class="mb-5"
 							label="Name"
 							:rules="[(value) => HasValue(value, 'Name')]"
 						/>

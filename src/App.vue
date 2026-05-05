@@ -1,10 +1,21 @@
 <script setup lang="ts">
+import { useTheme } from "vuetify";
 import useSettingsStore from "./stores/settings";
 import { TOAST_TIMEOUT } from "@/utils/Constants.ts";
 import useSyncStore from "@/stores/sync.ts";
+import LocalStorageKeys from "@/utils/config/LocalStorageKeys.ts";
 
 const settingsStore = useSettingsStore();
 const syncStore = useSyncStore();
+const themeInstance = useTheme();
+
+onMounted(() => {
+	// set theme
+	const storedTheme = localStorage.getItem(LocalStorageKeys.Theme);
+	if (storedTheme) {
+		themeInstance.change(storedTheme);
+	}
+});
 
 onMounted(async () => {
 	// sync stuff

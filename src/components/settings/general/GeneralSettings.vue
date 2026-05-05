@@ -110,7 +110,9 @@ const sendToTableStoreFunction = (input: string | null) => {
 						:items="item.statuses"
 						item-title="name"
 						return-object
-					></VSelect>
+						hide-details
+						class="my-2"
+					/>
 				</template>
 				<template v-slot:item.selectedStatusTwo="{ item }">
 					<VSelect
@@ -121,7 +123,8 @@ const sendToTableStoreFunction = (input: string | null) => {
 						:items="item.statuses"
 						item-title="name"
 						return-object
-					></VSelect>
+						hide-details
+					/>
 				</template>
 				<!--		 eslint-enable vue/valid-v-slot -->
 			</VDataTable>

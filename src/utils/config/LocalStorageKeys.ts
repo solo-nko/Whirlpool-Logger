@@ -4,7 +4,8 @@ enum LocalStorageKeys {
 	Dashboards = "dashboards",
 	SyncCode = "syncCode",
 	LastSynced = "lastSynced",
-	AutoSync = "autoSync"
+	AutoSync = "autoSync",
+	Theme = "theme"
 }
 
 export default LocalStorageKeys;
