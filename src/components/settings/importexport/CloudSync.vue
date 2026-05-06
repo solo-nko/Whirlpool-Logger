@@ -13,13 +13,11 @@ const syncButtonLoading = ref(false);
 
 const lastSyncedMessage = computed(() => {
 	const lastSynced = syncStore.lastSynced;
-	if (lastSynced === null) return "Last Synced: Unknown";
+	if (lastSynced === null) return "Unknown";
 	return lastSynced.toLocaleString(DateTime.DATETIME_FULL);
 });
 
-const syncPossible = computed(() => {
-	return syncStore.CheckAuth() && syncCodeInputValid.value;
-});
+const syncPossible = ref<boolean>(syncStore.CheckAuth() || false);
 
 const syncCodeRules = {
 	hasValue: (value: string) => {
@@ -40,6 +38,7 @@ const login = async () => {
 	validateButtonLoading.value = true;
 	const result = await syncStore.ValidateUser();
 	if (result.message) settingsStore.DisplayToast(result.message);
+	if (result.result === "ok") syncPossible.value = true;
 	validateButtonLoading.value = false;
 };
 
@@ -47,6 +46,7 @@ const getNewSyncCode = async () => {
 	requestButtonLoading.value = true;
 	const result = await syncStore.RequestSyncCode();
 	if (result.message) settingsStore.DisplayToast(result.message);
+	if (result.result === "ok") syncPossible.value = true;
 	requestButtonLoading.value = false;
 };
 
@@ -54,7 +54,9 @@ const sync = async () => {
 	syncButtonLoading.value = true;
 	const syncCode = syncStore.syncCode;
 	if (syncCode && syncStore.ValidateSyncCode(syncCode)) {
-		await syncStore.SyncWithServer(syncCode);
+		const result = await syncStore.SyncWithServer(syncCode);
+		const syncMessage = result.message;
+		if (syncMessage) settingsStore.DisplayToast(syncMessage);
 	}
 	syncButtonLoading.value = false;
 };
@@ -82,7 +84,14 @@ const sync = async () => {
 		</VCol>
 	</VRow>
 	<VRow>
-		<VLabel>Last Synced: {{ lastSyncedMessage }}</VLabel>
+		<VSkeletonLoader
+			type="sentences"
+			:loading="syncStore.syncInProgress"
+			class="grow"
+			elevation="0"
+		>
+			<VLabel>Last Synced: {{ lastSyncedMessage }}</VLabel>
+		</VSkeletonLoader>
 	</VRow>
 	<VRow>
 		<VCol class="flex-grow-0 h-full self-center">

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { DateTime } from "luxon";
 import { type ServerCategory, type ServerWhirlpool, WhirlpoolAPI } from "@/utils/config/backend.ts";
 import LocalStorageKeys from "@/utils/config/LocalStorageKeys.ts";
@@ -36,9 +37,13 @@ const useSyncStore = defineStore("sync-store", () => {
 
 	function CheckAuth() {
 		if (!api.value.instance.authStore.isValid) return false;
-		// disallow auth more than two days old
-		if (lastSynced.value === null || !lastSynced.value.isValid) return false;
-		if (lastSynced.value.diffNow(["hours"]).hours < -48) return false;
+		if (
+			lastSynced.value &&
+			lastSynced.value.isValid &&
+			lastSynced.value.diffNow(["hours"]).hours < -48
+		) {
+			return false;
+		}
 		return true;
 	}
 
@@ -92,7 +97,7 @@ const useSyncStore = defineStore("sync-store", () => {
 					const batchCreateCategoryRequest = api.value.instance.createBatch();
 					batch.forEach((request) => {
 						batchCreateCategoryRequest.collection("categories").create({ ...request });
-						syncedIds.push(request.id);
+						syncedIds.push(request.clientId);
 					});
 					const responses = await batchCreateCategoryRequest.send();
 					responses.forEach((response) => {
@@ -109,10 +114,10 @@ const useSyncStore = defineStore("sync-store", () => {
 			const clientCategoriesMap = new Map<string, ServerCategory>();
 			const serverCategoriesMap = new Map<string, ServerCategory>();
 			for (const clientCategory of clientCategories) {
-				clientCategoriesMap.set(clientCategory.id, clientCategory);
+				clientCategoriesMap.set(clientCategory.clientId, clientCategory);
 			}
 			for (const serverCategory of serverCategories) {
-				serverCategoriesMap.set(serverCategory.id, serverCategory);
+				serverCategoriesMap.set(serverCategory.clientId, serverCategory);
 			}
 
 			const upsertBatches: ServerCategory[][] = [];
@@ -144,7 +149,7 @@ const useSyncStore = defineStore("sync-store", () => {
 					const batchUpsertCategoryRequest = api.value.instance.createBatch();
 					batch.forEach((request) => {
 						batchUpsertCategoryRequest.collection("categories").upsert({ ...request });
-						syncedIds.push(request.id);
+						syncedIds.push(request.clientId);
 					});
 					const responses = await batchUpsertCategoryRequest.send();
 					responses.forEach((response) => {
@@ -164,14 +169,22 @@ const useSyncStore = defineStore("sync-store", () => {
 				const getClientCategory = clientCategoriesMap.get(serverCategory[0]);
 				// If client is missing any categories that the server has, create them.
 				if (getClientCategory === undefined) {
-					newClientCategories.push({ ...serverCategory[1], unsyncedChanges: false });
+					newClientCategories.push({
+						...serverCategory[1],
+						id: serverCategory[1].clientId,
+						unsyncedChanges: false
+					});
 				} else {
 					const serverUpdatedOn = DateTime.fromISO(serverCategory[1].updatedOn);
 					const clientUpdatedOn = DateTime.fromISO(getClientCategory.updatedOn);
 
 					// If client category is outdated, update it
 					if (clientUpdatedOn < serverUpdatedOn) {
-						updatedClientCategories.push({ ...serverCategory[1], unsyncedChanges: false });
+						updatedClientCategories.push({
+							...serverCategory[1],
+							id: serverCategory[1].clientId,
+							unsyncedChanges: false
+						});
 					}
 				}
 			}
@@ -227,10 +240,10 @@ const useSyncStore = defineStore("sync-store", () => {
 			const clientWhirlpoolsMap = new Map<string, ServerWhirlpool>();
 			const serverWhirlpoolsMap = new Map<string, ServerWhirlpool>();
 			for (const clientWhirlpool of clientWhirlpools) {
-				clientWhirlpoolsMap.set(clientWhirlpool.id, clientWhirlpool);
+				clientWhirlpoolsMap.set(clientWhirlpool.clientId, clientWhirlpool);
 			}
 			for (const serverWhirlpool of serverWhirlpools) {
-				serverWhirlpoolsMap.set(serverWhirlpool.id, serverWhirlpool);
+				serverWhirlpoolsMap.set(serverWhirlpool.clientId, serverWhirlpool);
 			}
 
 			const upsertBatches: ServerWhirlpool[][] = [];
@@ -266,7 +279,7 @@ const useSyncStore = defineStore("sync-store", () => {
 					const batchUpsertWhirlpoolsRequest = api.value.instance.createBatch();
 					batch.forEach((request) => {
 						batchUpsertWhirlpoolsRequest.collection("whirlpools").upsert({ ...request });
-						syncedIds.push(request.id);
+						syncedIds.push(request.clientId);
 					});
 					const responses = await batchUpsertWhirlpoolsRequest.send();
 					responses.forEach((response) => {
@@ -285,14 +298,22 @@ const useSyncStore = defineStore("sync-store", () => {
 				const getClientWhirlpool = clientWhirlpoolsMap.get(serverWhirlpool[0]);
 				// If client is missing any whirlpools that the server has, create them
 				if (getClientWhirlpool === undefined) {
-					newClientWhirlpools.push({ ...serverWhirlpool[1], unsyncedChanges: false });
+					newClientWhirlpools.push({
+						...serverWhirlpool[1],
+						id: serverWhirlpool[1].clientId,
+						unsyncedChanges: false
+					});
 				} else {
 					const serverUpdatedOn = DateTime.fromISO(serverWhirlpool[1].updatedOn);
 					const clientUpdatedOn = DateTime.fromISO(serverWhirlpool[1].updatedOn);
 
 					// If client whirlpool is outdated, update it
 					if (clientUpdatedOn < serverUpdatedOn) {
-						updatedClientWhirlpools.push({ ...serverWhirlpool[1], unsyncedChanges: false });
+						updatedClientWhirlpools.push({
+							...serverWhirlpool[1],
+							id: serverWhirlpool[1].clientId,
+							unsyncedChanges: false
+						});
 					}
 				}
 			}
@@ -301,8 +322,9 @@ const useSyncStore = defineStore("sync-store", () => {
 		}
 	}
 
-	async function SyncWithServer(inputSyncCode: string) {
+	async function SyncWithServer(inputSyncCode: string): Promise<IProcessResult> {
 		syncInProgress.value = true;
+		let syncError: boolean = false;
 
 		// make sure current sync code is properly applied to data
 		await ApplySyncCodeToWhirlpools(inputSyncCode);
@@ -311,17 +333,38 @@ const useSyncStore = defineStore("sync-store", () => {
 		// Get server records
 		const serverWhirlpools = await api.value.instance
 			.collection("whirlpools")
-			.getFullList({ filter: `syncCode = '${inputSyncCode}'` });
+			.getFullList({ filter: `syncCode = '${inputSyncCode}'` })
+			.catch((error) => {
+				console.error("Sync Error: ", error);
+				syncError = true;
+				return [] as ServerWhirlpool[];
+			});
+
+		if (syncError) {
+			syncInProgress.value = false;
+			return { result: "error", message: "There was an error getting the server whirlpools." };
+		}
+
 		const serverCategories = await api.value.instance
 			.collection("categories")
-			.getFullList({ filter: `syncCode = '${inputSyncCode}'` });
+			.getFullList({ filter: `syncCode = '${inputSyncCode}'` })
+			.catch((error) => {
+				console.error("Sync Error: ", error);
+				syncError = true;
+				return [] as ServerCategory[];
+			});
+
+		if (syncError) {
+			syncInProgress.value = false;
+			return { result: "error", message: "There was an error getting the server categories." };
+		}
 
 		// Get client records
 		const clientWhirlpools: ServerWhirlpool[] = whirlpoolStore.databaseWhirlpools
 			? whirlpoolStore.databaseWhirlpools.map(
 					(dbWhirlpool): ServerWhirlpool => ({
 						...dbWhirlpool,
-						// TODO: consider what the source of truth should be on sync codes
+						clientId: dbWhirlpool.id,
 						syncCode: dbWhirlpool.syncCode === inputSyncCode ? dbWhirlpool.syncCode : inputSyncCode
 					})
 				)
@@ -330,14 +373,30 @@ const useSyncStore = defineStore("sync-store", () => {
 			? categoryStore.databaseCategories.map(
 					(dbCategory): ServerCategory => ({
 						...dbCategory,
+						clientId: dbCategory.id,
 						syncCode: dbCategory.syncCode === inputSyncCode ? dbCategory.syncCode : inputSyncCode
 					})
 				)
 			: [];
 
 		// Sync categories first
-		await SyncCategories(clientCategories, serverCategories);
-		await SyncWhirlpools(clientWhirlpools, serverWhirlpools);
+		await SyncCategories(clientCategories, serverCategories).catch((error) => {
+			console.error("Sync Error: ", error);
+			syncInProgress.value = false;
+			syncError = true;
+		});
+		if (syncError) {
+			syncInProgress.value = false;
+			return { result: "error", message: "There was an error syncing the categories." };
+		}
+		await SyncWhirlpools(clientWhirlpools, serverWhirlpools).catch((error) => {
+			console.error("Sync Error: ", error);
+			syncError = true;
+		});
+		if (syncError) {
+			syncInProgress.value = false;
+			return { result: "error", message: "There was an error syncing the whirlpools." };
+		}
 
 		// set lastSynced
 		const now = DateTime.now();
@@ -348,16 +407,16 @@ const useSyncStore = defineStore("sync-store", () => {
 		const categoriesToDelete: string[] = [];
 		for (const category of clientCategories) {
 			const getAttachedWhirlpool = clientWhirlpools.find(
-				(whirlpool) => whirlpool.categoryId === category.id
+				(whirlpool) => whirlpool.categoryId === category.clientId
 			);
 			if (getAttachedWhirlpool === undefined) {
-				categoriesToDelete.push(category.id);
+				categoriesToDelete.push(category.clientId);
 			}
 		}
 		await LoggerDatabase.categories.bulkDelete(categoriesToDelete);
 		// TODO: This code assumes that the user does not create any whirlpools before their first sync. We should create a dialog or other UI that lets the user migrate orphaned whirlpools to the synced ones.
-
 		syncInProgress.value = false;
+		return { result: "ok", message: "Sync complete." };
 	}
 
 	async function RequestSyncCode(): Promise<IProcessResult> {
@@ -379,7 +438,6 @@ const useSyncStore = defineStore("sync-store", () => {
 			}
 			return { result: "error", message: "There was an issue with sending the Sync Code request." };
 		} catch (error) {
-			// eslint-disable-next-line no-console
 			console.log(error);
 			return { result: "error", message: "There was an error requesting a Sync Code." };
 		}
@@ -419,7 +477,11 @@ const useSyncStore = defineStore("sync-store", () => {
 				return;
 			}
 		}
-		await SyncWithServer(syncCode.value);
+		const result = await SyncWithServer(syncCode.value);
+		if (result.result !== "ok") {
+			autoSyncEnabled.value = false;
+			settingsStore.DisplayToast("There was a problem with sync. Auto Sync has been disabled.");
+		}
 	}
 
 	watch(
