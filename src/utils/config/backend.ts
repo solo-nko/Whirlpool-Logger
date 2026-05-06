@@ -7,6 +7,7 @@ export type ServerWhirlpool = Omit<
 	InstanceType<typeof DatabaseWhirlpool>,
 	"unsyncedChanges" | "syncCode" | "id"
 > & {
+	id?: string;
 	clientId: string;
 	syncCode: string;
 };
@@ -15,6 +16,7 @@ export type ServerCategory = Omit<
 	InstanceType<typeof DatabaseCategory>,
 	"unsyncedChanges" | "syncCode" | "id"
 > & {
+	id?: string;
 	clientId: string;
 	syncCode: string;
 };

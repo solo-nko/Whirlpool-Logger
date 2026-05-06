@@ -86,7 +86,7 @@ const useSyncStore = defineStore("sync-store", () => {
 					createBatches.push(createBatch);
 					createBatch = [];
 				}
-				createBatch.push({ ...category });
+				createBatch.push({ ...category, id: undefined });
 			});
 			// add final batch
 			if (createBatch.length > 0) createBatches.push(createBatch);
@@ -210,7 +210,7 @@ const useSyncStore = defineStore("sync-store", () => {
 					createBatches.push(createBatch);
 					createBatch = [];
 				}
-				createBatch.push({ ...whirlpool });
+				createBatch.push({ ...whirlpool, id: undefined });
 			});
 
 			// add final batch
@@ -364,6 +364,7 @@ const useSyncStore = defineStore("sync-store", () => {
 			? whirlpoolStore.databaseWhirlpools.map(
 					(dbWhirlpool): ServerWhirlpool => ({
 						...dbWhirlpool,
+						id: undefined,
 						clientId: dbWhirlpool.id,
 						syncCode: dbWhirlpool.syncCode === inputSyncCode ? dbWhirlpool.syncCode : inputSyncCode
 					})
@@ -373,6 +374,7 @@ const useSyncStore = defineStore("sync-store", () => {
 			? categoryStore.databaseCategories.map(
 					(dbCategory): ServerCategory => ({
 						...dbCategory,
+						id: undefined,
 						clientId: dbCategory.id,
 						syncCode: dbCategory.syncCode === inputSyncCode ? dbCategory.syncCode : inputSyncCode
 					})

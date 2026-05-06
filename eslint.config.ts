@@ -19,6 +19,7 @@ export default defineConfigWithVueTs(
 	globalIgnores([
 		"**/dist/**",
 		"**/dist-ssr/**",
+		"**/dev-dist/**",
 		"**/coverage/**",
 		".storybook/stories/",
 		"**/.vitepress/",
