@@ -219,7 +219,6 @@ const useSyncStore = defineStore("sync-store", () => {
 			// create and send a set of batch requests, up to MAX_BATCH_REQUESTS requests per batch
 			if (createBatches.length > 0) {
 				const syncedIds: string[] = [];
-				// TODO: foreach isn't recommended for async processes. Check if there are any dexie operations using it
 				for (const batch of createBatches) {
 					const batchCreateWhirlpoolsRequest = api.value.instance.createBatch();
 					batch.forEach((request) => {

@@ -6,6 +6,7 @@ import type { DatabaseWhirlpool } from "@/utils/database/models/DatabaseWhirlpoo
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
+import DatabaseNote from "@/utils/database/models/DatabaseNote.ts";
 
 const useWhirlpoolStore = defineStore("whirlpool-store", () => {
 	const databaseWhirlpools = useObservable<DatabaseWhirlpool[]>(
@@ -18,6 +19,7 @@ const useWhirlpoolStore = defineStore("whirlpool-store", () => {
 			return stored.map((log): WhirlpoolLog => {
 				return {
 					...log,
+					notes: log.notes.map((dbNote) => DatabaseNote.ConvertNoteFromDatabase(dbNote)),
 					status: log.status ? DatabaseStatus.ConvertStatusesFromDatabase(log.status) : undefined,
 					categoryId: log.categoryId,
 					deletedOn: log.deletedOn ? DateTime.fromISO(log.deletedOn) : null,

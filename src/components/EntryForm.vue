@@ -12,6 +12,8 @@ import { DeepToRaw, HasValue } from "@/utils/MiscUtils.ts";
 import useSettingsStore from "@/stores/settings";
 import useCategoriesStore from "@/stores/categories.ts";
 import useSyncStore from "@/stores/sync.ts";
+import DatabaseNote from "@/utils/database/models/DatabaseNote.ts";
+import Note from "@/utils/types/Note.ts";
 
 type EntryFormProps = {
 	/** Id of the category this whirlpool belongs to. */
@@ -34,6 +36,7 @@ function GenerateNewWhirlpool(categoryId: string): WhirlpoolLog {
 		id: ulid(),
 		title: "",
 		categoryId,
+		notes: [],
 		unsyncedChanges: true,
 		extraFieldValues: [],
 		tags: [],
@@ -134,6 +137,8 @@ const entryModel = ref<WhirlpoolLog>(
 	props.existingEntry ? { ...props.existingEntry } : GenerateNewWhirlpool(props.categoryId)
 );
 
+const editingNote = ref<Note>(new Note());
+
 const extraFields = computed(() => {
 	if (!entryCategory.value || entryCategory.value.extraFields.length === 0) return null;
 	return entryCategory.value.extraFields;
@@ -171,6 +176,7 @@ function OnSaveEntry(whichType: "add" | "update") {
 
 async function AddEntry() {
 	const now = DateTime.now();
+	entryModel.value.notes = [editingNote.value];
 	await LoggerDatabase.whirlpools
 		.add({
 			...entryModel.value,
@@ -178,7 +184,9 @@ async function AddEntry() {
 			status: entryModel.value.status
 				? DatabaseStatus.ConvertStatusForDatabase(entryModel.value.status)
 				: undefined,
-			notes: toRaw(entryModel.value.notes),
+			notes: entryModel.value.notes
+				? entryModel.value.notes.map((entryNote) => DatabaseNote.ConvertNoteToDatabase(entryNote))
+				: [],
 			extraFieldValues: DeepToRaw(entryModel.value.extraFieldValues),
 			tags: DeepToRaw(entryModel.value.tags),
 			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toISO(),
@@ -194,6 +202,7 @@ async function AddEntry() {
 
 async function UpdateEntry() {
 	const now = DateTime.now();
+	entryModel.value.notes = [editingNote.value];
 	await LoggerDatabase.whirlpools
 		.update(entryModel.value.id, {
 			...entryModel.value,
@@ -201,7 +210,9 @@ async function UpdateEntry() {
 			status: entryModel.value.status
 				? DatabaseStatus.ConvertStatusForDatabase(entryModel.value.status)
 				: undefined,
-			notes: toRaw(entryModel.value.notes),
+			notes: entryModel.value.notes
+				? entryModel.value.notes.map((entryNote) => DatabaseNote.ConvertNoteToDatabase(entryNote))
+				: [],
 			extraFieldValues: DeepToRaw(entryModel.value.extraFieldValues),
 			tags: DeepToRaw(entryModel.value.tags),
 			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toISO(),
@@ -241,6 +252,10 @@ onMounted(() => {
 		settingsStore.DisplayToast(
 			"There is a mismatch between the loaded whirlpool and the indicated whirlpool category. Upon saving, the whirlpool's category will be forcibly updated to correct this."
 		);
+	}
+	if (props.existingEntry !== undefined && props.existingEntry.notes.length > 0) {
+		const getFirstNote = props.existingEntry.notes[0];
+		if (getFirstNote) editingNote.value = getFirstNote;
 	}
 });
 </script>
@@ -323,7 +338,7 @@ onMounted(() => {
 				<VRow>
 					<TipTapEditor
 						v-if="notesFieldMods?.hidden !== true"
-						v-model="entryModel.notes"
+						v-model="editingNote.content"
 						content-type="html"
 					/>
 				</VRow>

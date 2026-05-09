@@ -67,51 +67,18 @@ const GamesCategory: Category = {
 
 const existingGamesEntry: WhirlpoolLog = {
 	id: "test",
-	category: GamesCategory,
+	categoryId: GamesCategory.id,
 	title: "Split/Fiction",
 	status: "status1",
-	notes: {
-		type: "doc",
-		content: [
-			{
-				type: "paragraph",
-				content: [{ type: "text", marks: [{ type: "italic" }], text: "What I like:" }]
-			},
-			{
-				type: "bulletList",
-				content: [
-					{
-						type: "listItem",
-						content: [
-							{
-								type: "paragraph",
-								content: [{ type: "text", text: "Multiplayer is well thought out" }]
-							}
-						]
-					}
-				]
-			},
-			{
-				type: "paragraph",
-				content: [{ type: "text", marks: [{ type: "italic" }], text: "What I don't like:" }]
-			},
-			{
-				type: "bulletList",
-				content: [
-					{
-						type: "listItem",
-						content: [
-							{
-								type: "paragraph",
-								content: [{ type: "text", text: "Can be too challenging for new gamers" }]
-							}
-						]
-					}
-				]
-			},
-			{ type: "paragraph" }
-		]
-	},
+	notes: [
+		{
+			id: 12345,
+			updatedOn: DateTime.fromObject({ day: 22, hour: 12, year: 2025, month: 10 }),
+			createdOn: DateTime.fromObject({ day: 22, hour: 12, year: 2025, month: 10 }),
+			content:
+				'<p xmlns="http://www.w3.org/1999/xhtml">What I like:</p><ol xmlns="http://www.w3.org/1999/xhtml"><li><p>Athena is hot. I also like her psychology gimmick.</p></li><li><p>The transition to 3D was done well, although I think the 2D sprites may have had more charm for me</p></li><li><p>Having Apollo, Phoenix and Athena together in one game does make it feel like the gang\'s really working together.</p></li></ol><p xmlns="http://www.w3.org/1999/xhtml">What I don\'t like:</p><ol xmlns="http://www.w3.org/1999/xhtml"><li><p>Case 2 and 3 are a bore.</p></li><li><p>They do almost nothing with the status quo established in prior entries, particularly Apollo Justice. Phoenix is a lawyer again, but just as goofy as he was before his disbarment, having inexplicably lost all of his grit.</p></li></ol>'
+		}
+	],
 	deletedOn: null,
 	unsyncedChanges: false,
 	extraFieldValues: [],
