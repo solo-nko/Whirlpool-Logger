@@ -9,7 +9,7 @@ export default class DatabaseNote {
 	createdOn: string;
 	content: HTMLContent;
 
-	constructor(inputContent: string, inputId: number) {
+	constructor(inputContent: string, inputId?: number) {
 		const now = DateTime.now();
 		this.id = inputId ? inputId : Math.floor(now.toSeconds());
 		this.updatedOn = now.toISO();

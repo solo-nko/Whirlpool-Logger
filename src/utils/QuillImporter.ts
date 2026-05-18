@@ -8,6 +8,8 @@ import { Placeholder } from "@tiptap/extensions";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import type { DatabaseWhirlpool } from "@/utils/database/models/DatabaseWhirlpool.ts";
 import type { IProcessResult } from "@/utils/types/IProcessResult.ts";
+import DatabaseNote from "@/utils/database/models/DatabaseNote.ts";
+import useWhirlpoolStore from "@/stores/whirlpools.ts";
 
 interface OldRow {
 	title: string;
@@ -27,7 +29,11 @@ interface OldRow {
 export default class QuillImporter {
 	static quill = reactive<{ instance: Quill | null }>({ instance: null });
 
-	static async ImportOldFormat(oldDb: File): Promise<IProcessResult> {
+	/** Imports data into the database using format exported from the old Media Tracker PWA project.
+	 * @param oldDb The old json file. Should be imported as-is, with no modifications.
+	 * @param overwriteMode If set to true, the importer will replace the existing whirlpools with the ones in the import file.
+	 * */
+	static async ImportOldFormat(oldDb: File, overwriteMode: boolean): Promise<IProcessResult> {
 		const finalResult: IProcessResult = {
 			result: "ok",
 			message: "Database successfully imported from old version."
@@ -140,8 +146,9 @@ export default class QuillImporter {
 				}
 			}
 		};
-		const deriveNotes = (rowData: OldRow) => {
-			if (rowData.impression === null) return undefined;
+		const deriveNotes = (rowData: OldRow): DatabaseNote[] => {
+			const notes: DatabaseNote[] = [];
+			if (rowData.impression === null) return notes;
 			let jsonExport;
 			if (this.quill.instance) {
 				this.quill.instance.setContents(new Delta(JSON.parse(rowData.impression)));
@@ -149,13 +156,17 @@ export default class QuillImporter {
 
 				// TODO: make sure all extensions that we'll be using are installed and imported before testing extensively
 				const extensions = [StarterKit, Placeholder];
-				jsonExport = generateJSON(htmlContents, extensions);
 				// While it is probably theoretically possible to convert directly from Quill HTML to TipTap's, I'm not sure if they use 100% the same format (in fact I know they don't, as Quill doesn't seem to distinguish between <ul> and <ol> when outputting from Delta). So, we'll convert to TipTap's JSON format first and then convert back to HTML from that.
-				return generateHTML(jsonExport, extensions);
+				jsonExport = generateJSON(htmlContents, extensions);
+
+				notes.push(new DatabaseNote(generateHTML(jsonExport, extensions)));
+				return notes;
 			}
+			return notes;
 		};
 
-		// import games
+		// add games to import list
+		const totalImports: DatabaseWhirlpool[] = [];
 		const gamesEntries = data.data.find((element) => element.tableName === "games");
 		if (gamesEntries) {
 			const gamesCategory = categories.find((category) => category.name === "Games");
@@ -173,7 +184,7 @@ export default class QuillImporter {
 								shapedRow.series === "N/A" || !shapedRow.series ? undefined : shapedRow.series,
 							progress: shapedRow.progress || undefined,
 							rating: shapedRow.rating || undefined,
-							notes: deriveNotes(shapedRow) || undefined,
+							notes: deriveNotes(shapedRow),
 							deletedOn: null,
 							createdOn: DateTime.fromISO(shapedRow.dateCreated).toISO() ?? "unknown",
 							userUpdatedOn: DateTime.fromISO(shapedRow.dateModified).toISODate() ?? undefined,
@@ -184,23 +195,24 @@ export default class QuillImporter {
 						};
 					}
 				);
-				await LoggerDatabase.whirlpools
-					.bulkAdd(
-						gamesImports.map((gameImport) => {
-							return {
-								...gameImport,
-								createdOn: gameImport.createdOn,
-								updatedOn: gameImport.updatedOn,
-								deletedOn: gameImport.deletedOn === null ? null : gameImport.deletedOn
-							};
-						})
-					)
-					.catch((error) => {
-						console.error("Error: ", error);
-						finalResult.result = "error";
-						finalResult.message =
-							"There was an error parsing the games data. Please check the console.";
-					});
+				totalImports.push(...gamesImports);
+				// await LoggerDatabase.whirlpools
+				// 	.bulkAdd(
+				// 		gamesImports.map((gameImport) => {
+				// 			return {
+				// 				...gameImport,
+				// 				createdOn: gameImport.createdOn,
+				// 				updatedOn: gameImport.updatedOn,
+				// 				deletedOn: gameImport.deletedOn === null ? null : gameImport.deletedOn
+				// 			};
+				// 		})
+				// 	)
+				// 	.catch((error) => {
+				// 		console.error("Error: ", error);
+				// 		finalResult.result = "error";
+				// 		finalResult.message =
+				// 			"There was an error parsing the games data. Please check the console.";
+				// 	});
 			} else {
 				console.error("Couldn't find games category");
 				finalResult.result = "error";
@@ -211,7 +223,7 @@ export default class QuillImporter {
 
 		if (finalResult.result !== "ok") return finalResult;
 
-		// import tv
+		// add tv to import list
 		const tvEntries = data.data.find((element) => element.tableName === "television");
 		if (tvEntries) {
 			const tvCategory = categories.find((category) => category.name === "TV");
@@ -232,7 +244,7 @@ export default class QuillImporter {
 						status: shapedStatus,
 						progress: shapedRow.progress || undefined,
 						rating: shapedRow.rating || undefined,
-						notes: deriveNotes(shapedRow) || undefined,
+						notes: deriveNotes(shapedRow),
 						deletedOn: null,
 						createdOn: DateTime.fromISO(shapedRow.dateCreated).toISO() ?? "unknown",
 						userUpdatedOn: DateTime.fromISO(shapedRow.dateModified).toISODate() ?? undefined,
@@ -244,23 +256,24 @@ export default class QuillImporter {
 						volume: deriveChapterOrVolume(shapedRow.season)
 					};
 				});
-				await LoggerDatabase.whirlpools
-					.bulkAdd(
-						tvImports.map((tvImport) => {
-							return {
-								...tvImport,
-								createdOn: tvImport.createdOn,
-								updatedOn: tvImport.updatedOn,
-								deletedOn: tvImport.deletedOn === null ? null : tvImport.deletedOn
-							};
-						})
-					)
-					.catch((error) => {
-						console.log("Error: ", error);
-						finalResult.result = "error";
-						finalResult.message =
-							"There was an error parsing the television data. Please check the console.";
-					});
+				totalImports.push(...tvImports);
+				// await LoggerDatabase.whirlpools
+				// 	.bulkAdd(
+				// 		tvImports.map((tvImport) => {
+				// 			return {
+				// 				...tvImport,
+				// 				createdOn: tvImport.createdOn,
+				// 				updatedOn: tvImport.updatedOn,
+				// 				deletedOn: tvImport.deletedOn === null ? null : tvImport.deletedOn
+				// 			};
+				// 		})
+				// 	)
+				// 	.catch((error) => {
+				// 		console.log("Error: ", error);
+				// 		finalResult.result = "error";
+				// 		finalResult.message =
+				// 			"There was an error parsing the television data. Please check the console.";
+				// 	});
 			} else {
 				console.log("Couldn't find TV category");
 				finalResult.result = "error";
@@ -271,7 +284,7 @@ export default class QuillImporter {
 
 		if (finalResult.result !== "ok") return finalResult;
 
-		// import movies
+		// add movies to import list
 		const movieEntries = data.data.find((element) => element.tableName === "movies");
 		if (movieEntries) {
 			const moviesCategory = categories.find((category) => category.name === "Movies");
@@ -298,23 +311,24 @@ export default class QuillImporter {
 						};
 					}
 				);
-				await LoggerDatabase.whirlpools
-					.bulkAdd(
-						movieImports.map((movieImport) => {
-							return {
-								...movieImport,
-								createdOn: movieImport.createdOn,
-								updatedOn: movieImport.updatedOn,
-								deletedOn: movieImport.deletedOn === null ? null : movieImport.deletedOn
-							};
-						})
-					)
-					.catch((error) => {
-						console.log("Error: ", error);
-						finalResult.result = "error";
-						finalResult.message =
-							"There was an error parsing the movies data. Please check the console.";
-					});
+				totalImports.push(...movieImports);
+				// await LoggerDatabase.whirlpools
+				// 	.bulkAdd(
+				// 		movieImports.map((movieImport) => {
+				// 			return {
+				// 				...movieImport,
+				// 				createdOn: movieImport.createdOn,
+				// 				updatedOn: movieImport.updatedOn,
+				// 				deletedOn: movieImport.deletedOn === null ? null : movieImport.deletedOn
+				// 			};
+				// 		})
+				// 	)
+				// 	.catch((error) => {
+				// 		console.log("Error: ", error);
+				// 		finalResult.result = "error";
+				// 		finalResult.message =
+				// 			"There was an error parsing the movies data. Please check the console.";
+				// 	});
 			} else {
 				console.log("Couldn't find Movies category");
 				finalResult.result = "error";
@@ -325,7 +339,7 @@ export default class QuillImporter {
 
 		if (finalResult.result !== "ok") return finalResult;
 
-		// import books
+		// add books to import list
 		const booksEntries = data.data.find((element) => element.tableName === "books");
 		if (booksEntries) {
 			const booksCategory = categories.find((category) => category.name === "Books");
@@ -341,7 +355,7 @@ export default class QuillImporter {
 							title: shapedRow.title,
 							progress: shapedRow.progress || undefined,
 							rating: shapedRow.rating || undefined,
-							notes: deriveNotes(shapedRow) || undefined,
+							notes: deriveNotes(shapedRow),
 							deletedOn: null,
 							createdOn: DateTime.fromISO(shapedRow.dateCreated).toISO() ?? "unknown",
 							userUpdatedOn: DateTime.fromISO(shapedRow.dateModified).toISODate() ?? undefined,
@@ -353,23 +367,24 @@ export default class QuillImporter {
 						};
 					}
 				);
-				await LoggerDatabase.whirlpools
-					.bulkAdd(
-						booksImports.map((bookImport) => {
-							return {
-								...bookImport,
-								createdOn: bookImport.createdOn,
-								updatedOn: bookImport.updatedOn,
-								deletedOn: bookImport.deletedOn === null ? null : bookImport.deletedOn
-							};
-						})
-					)
-					.catch((error) => {
-						console.log("Error: ", error);
-						finalResult.result = "error";
-						finalResult.message =
-							"There was an error parsing the games data. Please check the console.";
-					});
+				totalImports.push(...booksImports);
+				// await LoggerDatabase.whirlpools
+				// 	.bulkAdd(
+				// 		booksImports.map((bookImport) => {
+				// 			return {
+				// 				...bookImport,
+				// 				createdOn: bookImport.createdOn,
+				// 				updatedOn: bookImport.updatedOn,
+				// 				deletedOn: bookImport.deletedOn === null ? null : bookImport.deletedOn
+				// 			};
+				// 		})
+				// 	)
+				// 	.catch((error) => {
+				// 		console.log("Error: ", error);
+				// 		finalResult.result = "error";
+				// 		finalResult.message =
+				// 			"There was an error parsing the games data. Please check the console.";
+				// 	});
 			} else {
 				console.log("Couldn't find Books category");
 				finalResult.result = "error";
@@ -377,6 +392,46 @@ export default class QuillImporter {
 					"There was an error parsing the books data. Please check the console.";
 			}
 		}
+
+		const existingWhirlpoolsBackup = useWhirlpoolStore().databaseWhirlpools ?? [];
+		if (overwriteMode) {
+			await LoggerDatabase.whirlpools.clear();
+		}
+		await LoggerDatabase.whirlpools
+			.bulkAdd(
+				totalImports.map((importItem) => {
+					return {
+						...importItem,
+						createdOn: importItem.createdOn,
+						updatedOn: importItem.updatedOn,
+						deletedOn: importItem.deletedOn === null ? null : importItem.deletedOn
+					};
+				})
+			)
+			.catch(async (error) => {
+				console.log("Error: ", error);
+				await LoggerDatabase.whirlpools.clear();
+				if (existingWhirlpoolsBackup.length > 0) {
+					await LoggerDatabase.whirlpools
+						.bulkAdd(
+							existingWhirlpoolsBackup.map((backupItem) => {
+								return {
+									...backupItem,
+									createdOn: backupItem.createdOn,
+									updatedOn: backupItem.updatedOn,
+									deletedOn: backupItem.deletedOn === null ? null : backupItem.deletedOn
+								};
+							})
+						)
+						.catch((error) => {
+							console.log("Restore of old whirlpools failed.");
+							console.log("Error: ", error);
+						});
+				}
+				finalResult.result = "error";
+				finalResult.message =
+					"There was an error parsing the import data. Please check the console. Attempted to restore previous whirlpools.";
+			});
 
 		return finalResult;
 	}

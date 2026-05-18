@@ -15,7 +15,7 @@ const onClickImport = async () => {
 	let result: IProcessResult = { result: "ok" };
 	if (uploadedFile.value === null) return;
 	if (oldVersion.value === true) {
-		result = await QuillImporter.ImportOldFormat(uploadedFile.value);
+		result = await QuillImporter.ImportOldFormat(uploadedFile.value, true);
 	} else {
 		result = await ImportDatabase(uploadedFile.value);
 	}
@@ -50,9 +50,14 @@ const onClickImport = async () => {
 			<VRow>
 				<VCol cols="12" md="9">
 					<VCheckboxBtn v-model="oldVersion">
-						<template v-slot:label
-							><span>I'm importing from the old version of the app!</span></template
-						>
+						<template v-slot:label>
+							<span>
+								I'm importing from the old version of the app! ※Please note! The old version will
+								NOT work if you don't have four categories named "Games", "TV", "Movies", and
+								"Books" respectively. The current version of the app creates these categories by
+								default, so if you haven't renamed any of them, you can ignore this warning.
+							</span>
+						</template>
 					</VCheckboxBtn>
 					<VFileInput
 						v-model="uploadedFile"
