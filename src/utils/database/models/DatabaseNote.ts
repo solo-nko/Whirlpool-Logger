@@ -1,4 +1,5 @@
 import { DateTime } from "luxon";
+import type { HTMLContent } from "@tiptap/vue-3";
 import type Note from "@/utils/types/Note.ts";
 
 export default class DatabaseNote {
@@ -6,7 +7,7 @@ export default class DatabaseNote {
 	title?: string;
 	updatedOn: string;
 	createdOn: string;
-	content: string;
+	content: HTMLContent;
 
 	constructor(inputContent: string, inputId: number) {
 		const now = DateTime.now();

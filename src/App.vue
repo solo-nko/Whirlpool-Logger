@@ -1,14 +1,45 @@
 <script setup lang="ts">
+import { useTheme } from "vuetify";
 import useSettingsStore from "./stores/settings";
 import { TOAST_TIMEOUT } from "@/utils/Constants.ts";
+import useSyncStore from "@/stores/sync.ts";
+import LocalStorageKeys from "@/utils/config/LocalStorageKeys.ts";
 
 const settingsStore = useSettingsStore();
+const syncStore = useSyncStore();
+const themeInstance = useTheme();
+
+onMounted(() => {
+	// set theme
+	const storedTheme = localStorage.getItem(LocalStorageKeys.Theme);
+	if (storedTheme) {
+		themeInstance.change(storedTheme);
+	}
+});
+
+onMounted(async () => {
+	// sync stuff
+	if (syncStore.autoSyncEnabled === true && syncStore.syncCode) {
+		await syncStore.AutoSync();
+	}
+});
 </script>
 
 <template>
 	<VApp>
 		<VAppBar>
 			<VAppBarTitle>Whirlpool Logger</VAppBarTitle>
+			<VProgressLinear
+				:active="syncStore.syncInProgress"
+				location="bottom"
+				indeterminate
+				absolute
+			/>
+			<template v-slot:append>
+				<VFadeTransition>
+					<VLabel v-if="syncStore.syncInProgress">Sync in progress...</VLabel>
+				</VFadeTransition>
+			</template>
 		</VAppBar>
 		<VMain>
 			<RouterView />

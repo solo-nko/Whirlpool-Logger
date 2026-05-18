@@ -103,11 +103,12 @@ watch(selectedTag, (newSelection) => {
 				</div>
 			</VCol>
 			<VCol cols="12" md="9">
-				<VCard>
+				<VCard variant="outlined" class="px-5">
 					<VForm ref="formRef" v-model="formValidationStatus">
 						<VCardTitle>{{ isEditingNewTag ? "Add Tag" : "Edit Tag" }}</VCardTitle>
 						<VTextField
 							v-model="editingTag.label"
+							class="mb-5"
 							label="Label"
 							:rules="[(value: string) => HasValue(value, 'Label')]"
 						/>

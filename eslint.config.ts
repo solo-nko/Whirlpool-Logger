@@ -19,10 +19,12 @@ export default defineConfigWithVueTs(
 	globalIgnores([
 		"**/dist/**",
 		"**/dist-ssr/**",
+		"**/dev-dist/**",
 		"**/coverage/**",
 		".storybook/stories/",
 		"**/.vitepress/",
 		"*.d.ts",
+		"src/server-hooks/types.d.ts",
 		"**/storybook-static/**"
 	]),
 	// rules per-filetype

@@ -4,7 +4,6 @@ import vuetify from "../.plugins/vuetify";
 import { withVuetifyTheme } from "./withVuetifyTheme.decorator";
 import "../src/assets/styles/layers.css";
 import "../src/assets/styles/tailwind.css";
-import "@mdi/font/css/materialdesignicons.css";
 import "vuetify/styles";
 
 setup((app) => {

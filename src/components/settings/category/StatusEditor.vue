@@ -100,10 +100,12 @@ watch(
 				</VList>
 			</VCol>
 			<VCol cols="12" md="9">
-				<VCard>
+				<VCard variant="outlined" class="px-5">
+					<VCardTitle>{{ isNewStatus ? "Add Status" : "Edit Status" }}</VCardTitle>
 					<VForm ref="formRef" v-model="formValidationStatus">
 						<VTextField
 							v-model="editingStatus.name"
+							class="mb-5"
 							label="Name"
 							:rules="[(value) => HasValue(value, 'Name')]"
 						/>

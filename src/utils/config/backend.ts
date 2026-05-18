@@ -2,15 +2,34 @@ import PocketBase, { type RecordService } from "pocketbase";
 import type { DatabaseWhirlpool } from "@/utils/database/models/DatabaseWhirlpool.ts";
 import type { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.ts";
 
+/** Tweaked version of the DatabaseWhirlpool type which requires syncCode and omits unsyncedChanges. */
+export type ServerWhirlpool = Omit<
+	InstanceType<typeof DatabaseWhirlpool>,
+	"unsyncedChanges" | "syncCode" | "id"
+> & {
+	id?: string;
+	clientId: string;
+	syncCode: string;
+};
+
+export type ServerCategory = Omit<
+	InstanceType<typeof DatabaseCategory>,
+	"unsyncedChanges" | "syncCode" | "id"
+> & {
+	id?: string;
+	clientId: string;
+	syncCode: string;
+};
+
 interface APIUser {
 	syncCode: string;
-	syncedOn: Date;
+	syncedOn: string;
 }
 
 interface TypedPocketBase extends PocketBase {
 	collection(name: string): RecordService;
-	collection(name: "whirlpools"): RecordService<DatabaseWhirlpool>;
-	collection(name: "categories"): RecordService<DatabaseCategory>;
+	collection(name: "whirlpools"): RecordService<ServerWhirlpool>;
+	collection(name: "categories"): RecordService<ServerCategory>;
 	collection(name: "users"): RecordService<APIUser>;
 }
 
@@ -32,8 +51,9 @@ class WhirlpoolAPI {
 	}
 
 	async Authenticate(syncCode: string) {
-		await this.instance.collection("whirlpools").authWithPassword(syncCode, syncCode);
-		await this.instance.collection("categories").authWithPassword(syncCode, syncCode);
+		return await this.instance
+			.collection("users")
+			.authWithPassword(syncCode, import.meta.env.VITE_API_PASSWORD);
 	}
 
 	async Logout() {
