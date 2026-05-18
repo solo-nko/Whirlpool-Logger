@@ -328,6 +328,7 @@ onMounted(() => {
 						/>
 					</VCol>
 					<VCol v-if="seriesFieldMods?.hidden !== true">
+						<!--	TODO: Add soft autocomplete. Maintain filtered list of items that have a series defined -->
 						<VTextField
 							v-model="entryModel.series"
 							:label="seriesFieldMods?.rename || 'Series'"

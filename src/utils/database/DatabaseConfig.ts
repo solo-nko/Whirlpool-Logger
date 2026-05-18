@@ -16,7 +16,10 @@ const defaultCategories: Category[] = [
 	{
 		id: ulid(),
 		name: "Games",
-		modifiedFields: [],
+		modifiedFields: [
+			{ field: "chapter", hidden: true },
+			{ field: "volume", hidden: true }
+		],
 		extraFields: [],
 		displayOrder: 1,
 		availableStatuses: [

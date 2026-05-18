@@ -3,6 +3,7 @@ import type { Category } from "@/utils/types/Category.ts";
 import useCategoriesStore from "@/stores/categories.ts";
 import type { IDashboard } from "@/utils/types/IDashboard.ts";
 import LocalStorageKeys from "@/utils/config/LocalStorageKeys.ts";
+import localStorageKeys from "@/utils/config/LocalStorageKeys.ts";
 
 const useSettingsStore = defineStore("settings-store", () => {
 	const categoryStore = useCategoriesStore();
@@ -69,7 +70,7 @@ const useSettingsStore = defineStore("settings-store", () => {
 			);
 		}
 	}
-	/** Update dashboards to reflect changes made in Category Editor. TODO: Running this (or deleting the dashboard key in localstorage and refreshing) is necessary after using the importer, or the dashboards may not display correctly */
+	/** Update dashboards to reflect changes made in Category Editor. */
 	function UpdateDashboardsTable(category: Category) {
 		const findDashboardIndex = dashboards.value.findIndex(
 			(dash) => dash.categoryId === category.id
@@ -80,6 +81,10 @@ const useSettingsStore = defineStore("settings-store", () => {
 				noneStatus
 			];
 		}
+	}
+
+	function ResetDashboards() {
+		localStorage.removeItem(localStorageKeys.Dashboards);
 	}
 
 	// watch for categories to finish querying from Dexie, and populate settings in response
@@ -128,7 +133,8 @@ const useSettingsStore = defineStore("settings-store", () => {
 		dashboards,
 		displayedDashboards,
 		PopulateDashboardsTable,
-		UpdateDashboardsTable
+		UpdateDashboardsTable,
+		ResetDashboards
 	};
 });
 

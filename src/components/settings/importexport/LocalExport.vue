@@ -3,18 +3,17 @@ import { ExportDatabase, ImportDatabase } from "@/utils/ImportExportUtils.ts";
 import useSettingsStore from "@/stores/settings.ts";
 
 const settingsStore = useSettingsStore();
-const uploadedFile = ref<File | null>(null);
+const uploadedFile = ref<File | undefined>(undefined);
+const overwrite = ref<boolean>(true);
 
 const onClickExport = async () => {
 	await ExportDatabase();
 };
 const onClickImport = async () => {
-	if (uploadedFile.value === null) return;
-	const result = await ImportDatabase(uploadedFile.value);
+	if (uploadedFile.value === undefined || uploadedFile.value === null) return;
+	const result = await ImportDatabase(uploadedFile.value, overwrite.value);
 	if (result.message) settingsStore.DisplayToast(result.message);
 };
-
-// TODO: add option to choose between "overwrite" and "add", basically whether to add on top of existing database, or replace it with what's imported in the json.
 </script>
 
 <template>
@@ -22,6 +21,10 @@ const onClickImport = async () => {
 		<VCol>
 			<h2>Local Import and Export</h2>
 			<p>For people who prefer to move their data around the old-fashioned way.</p>
+		</VCol>
+	</VRow>
+	<VRow>
+		<VCol>
 			<VLabel>Export Whirlpool Logs to a local file.</VLabel>
 			<p>
 				Export your entire database to a small JSON file. You can later use the import area below to
@@ -33,22 +36,32 @@ const onClickImport = async () => {
 	</VRow>
 	<VRow>
 		<VCol>
-			<VRow>
+			<VRow density="compact">
 				<VCol>
 					<VLabel>Import Whirlpool Logs from local file</VLabel>
 					<p>You can import your database from a local JSON file.</p>
 				</VCol>
 			</VRow>
-			<VRow>
+			<VRow density="compact">
+				<VCol>
+					<VCheckboxBtn v-model="overwrite" label="Overwrite existing database" />
+				</VCol>
+			</VRow>
+			<VRow class="items-center" density="compact">
 				<VCol cols="12" md="9">
 					<VFileInput
 						v-model="uploadedFile"
 						label="Place database file here..."
 						accept=".json"
 						clearable
+						hide-details
 					/>
 				</VCol>
-				<VCol><VBtn @click="onClickImport">Import Whirlpool Logs</VBtn></VCol>
+				<VCol>
+					<VBtn :disabled="uploadedFile === undefined" @click="onClickImport">
+						Import Whirlpool Logs
+					</VBtn>
+				</VCol>
 			</VRow>
 		</VCol>
 	</VRow>
