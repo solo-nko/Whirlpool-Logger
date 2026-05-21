@@ -246,6 +246,7 @@ const updateCategory = async () => {
 		await UpdateWhirlpoolExtraFields();
 		await LoggerDatabase.categories.update(editingModel.value.id, {
 			// Dexie internally uses structuredClone for its put and add operations. structuredClone can't be used on Proxies, and Vue creates Proxies of object refs to maintain reactivity. Thus, when using a ref (or reactive) that refers to an object, it is likely necessary to use DeepRaw, or Vue's provided toRaw function to pull the object out from the reactive Proxy. Otherwise, Dexie won't be able to operate on it. This should not be an issue for refs based on primitive values such as strings and numbers, which is why name and displayOrder do not need this treatment.
+			// TODO: actual change detection
 			name: editingModel.value.name,
 			displayOrder: editingModel.value.displayOrder,
 			modifiedFields: DeepToRaw(editingModel.value.modifiedFields),

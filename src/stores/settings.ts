@@ -3,7 +3,6 @@ import type { Category } from "@/utils/types/Category.ts";
 import useCategoriesStore from "@/stores/categories.ts";
 import type { IDashboard } from "@/utils/types/IDashboard.ts";
 import LocalStorageKeys from "@/utils/config/LocalStorageKeys.ts";
-import localStorageKeys from "@/utils/config/LocalStorageKeys.ts";
 
 const useSettingsStore = defineStore("settings-store", () => {
 	const categoryStore = useCategoriesStore();
@@ -84,7 +83,7 @@ const useSettingsStore = defineStore("settings-store", () => {
 	}
 
 	function ResetDashboards() {
-		localStorage.removeItem(localStorageKeys.Dashboards);
+		localStorage.removeItem(LocalStorageKeys.Dashboards);
 	}
 
 	// watch for categories to finish querying from Dexie, and populate settings in response

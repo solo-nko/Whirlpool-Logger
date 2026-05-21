@@ -2,6 +2,7 @@
 import { DateTime } from "luxon";
 import useSyncStore from "@/stores/sync.ts";
 import useSettingsStore from "@/stores/settings.ts";
+import SyncConfirm from "@/components/settings/importexport/SyncConfirm.vue";
 
 const syncStore = useSyncStore();
 const settingsStore = useSettingsStore();
@@ -10,6 +11,7 @@ const syncCodeInputValid = ref<boolean>(false);
 const requestButtonLoading = ref(false);
 const validateButtonLoading = ref(false);
 const syncButtonLoading = ref(false);
+const syncConfirmOpen = ref(false);
 
 const lastSyncedMessage = computed(() => {
 	const lastSynced = syncStore.lastSynced;
@@ -18,6 +20,7 @@ const lastSyncedMessage = computed(() => {
 });
 
 const syncPossible = ref<boolean>(syncStore.CheckAuth() || false);
+const hasSyncedBefore = computed(() => syncStore.lastSynced !== null);
 
 const syncCodeRules = {
 	hasValue: (value: string) => {
@@ -46,20 +49,39 @@ const getNewSyncCode = async () => {
 	requestButtonLoading.value = true;
 	const result = await syncStore.RequestSyncCode();
 	if (result.message) settingsStore.DisplayToast(result.message);
-	if (result.result === "ok") syncPossible.value = true;
+	// if (result.result === "ok") syncPossible.value = true;
 	requestButtonLoading.value = false;
 };
 
-const sync = async () => {
+const onConfirmSync = async () => {
 	syncButtonLoading.value = true;
+	syncConfirmOpen.value = false;
 	const syncCode = syncStore.syncCode;
 	if (syncCode && syncStore.ValidateSyncCode(syncCode)) {
-		const result = await syncStore.SyncWithServer(syncCode);
-		const syncMessage = result.message;
-		if (syncMessage) settingsStore.DisplayToast(syncMessage);
+		syncStore.syncInProgress = true;
+		// As we already set up the synced data in the display prompt (SyncConfirm), we proceed directly to sync operations
+		const syncResult = await syncStore
+			.SyncWithServer(syncCode)
+			.finally(() => (syncStore.syncInProgress = false));
+		if (syncResult.message) settingsStore.DisplayToast(syncResult.message);
 	}
 	syncButtonLoading.value = false;
 };
+
+const onClickSync = () => {
+	syncConfirmOpen.value = true;
+};
+
+const onCancelSync = () => {
+	syncConfirmOpen.value = false;
+};
+
+watch(
+	() => syncStore.syncCode,
+	() => {
+		syncPossible.value = syncStore.CheckAuth();
+	}
+);
 </script>
 
 <template>
@@ -79,6 +101,7 @@ const sync = async () => {
 					v-model="syncStore.syncCode"
 					label="Sync Code"
 					:rules="[syncCodeRules.hasValue, syncCodeRules.length, syncCodeRules.regex]"
+					clearable
 				/>
 			</VForm>
 		</VCol>
@@ -109,17 +132,26 @@ const sync = async () => {
 			</VBtn>
 		</VCol>
 		<VCol class="flex-grow-0 h-full self-center">
-			<VBtn :loading="syncButtonLoading" :disabled="!syncPossible" @click="sync">Sync</VBtn>
+			<VBtn :loading="syncButtonLoading" :disabled="!syncPossible" @click="onClickSync">Sync</VBtn>
 		</VCol>
 		<VCol cols="12" md="8">
 			<VCheckbox
 				v-model="syncStore.autoSyncEnabled"
-				:disabled="!syncPossible"
-				label="Sync Automatically"
+				:disabled="!syncPossible || !hasSyncedBefore"
+				:label="
+					hasSyncedBefore
+						? 'Sync Automatically'
+						: 'Sync Automatically (Complete a manual sync first)'
+				"
 				:hide-details="true"
 			></VCheckbox>
 		</VCol>
 	</VRow>
+	<SyncConfirm
+		:is-open="syncConfirmOpen"
+		@confirm-sync="onConfirmSync"
+		@cancel-sync="onCancelSync"
+	/>
 </template>
 
 <style scoped></style>

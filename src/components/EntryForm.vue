@@ -170,8 +170,9 @@ function ResetFields() {
 	entryModel.value = GenerateNewWhirlpool(props.categoryId);
 }
 
-function OnSaveEntry(whichType: "add" | "update") {
+async function OnSaveEntry(whichType: "add" | "update") {
 	emits("save", whichType);
+	if (syncStore.autoSyncEnabled) await syncStore.AutoSync();
 }
 
 async function AddEntry() {
@@ -197,7 +198,7 @@ async function AddEntry() {
 			ResetFields();
 			settingsStore.DisplayToast("Entry added!");
 		});
-	OnSaveEntry("add");
+	await OnSaveEntry("add");
 }
 
 async function UpdateEntry() {
@@ -217,13 +218,14 @@ async function UpdateEntry() {
 			tags: DeepToRaw(entryModel.value.tags),
 			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toISO(),
 			updatedOn: now.toISO(),
-			createdOn: entryModel.value.createdOn.toISO() ?? "unknown"
+			createdOn: entryModel.value.createdOn.toISO() ?? "unknown",
+			unsyncedChanges: true
 		})
 		.then(() => {
 			ResetFields();
 			settingsStore.DisplayToast("Entry updated!");
 		});
-	OnSaveEntry("update");
+	await OnSaveEntry("update");
 	emits("close");
 }
 

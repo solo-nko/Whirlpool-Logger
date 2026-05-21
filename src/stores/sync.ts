@@ -25,26 +25,37 @@ const useSyncStore = defineStore("sync-store", () => {
 		getLocalStorageLastSynced ? DateTime.fromISO(getLocalStorageLastSynced) : null
 	);
 	const MAX_BATCH_LENGTH = 50;
+	const serverWhirlpools = ref<ServerWhirlpool[] | null>(null);
+	const serverCategories = ref<ServerCategory[] | null>(null);
 
-	async function SetUnsyncedChanges(ids: string[], setting = false) {
-		await LoggerDatabase.whirlpools.bulkUpdate(
-			ids.map((id) => ({
-				key: id,
-				changes: { unsyncedChanges: setting }
-			}))
-		);
+	async function SetUnsyncedChanges(params: {
+		ids: string[];
+		type: "whirlpools" | "categories";
+		setting?: boolean;
+	}) {
+		const { ids, type, setting } = params;
+		if (type === "whirlpools") {
+			await LoggerDatabase.whirlpools.bulkUpdate(
+				ids.map((id) => ({
+					key: id,
+					changes: { unsyncedChanges: setting ?? false }
+				}))
+			);
+		} else {
+			await LoggerDatabase.categories.bulkUpdate(
+				ids.map((id) => ({
+					key: id,
+					changes: { unsyncedChanges: setting ?? false }
+				}))
+			);
+		}
 	}
 
 	function CheckAuth() {
-		if (!api.value.instance.authStore.isValid) return false;
-		if (
-			lastSynced.value &&
-			lastSynced.value.isValid &&
-			lastSynced.value.diffNow(["hours"]).hours < -48
-		) {
-			return false;
-		}
-		return true;
+		const { authStore } = api.value.instance;
+		if (authStore.record === null) return false;
+		if (authStore.record.syncCode !== syncCode.value) return false;
+		return authStore.isValid;
 	}
 
 	async function ApplySyncCodeToWhirlpools(newSyncCode: string) {
@@ -72,352 +83,366 @@ const useSyncStore = defineStore("sync-store", () => {
 		return testCondition.test(code);
 	}
 
-	async function SyncCategories(
-		clientCategories: ServerCategory[],
-		serverCategories: ServerCategory[]
-	) {
-		// No categories on server, meaning this is likely a first-time sync
-		if (serverCategories.length === 0) {
+	async function Synchronizer(params: {
+		syncCode: string;
+		clientCategories: DatabaseCategory[];
+		serverCategories: ServerCategory[];
+		clientWhirlpools: DatabaseWhirlpool[];
+		serverWhirlpools: ServerWhirlpool[];
+	}) {
+		const { syncCode, clientCategories, serverCategories, clientWhirlpools, serverWhirlpools } =
+			params;
+		// if there is no server data, the source of truth is the client.
+		// if there is server data but no client data, the source of truth is the server.
+		// if there is server data and there is client data...
+		// the source of truth is the server, except where client data has unsyncedChanges set to true.
+
+		// map categories
+		const clientCategoriesMap = new Map<string, ServerCategory>();
+		const serverCategoriesMap = new Map<string, ServerCategory>();
+		for (const clientCategory of clientCategories) {
+			const { id, ...everythingElse } = clientCategory;
+			clientCategoriesMap.set(id, {
+				...everythingElse,
+				clientId: id,
+				syncCode: everythingElse.syncCode ?? syncCode
+			});
+		}
+		for (const serverCategory of serverCategories) {
+			serverCategoriesMap.set(serverCategory.clientId, serverCategory);
+		}
+
+		// map whirlpools
+		const clientWhirlpoolsMap = new Map<string, ServerWhirlpool>();
+		const serverWhirlpoolsMap = new Map<string, ServerWhirlpool>();
+		for (const clientWhirlpool of clientWhirlpools) {
+			const { id, ...everythingElse } = clientWhirlpool;
+			clientWhirlpoolsMap.set(id, {
+				...everythingElse,
+				clientId: id,
+				syncCode: everythingElse.syncCode ?? syncCode
+			});
+		}
+		for (const serverWhirlpool of serverWhirlpools) {
+			serverWhirlpoolsMap.set(serverWhirlpool.clientId, serverWhirlpool);
+		}
+
+		async function OverwriteLocalCategories() {
+			await LoggerDatabase.categories.clear();
+			await LoggerDatabase.categories.bulkAdd(
+				serverCategories.map((serverCategory): DatabaseCategory => {
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					const { id, ...everythingElse } = serverCategory;
+					console.log(everythingElse);
+					return {
+						...everythingElse,
+						id: everythingElse.clientId,
+						unsyncedChanges: false
+					};
+				})
+			);
+		}
+
+		async function OverwriteLocalWhirlpools() {
+			await LoggerDatabase.whirlpools.clear();
+			await LoggerDatabase.whirlpools.bulkAdd(
+				serverWhirlpools.map((serverWhirlpool): DatabaseWhirlpool => {
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					const { id, ...everythingElse } = serverWhirlpool;
+					console.log(everythingElse);
+					return {
+						...everythingElse,
+						id: everythingElse.clientId,
+						unsyncedChanges: false
+					};
+				})
+			);
+		}
+
+		async function UploadLocalCategories() {
+			// The server is configured to only accept so many requests at a time, so we create a "batch of batches." Once a single batch has reached the limit, we set it aside and create a new one.
 			const createBatches: ServerCategory[][] = [];
-			let createBatch: ServerCategory[] = [];
-			clientCategories.forEach((category) => {
-				// check if current batch has reached limit. if so add it to the batch array, then start a new one
-				if (createBatch.length === MAX_BATCH_LENGTH) {
-					createBatches.push(createBatch);
-					createBatch = [];
+			let currentCreateBatch: ServerCategory[] = [];
+			clientCategories.forEach((clientCategory) => {
+				// check if current batch ahs reached limit. If so, add it to the batch array, then start a new one
+				if (currentCreateBatch.length === MAX_BATCH_LENGTH) {
+					createBatches.push(currentCreateBatch);
+					currentCreateBatch = [];
 				}
-				createBatch.push({ ...category, id: undefined });
+				// to avoid needless use of bandwidth, only send categories that have unsynced changes
+				if (clientCategory.unsyncedChanges) {
+					currentCreateBatch.push({
+						...clientCategory,
+						id: undefined,
+						clientId: clientCategory.id,
+						syncCode: clientCategory.syncCode ?? syncCode
+					});
+				}
 			});
+
 			// add final batch
-			if (createBatch.length > 0) createBatches.push(createBatch);
-			// create and send a set of batch requests, up to MAX_BATCH_REQUESTS requests for batch
+			if (currentCreateBatch.length > 0) createBatches.push(currentCreateBatch);
+
+			// create and send set of batch requests
 			if (createBatches.length > 0) {
+				// track which categories have been synced
 				const syncedIds: string[] = [];
 				for (const batch of createBatches) {
-					const batchCreateCategoryRequest = api.value.instance.createBatch();
+					const createCategoryRequestBatch = api.value.instance.createBatch();
 					batch.forEach((request) => {
-						batchCreateCategoryRequest.collection("categories").create({ ...request });
-						syncedIds.push(request.clientId);
+						createCategoryRequestBatch.collection("categories").create({ ...request });
 					});
-					const responses = await batchCreateCategoryRequest.send();
+					const responses = await createCategoryRequestBatch.send();
 					responses.forEach((response) => {
 						if (response.status === 200) {
-							syncedIds.push(response.body.id);
+							syncedIds.push(response.body.clientId);
 						}
 					});
 				}
-				// for each successfully synced item, flip 'unsyncedChanges' property to false
-				await SetUnsyncedChanges(syncedIds);
+				// for each successfully synced item, flip 'unsyncedChanges' property to false.
+				await SetUnsyncedChanges({ ids: syncedIds, type: "categories" });
 			}
-		} else {
-			// Switch from arrays to maps for performance
-			const clientCategoriesMap = new Map<string, ServerCategory>();
-			const serverCategoriesMap = new Map<string, ServerCategory>();
-			for (const clientCategory of clientCategories) {
-				clientCategoriesMap.set(clientCategory.clientId, clientCategory);
-			}
-			for (const serverCategory of serverCategories) {
-				serverCategoriesMap.set(serverCategory.clientId, serverCategory);
-			}
-
-			const upsertBatches: ServerCategory[][] = [];
-			let upsertBatch: ServerCategory[] = [];
-
-			for (const clientCategory of clientCategoriesMap) {
-				// check if current batch has reached limit. If so, add it to the batch array, then start a new one
-				if (upsertBatch.length === MAX_BATCH_LENGTH) {
-					upsertBatches.push(upsertBatch);
-					upsertBatch = [];
-				}
-
-				const getServerCategory = serverCategoriesMap.get(clientCategory[0]);
-				// Skip client categories that don't exist on the server (because it's not currently possible for the user to create categories, the only way this should happen is via categories created at db initialization)
-				if (getServerCategory === undefined) continue;
-				const serverUpdatedOn = DateTime.fromISO(getServerCategory.updatedOn);
-				const clientUpdatedOn = DateTime.fromISO(clientCategory[1].updatedOn);
-				// If server category is outdated, update it.
-				if (serverUpdatedOn < clientUpdatedOn) {
-					upsertBatch.push({ ...clientCategory[1] });
-				}
-			}
-			// add final batch
-			if (upsertBatch.length > 0) upsertBatches.push(upsertBatch);
-
-			if (upsertBatches.length > 0) {
-				const syncedIds: string[] = [];
-				for (const batch of upsertBatches) {
-					const batchUpsertCategoryRequest = api.value.instance.createBatch();
-					batch.forEach((request) => {
-						batchUpsertCategoryRequest.collection("categories").upsert({ ...request });
-						syncedIds.push(request.clientId);
-					});
-					const responses = await batchUpsertCategoryRequest.send();
-					responses.forEach((response) => {
-						if (response.status === 200) {
-							syncedIds.push(response.body.id);
-						}
-					});
-				}
-
-				// for each successfully synced item, flip 'unsyncedChanges' property to false
-				await SetUnsyncedChanges(syncedIds);
-			}
-
-			const newClientCategories: DatabaseCategory[] = [];
-			const updatedClientCategories: DatabaseCategory[] = [];
-			for (const serverCategory of serverCategoriesMap) {
-				const getClientCategory = clientCategoriesMap.get(serverCategory[0]);
-				// If client is missing any categories that the server has, create them.
-				if (getClientCategory === undefined) {
-					newClientCategories.push({
-						...serverCategory[1],
-						id: serverCategory[1].clientId,
-						unsyncedChanges: false
-					});
-				} else {
-					const serverUpdatedOn = DateTime.fromISO(serverCategory[1].updatedOn);
-					const clientUpdatedOn = DateTime.fromISO(getClientCategory.updatedOn);
-
-					// If client category is outdated, update it
-					if (clientUpdatedOn < serverUpdatedOn) {
-						updatedClientCategories.push({
-							...serverCategory[1],
-							id: serverCategory[1].clientId,
-							unsyncedChanges: false
-						});
-					}
-				}
-			}
-			/*
-			 * https://dexie.org/docs/Table/Table.update()
-			 * "The difference between update() and put() is that update() will only apply the given changes to the object while put() will replace the entire object"
-			 * */
-			await LoggerDatabase.categories.bulkPut([...newClientCategories, ...updatedClientCategories]);
 		}
-	}
 
-	async function SyncWhirlpools(
-		clientWhirlpools: ServerWhirlpool[],
-		serverWhirlpools: ServerWhirlpool[]
-	) {
-		// No whirlpools on server, meaning this is likely a first-time sync
-		if (serverWhirlpools.length === 0) {
+		async function UploadLocalWhirlpools() {
 			const createBatches: ServerWhirlpool[][] = [];
-			let createBatch: ServerWhirlpool[] = [];
-			clientWhirlpools.forEach((whirlpool) => {
-				// check if current batch has reached limit. If so, add it to the batch array, then start a new one.
-				if (createBatch.length === MAX_BATCH_LENGTH) {
-					createBatches.push(createBatch);
-					createBatch = [];
+			let currentCreateBatch: ServerWhirlpool[] = [];
+			clientWhirlpools.forEach((clientWhirlpool) => {
+				if (currentCreateBatch.length === MAX_BATCH_LENGTH) {
+					createBatches.push(currentCreateBatch);
+					currentCreateBatch = [];
 				}
-				createBatch.push({ ...whirlpool, id: undefined });
+				if (clientWhirlpool.unsyncedChanges) {
+					currentCreateBatch.push({
+						...clientWhirlpool,
+						id: undefined,
+						clientId: clientWhirlpool.id,
+						syncCode: clientWhirlpool.syncCode ?? syncCode
+					});
+				}
 			});
 
-			// add final batch
-			if (createBatch.length > 0) createBatches.push(createBatch);
+			if (currentCreateBatch.length > 0) createBatches.push(currentCreateBatch);
 
-			// create and send a set of batch requests, up to MAX_BATCH_REQUESTS requests per batch
 			if (createBatches.length > 0) {
 				const syncedIds: string[] = [];
 				for (const batch of createBatches) {
-					const batchCreateWhirlpoolsRequest = api.value.instance.createBatch();
+					const createWhirlpoolRequestBatch = api.value.instance.createBatch();
 					batch.forEach((request) => {
-						batchCreateWhirlpoolsRequest.collection("whirlpools").create({ ...request });
+						createWhirlpoolRequestBatch.collection("whirlpools").create({ ...request });
 					});
-					const responses = await batchCreateWhirlpoolsRequest.send();
+					const responses = await createWhirlpoolRequestBatch.send();
 					responses.forEach((response) => {
 						if (response.status === 200) {
-							syncedIds.push(response.body.id);
+							syncedIds.push(response.body.clientId);
 						}
 					});
 				}
-				// for each successfully synced item, flip 'unsyncedChanges' property to false
-				await SetUnsyncedChanges(syncedIds);
+				await SetUnsyncedChanges({ ids: syncedIds, type: "whirlpools" });
 			}
+		}
+
+		if (serverWhirlpools.length === 0) {
+			await UploadLocalCategories();
+			await UploadLocalWhirlpools();
+		} else if (clientWhirlpools.length === 0) {
+			await OverwriteLocalCategories();
+			await OverwriteLocalWhirlpools();
 		} else {
-			// Switch from arrays to maps for performance
-			const clientWhirlpoolsMap = new Map<string, ServerWhirlpool>();
-			const serverWhirlpoolsMap = new Map<string, ServerWhirlpool>();
-			for (const clientWhirlpool of clientWhirlpools) {
-				clientWhirlpoolsMap.set(clientWhirlpool.clientId, clientWhirlpool);
-			}
-			for (const serverWhirlpool of serverWhirlpools) {
-				serverWhirlpoolsMap.set(serverWhirlpool.clientId, serverWhirlpool);
-			}
+			const unsyncedCategories = new Map(
+				clientCategories.filter((cat) => cat.unsyncedChanges).map((cat) => [cat.id, cat])
+			);
+			const unsyncedWhirlpools = new Map(
+				clientWhirlpools.filter((wp) => wp.unsyncedChanges).map((wp) => [wp.id, wp])
+			);
 
-			const upsertBatches: ServerWhirlpool[][] = [];
-			let upsertBatch: ServerWhirlpool[] = [];
+			const categoriesToDownload = serverCategories
+				.filter((serverCat) => {
+					const getLocalCategory = clientCategoriesMap.get(serverCat.clientId);
+					// if there isn't a local category, we assume that means the server version is new. otherwise, we compare updatedOn fields.
+					const serverIsNewer =
+						getLocalCategory === undefined ||
+						DateTime.fromISO(serverCat.updatedOn) > DateTime.fromISO(getLocalCategory.updatedOn);
+					return !unsyncedCategories.has(serverCat.clientId) && serverIsNewer;
+				})
+				.map((finalCat): DatabaseCategory => {
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					const { id, ...everythingElse } = finalCat;
+					return {
+						...everythingElse,
+						id: everythingElse.clientId,
+						unsyncedChanges: false
+					};
+				});
 
-			for (const clientWhirlpool of clientWhirlpoolsMap) {
-				// check if current batch has reached limit. If so, add it to the batch array, then start a new one.
-				if (upsertBatch.length === MAX_BATCH_LENGTH) {
-					upsertBatches.push(upsertBatch);
-					upsertBatch = [];
+			const whirlpoolsToDownload = serverWhirlpools
+				.filter((serverWp) => {
+					const getLocalWhirlpool = clientWhirlpoolsMap.get(serverWp.clientId);
+					const serverIsNewer =
+						getLocalWhirlpool === undefined ||
+						DateTime.fromISO(serverWp.updatedOn) > DateTime.fromISO(getLocalWhirlpool.updatedOn);
+					return !unsyncedWhirlpools.has(serverWp.clientId) && serverIsNewer;
+				})
+				.map((finalWp): DatabaseWhirlpool => {
+					// eslint-disable-next-line @typescript-eslint/no-unused-vars
+					const { id, ...everythingElse } = finalWp;
+					return {
+						...everythingElse,
+						id: everythingElse.clientId,
+						unsyncedChanges: false
+					};
+				});
+
+			// write categories to client
+			await LoggerDatabase.categories.bulkPut(categoriesToDownload);
+			// write whirlpools to client
+			await LoggerDatabase.whirlpools.bulkPut(whirlpoolsToDownload);
+
+			// send categories to server
+			const upsertCategoryBatches: ServerCategory[][] = [];
+			let currentUpsertCategoryBatch: ServerCategory[] = [];
+			for (const unsyncedCategory of unsyncedCategories) {
+				if (currentUpsertCategoryBatch.length === MAX_BATCH_LENGTH) {
+					upsertCategoryBatches.push(currentUpsertCategoryBatch);
+					currentUpsertCategoryBatch = [];
 				}
-
-				const getServerWhirlpool = serverWhirlpoolsMap.get(clientWhirlpool[0]);
-				// If server is missing any whirlpools that the client has, create them (via upsert)
-				if (getServerWhirlpool === undefined) {
-					upsertBatch.push({ ...clientWhirlpool[1] });
-				} else {
-					// If server whirlpool is outdated, update it
-					const serverUpdatedOn = DateTime.fromISO(getServerWhirlpool.updatedOn);
-					const clientUpdatedOn = DateTime.fromISO(clientWhirlpool[1].updatedOn);
-
-					if (serverUpdatedOn < clientUpdatedOn) {
-						upsertBatch.push({ ...clientWhirlpool[1] });
-					}
-				}
+				const getServerCategory = serverCategoriesMap.get(unsyncedCategory[0]);
+				// the category exists on the server, this is an update operation and we'll need the server id. otherwise, we leave id undefined and the server will generate one when it creates a new record for the category.
+				currentUpsertCategoryBatch.push({
+					...unsyncedCategory[1],
+					id: getServerCategory ? getServerCategory.id : undefined,
+					clientId: unsyncedCategory[1].id,
+					syncCode: syncCode
+				});
 			}
+
 			// add final batch
-			if (upsertBatch.length > 0) upsertBatches.push(upsertBatch);
-
-			if (upsertBatches.length > 0) {
+			if (currentUpsertCategoryBatch.length > 0)
+				upsertCategoryBatches.push(currentUpsertCategoryBatch);
+			if (upsertCategoryBatches.length > 0) {
 				const syncedIds: string[] = [];
-				for (const batch of upsertBatches) {
-					const batchUpsertWhirlpoolsRequest = api.value.instance.createBatch();
+				for (const batch of upsertCategoryBatches) {
+					const upsertCategoryRequestBatch = api.value.instance.createBatch();
 					batch.forEach((request) => {
-						batchUpsertWhirlpoolsRequest.collection("whirlpools").upsert({ ...request });
-						syncedIds.push(request.clientId);
+						upsertCategoryRequestBatch.collection("categories").upsert({ ...request });
 					});
-					const responses = await batchUpsertWhirlpoolsRequest.send();
+					const responses = await upsertCategoryRequestBatch.send();
 					responses.forEach((response) => {
 						if (response.status === 200) {
-							syncedIds.push(response.body.id);
+							syncedIds.push(response.body.clientId);
 						}
 					});
 				}
-				// for each successfully synced item, flip 'unsyncedChanges' property to false
-				await SetUnsyncedChanges(syncedIds);
+
+				await SetUnsyncedChanges({ ids: syncedIds, type: "categories" });
 			}
 
-			const newClientWhirlpools: DatabaseWhirlpool[] = [];
-			const updatedClientWhirlpools: DatabaseWhirlpool[] = [];
-			for (const serverWhirlpool of serverWhirlpoolsMap) {
-				const getClientWhirlpool = clientWhirlpoolsMap.get(serverWhirlpool[0]);
-				// If client is missing any whirlpools that the server has, create them
-				if (getClientWhirlpool === undefined) {
-					newClientWhirlpools.push({
-						...serverWhirlpool[1],
-						id: serverWhirlpool[1].clientId,
-						unsyncedChanges: false
-					});
-				} else {
-					const serverUpdatedOn = DateTime.fromISO(serverWhirlpool[1].updatedOn);
-					const clientUpdatedOn = DateTime.fromISO(serverWhirlpool[1].updatedOn);
-
-					// If client whirlpool is outdated, update it
-					if (clientUpdatedOn < serverUpdatedOn) {
-						updatedClientWhirlpools.push({
-							...serverWhirlpool[1],
-							id: serverWhirlpool[1].clientId,
-							unsyncedChanges: false
-						});
-					}
+			// send whirlpools to server
+			// send categories to server
+			const upsertWhirlpoolBatches: ServerWhirlpool[][] = [];
+			let currentUpsertWhirlpoolBatch: ServerWhirlpool[] = [];
+			for (const unsyncedWhirlpool of unsyncedWhirlpools) {
+				if (currentUpsertWhirlpoolBatch.length === MAX_BATCH_LENGTH) {
+					upsertWhirlpoolBatches.push(currentUpsertWhirlpoolBatch);
+					currentUpsertWhirlpoolBatch = [];
 				}
+				const getServerWhirlpool = serverWhirlpoolsMap.get(unsyncedWhirlpool[0]);
+				currentUpsertWhirlpoolBatch.push({
+					...unsyncedWhirlpool[1],
+					id: getServerWhirlpool ? getServerWhirlpool.id : undefined,
+					clientId: unsyncedWhirlpool[1].id,
+					syncCode: syncCode
+				});
 			}
 
-			await LoggerDatabase.whirlpools.bulkPut([...newClientWhirlpools, ...updatedClientWhirlpools]);
+			// add final batch
+			if (currentUpsertWhirlpoolBatch.length > 0)
+				upsertWhirlpoolBatches.push(currentUpsertWhirlpoolBatch);
+			if (upsertWhirlpoolBatches.length > 0) {
+				const syncedIds: string[] = [];
+				for (const batch of upsertWhirlpoolBatches) {
+					const upsertWhirlpoolRequestBatch = api.value.instance.createBatch();
+					batch.forEach((request) => {
+						upsertWhirlpoolRequestBatch.collection("whirlpools").upsert({ ...request });
+					});
+					const responses = await upsertWhirlpoolRequestBatch.send();
+					responses.forEach((response) => {
+						if (response.status === 200) {
+							syncedIds.push(response.body.clientId);
+						}
+					});
+				}
+
+				await SetUnsyncedChanges({ ids: syncedIds, type: "whirlpools" });
+			}
 		}
 	}
 
-	async function SyncWithServer(inputSyncCode: string): Promise<IProcessResult> {
-		syncInProgress.value = true;
-		let syncError: boolean = false;
-
-		// make sure current sync code is properly applied to data
-		await ApplySyncCodeToWhirlpools(inputSyncCode);
-		await ApplySyncCodeToCategories(inputSyncCode);
+	async function GetServerRecords(inputSyncCode: string): Promise<IProcessResult> {
+		let getError: boolean = false;
 
 		// Get server records
-		const serverWhirlpools = await api.value.instance
+		serverWhirlpools.value = await api.value.instance
 			.collection("whirlpools")
 			.getFullList({ filter: `syncCode = '${inputSyncCode}'` })
 			.catch((error) => {
 				console.error("Sync Error: ", error);
-				syncError = true;
+				getError = true;
 				return [] as ServerWhirlpool[];
 			});
 
-		if (syncError) {
-			syncInProgress.value = false;
+		if (getError) {
+			serverWhirlpools.value = null;
 			return { result: "error", message: "There was an error getting the server whirlpools." };
 		}
 
-		const serverCategories = await api.value.instance
+		serverCategories.value = await api.value.instance
 			.collection("categories")
 			.getFullList({ filter: `syncCode = '${inputSyncCode}'` })
 			.catch((error) => {
 				console.error("Sync Error: ", error);
-				syncError = true;
+				getError = true;
 				return [] as ServerCategory[];
 			});
 
-		if (syncError) {
-			syncInProgress.value = false;
+		if (getError) {
+			serverWhirlpools.value = null;
 			return { result: "error", message: "There was an error getting the server categories." };
 		}
+		return {
+			result: "ok"
+		};
+	}
 
-		// Get client records
-		const clientWhirlpools: ServerWhirlpool[] = whirlpoolStore.databaseWhirlpools
-			? whirlpoolStore.databaseWhirlpools.map(
-					(dbWhirlpool): ServerWhirlpool => ({
-						...dbWhirlpool,
-						id: undefined,
-						clientId: dbWhirlpool.id,
-						syncCode: dbWhirlpool.syncCode === inputSyncCode ? dbWhirlpool.syncCode : inputSyncCode
-					})
-				)
-			: [];
-		const clientCategories = categoryStore.databaseCategories
-			? categoryStore.databaseCategories.map(
-					(dbCategory): ServerCategory => ({
-						...dbCategory,
-						id: undefined,
-						clientId: dbCategory.id,
-						syncCode: dbCategory.syncCode === inputSyncCode ? dbCategory.syncCode : inputSyncCode
-					})
-				)
-			: [];
+	async function SyncWithServer(syncCode: string): Promise<IProcessResult> {
+		let syncError = false;
+		// make sure current sync code is properly applied to data
+		await ApplySyncCodeToWhirlpools(syncCode);
+		await ApplySyncCodeToCategories(syncCode);
 
-		// Sync categories first
-		await SyncCategories(clientCategories, serverCategories).catch((error) => {
-			console.error("Sync Error: ", error);
-			syncInProgress.value = false;
-			syncError = true;
-		});
-		if (syncError) {
-			syncInProgress.value = false;
-			return { result: "error", message: "There was an error syncing the categories." };
+		if (serverWhirlpools.value === null || serverCategories.value === null) {
+			return { result: "error", message: "There was an error resolving server data." };
 		}
-		await SyncWhirlpools(clientWhirlpools, serverWhirlpools).catch((error) => {
+		await Synchronizer({
+			syncCode,
+			serverWhirlpools: toRaw(serverWhirlpools.value) ?? [],
+			serverCategories: toRaw(serverCategories.value) ?? [],
+			clientCategories: categoryStore.databaseCategories ?? [],
+			clientWhirlpools: whirlpoolStore.databaseWhirlpools ?? []
+		}).catch((error) => {
 			console.error("Sync Error: ", error);
 			syncError = true;
 		});
-		if (syncError) {
-			syncInProgress.value = false;
-			return { result: "error", message: "There was an error syncing the whirlpools." };
-		}
 
 		// set lastSynced
 		const now = DateTime.now();
 		lastSynced.value = now;
 		localStorage.setItem(LocalStorageKeys.LastSynced, now.toISO());
 
-		// last step: delete any categories that don't have whirlpools attached to them.
-		const categoriesToDelete: string[] = [];
-		for (const category of clientCategories) {
-			const getAttachedWhirlpool = clientWhirlpools.find(
-				(whirlpool) => whirlpool.categoryId === category.clientId
-			);
-			if (getAttachedWhirlpool === undefined) {
-				categoriesToDelete.push(category.clientId);
-			}
-		}
-		await LoggerDatabase.categories.bulkDelete(categoriesToDelete);
-		// TODO: This code assumes that the user does not create any whirlpools before their first sync. We should create a dialog or other UI that lets the user migrate orphaned whirlpools to the synced ones.
-		syncInProgress.value = false;
-		return { result: "ok", message: "Sync complete." };
+		// TODO: consider what the app should do when you do the following: Input a new sync code, for which you know there is data on the server, while also having existing data locally. I'm thinking the server should be considered the source of truth in such a case.
+		return syncError
+			? { result: "error", message: "An error occurred during sync." }
+			: { result: "ok", message: "Sync Complete" };
 	}
 
 	async function RequestSyncCode(): Promise<IProcessResult> {
@@ -478,8 +503,15 @@ const useSyncStore = defineStore("sync-store", () => {
 				return;
 			}
 		}
-		const result = await SyncWithServer(syncCode.value);
-		if (result.result !== "ok") {
+		const getServerRecords = await GetServerRecords(syncCode.value);
+		if (getServerRecords.result !== "ok") {
+			autoSyncEnabled.value = false;
+			settingsStore.DisplayToast(
+				"There was a problem getting data from the server. Auto Sync has been disabled."
+			);
+		}
+		const syncResult = await SyncWithServer(syncCode.value);
+		if (syncResult.result !== "ok") {
 			autoSyncEnabled.value = false;
 			settingsStore.DisplayToast("There was a problem with sync. Auto Sync has been disabled.");
 		}
@@ -495,14 +527,17 @@ const useSyncStore = defineStore("sync-store", () => {
 	return {
 		api,
 		syncCode,
+		autoSyncEnabled,
+		syncInProgress,
 		lastSynced,
+		serverWhirlpools,
+		serverCategories,
 		CheckAuth,
 		ValidateSyncCode,
-		autoSyncEnabled,
+		GetServerRecords,
 		SyncWithServer,
 		RequestSyncCode,
 		ValidateUser,
-		syncInProgress,
 		AutoSync
 	};
 });

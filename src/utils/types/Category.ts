@@ -8,7 +8,9 @@ import type { DefaultField } from "@/utils/DefaultFieldUtils.ts";
 class Category {
 	id: ULID;
 	name: string;
+	/** Default fields that have been modified */
 	modifiedFields: DefaultField[];
+	/** User-created fields */
 	extraFields: IField[];
 	displayOrder?: number;
 	availableStatuses: IStatus[];
