@@ -42,7 +42,11 @@ onMounted(async () => {
 			</template>
 		</VAppBar>
 		<VMain>
-			<RouterView />
+			<RouterView v-slot="{ Component }">
+				<KeepAlive>
+					<Component :is="Component" />
+				</KeepAlive>
+			</RouterView>
 			<VSnackbar
 				v-model="settingsStore.isToastDisplayed"
 				:text="settingsStore.toastMessage"
