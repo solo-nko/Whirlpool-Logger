@@ -7,7 +7,8 @@ enum SyncScenarios {
 	SERVER_HAS_DATA_CLIENT_HAS_DATA,
 	SERVER_HAS_DATA_CLIENT_NO_DATA,
 	SERVER_NO_DATA_CLIENT_NO_DATA,
-	SERVER_NO_DATA_CLIENT_HAS_DATA
+	SERVER_NO_DATA_CLIENT_HAS_DATA,
+	ERROR_STATUS
 }
 
 type SyncConfirmProps = {
@@ -25,12 +26,14 @@ const settingsStore = useSettingsStore();
 
 const internalIsOpen = ref(isOpen);
 const syncButtonLoading = ref(false);
+const syncPossible = ref(false);
 
 const nonDeletedWhirlpools = computed(() =>
 	whirlpoolStore.clientWhirlpools.filter((whirlpool) => whirlpool.deletedOn === null)
 );
 const serverWhirlpools = computed(() => syncStore.serverWhirlpools ?? []);
 const whichSyncScenario = computed(() => {
+	if (syncPossible.value === false) return SyncScenarios.ERROR_STATUS;
 	// Scenario: No Whirlpools on Client + Whirlpools on Server
 	if (nonDeletedWhirlpools.value.length === 0 && serverWhirlpools.value.length > 0)
 		return SyncScenarios.SERVER_HAS_DATA_CLIENT_NO_DATA;
@@ -67,6 +70,7 @@ watch(
 					.GetServerRecords(syncCode)
 					.finally(() => (syncButtonLoading.value = false));
 				if (getResult.message) settingsStore.DisplayToast(getResult.message);
+				syncPossible.value = getResult.result === "ok";
 			}
 		}
 	}
@@ -110,11 +114,17 @@ watch(
 				<!--						<VRadio :value="false" label="Local (Backup from Local)" />-->
 				<!--					</VRadioGroup>-->
 				<!--				</VCardText>-->
+				<!--	Scenario: No Whirlpools on Client + Whirlpools on Server-->
+				<VCardText v-else-if="whichSyncScenario === SyncScenarios.ERROR_STATUS">
+					Unable to acquire sync information.
+				</VCardText>
 				<VCardText v-else>Data found on the server.</VCardText>
 			</VSkeletonLoader>
 
 			<VCardActions>
-				<VBtn :loading="syncButtonLoading" @click="onSyncConfirm"> Sync </VBtn>
+				<VBtn :loading="syncButtonLoading" :disabled="!syncPossible" @click="onSyncConfirm">
+					Sync
+				</VBtn>
 				<VBtn @click="onSyncCancel">Cancel</VBtn>
 			</VCardActions>
 		</VCard>

@@ -111,7 +111,6 @@ const useSyncStore = defineStore("sync-store", () => {
 		for (const serverCategory of serverCategories) {
 			serverCategoriesMap.set(serverCategory.clientId, serverCategory);
 		}
-
 		// map whirlpools
 		const clientWhirlpoolsMap = new Map<string, ServerWhirlpool>();
 		const serverWhirlpoolsMap = new Map<string, ServerWhirlpool>();
@@ -393,7 +392,11 @@ const useSyncStore = defineStore("sync-store", () => {
 
 		if (getError) {
 			serverWhirlpools.value = null;
-			return { result: "error", message: "There was an error getting the server whirlpools." };
+			return {
+				result: "error",
+				message:
+					"There was an error getting the server whirlpools. You may need to validate your Sync Code again."
+			};
 		}
 
 		serverCategories.value = await api.value.instance
@@ -407,7 +410,11 @@ const useSyncStore = defineStore("sync-store", () => {
 
 		if (getError) {
 			serverWhirlpools.value = null;
-			return { result: "error", message: "There was an error getting the server categories." };
+			return {
+				result: "error",
+				message:
+					"There was an error getting the server categories. You may need to validate your Sync Code again."
+			};
 		}
 		return {
 			result: "ok"
@@ -481,16 +488,21 @@ const useSyncStore = defineStore("sync-store", () => {
 		} catch (error) {
 			console.error("Authentication Error: ", error);
 			localStorage.removeItem(LocalStorageKeys.SyncCode);
-			return { result: "error", message: "Failed to authenticate. Please check the Sync Code." };
+			return {
+				result: "error",
+				message: "Failed to authenticate. Your Sync Code may be incorrect or expired."
+			};
 		}
 	}
 
 	async function AutoSync() {
+		syncInProgress.value = true;
 		if (!syncCode.value || !ValidateSyncCode(syncCode.value)) {
 			autoSyncEnabled.value = false;
 			settingsStore.DisplayToast(
 				"There was a problem with the sync code. Auto sync has been disabled."
 			);
+			syncInProgress.value = false;
 			return;
 		}
 		if (!CheckAuth()) {
@@ -500,6 +512,7 @@ const useSyncStore = defineStore("sync-store", () => {
 				settingsStore.DisplayToast(
 					"There was a problem with authentication. Auto sync has been disabled."
 				);
+				syncInProgress.value = false;
 				return;
 			}
 		}
@@ -509,12 +522,17 @@ const useSyncStore = defineStore("sync-store", () => {
 			settingsStore.DisplayToast(
 				"There was a problem getting data from the server. Auto Sync has been disabled."
 			);
+			syncInProgress.value = false;
+			return;
 		}
 		const syncResult = await SyncWithServer(syncCode.value);
 		if (syncResult.result !== "ok") {
 			autoSyncEnabled.value = false;
 			settingsStore.DisplayToast("There was a problem with sync. Auto Sync has been disabled.");
+			syncInProgress.value = false;
+			return;
 		}
+		syncInProgress.value = false;
 	}
 
 	watch(

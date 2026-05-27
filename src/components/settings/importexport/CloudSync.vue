@@ -85,68 +85,90 @@ watch(
 </script>
 
 <template>
-	<VRow>
-		<VCol>
-			<h2>Cloud Sync</h2>
-			<VLabel>Sync your whirlpool data to the cloud!</VLabel>
-			<p>
-				Using a sync code, you can keep your data up-to-date on whatever device you use the app on.
-			</p>
-		</VCol>
-	</VRow>
-	<VRow>
-		<VCol>
-			<VForm v-model="syncCodeInputValid">
-				<VTextField
-					v-model="syncStore.syncCode"
-					label="Sync Code"
-					:rules="[syncCodeRules.hasValue, syncCodeRules.length, syncCodeRules.regex]"
-					clearable
-				/>
-			</VForm>
-		</VCol>
-	</VRow>
-	<VRow>
-		<VSkeletonLoader
-			type="sentences"
-			:loading="syncStore.syncInProgress"
-			class="grow"
-			elevation="0"
-		>
-			<VLabel>Last Synced: {{ lastSyncedMessage }}</VLabel>
-		</VSkeletonLoader>
-	</VRow>
-	<VRow>
-		<VCol class="flex-grow-0 h-full self-center">
-			<VBtn v-if="!syncStore.syncCode" :loading="requestButtonLoading" @click="getNewSyncCode">
-				Request Sync Code
-			</VBtn>
-			<!--	TODO: add animated transition?-->
-			<VBtn
-				v-else
-				:loading="validateButtonLoading"
-				:disabled="syncCodeInputValid !== true"
-				@click="login"
-			>
-				Validate Sync Code
-			</VBtn>
-		</VCol>
-		<VCol class="flex-grow-0 h-full self-center">
-			<VBtn :loading="syncButtonLoading" :disabled="!syncPossible" @click="onClickSync">Sync</VBtn>
-		</VCol>
-		<VCol cols="12" md="8">
-			<VCheckbox
-				v-model="syncStore.autoSyncEnabled"
-				:disabled="!syncPossible || !hasSyncedBefore"
-				:label="
-					hasSyncedBefore
-						? 'Sync Automatically'
-						: 'Sync Automatically (Complete a manual sync first)'
-				"
-				:hide-details="true"
-			></VCheckbox>
-		</VCol>
-	</VRow>
+	<VCard>
+		<VContainer>
+			<VRow>
+				<VCol>
+					<h2 class="mt-1">Cloud Sync</h2>
+					<h3 class="opacity-75 my-0">Sync your whirlpool data to the cloud!</h3>
+					<p>
+						Using a "Sync Code," you can keep your data up-to-date on whatever device you use the
+						app on. To use this feature, first request a new Sync Code from the server. This will be
+						used to identify your data across devices. Validate the new Sync Code to "login" to the
+						service, and then press "Sync." Once you have your Sync Code, you can enter it here on
+						other devices to download your data. Sync Codes automatically expire after a period of
+						inactivity. When that happens, all of your data synced on the cloud will be deleted, but
+						you can simply re-upload it by requesting a new Sync Code and syncing again.
+					</p>
+					<p class="alert">⚠️ This feature is still in testing.</p>
+					<p class="alert">
+						⚠️ Data is not encrypted, so do not use this feature with sensitive information.
+					</p>
+				</VCol>
+			</VRow>
+			<VRow>
+				<VCol>
+					<VForm v-model="syncCodeInputValid">
+						<VTextField
+							v-model="syncStore.syncCode"
+							label="Sync Code"
+							:rules="[syncCodeRules.hasValue, syncCodeRules.length, syncCodeRules.regex]"
+							clearable
+						/>
+					</VForm>
+				</VCol>
+			</VRow>
+			<VRow>
+				<VSkeletonLoader
+					type="sentences"
+					:loading="syncStore.syncInProgress"
+					class="grow"
+					elevation="0"
+				>
+					<div class="opacity-75 text-center">Last Synced: {{ lastSyncedMessage }}</div>
+				</VSkeletonLoader>
+			</VRow>
+			<VRow>
+				<VCol class="flex-grow-0 h-full self-center">
+					<VBtn v-if="!syncStore.syncCode" :loading="requestButtonLoading" @click="getNewSyncCode">
+						Request Sync Code
+					</VBtn>
+					<!--	TODO: add animated transition?-->
+					<VBtn
+						v-else
+						:loading="validateButtonLoading"
+						:disabled="syncCodeInputValid !== true"
+						@click="login"
+					>
+						Validate Sync Code
+					</VBtn>
+				</VCol>
+				<VCol class="flex-grow-0 h-full self-center">
+					<VTooltip v-if="!syncPossible" location="bottom" text="Validate Sync Code first">
+						<template v-slot:activator="{ props }">
+							<!-- Tooltips dont seem to activate on buttons that are disabled, so I wrapped the button in a span.-->
+							<span v-bind="props"><VBtn :loading="syncButtonLoading" disabled>Sync</VBtn></span>
+						</template>
+					</VTooltip>
+					<VBtn v-else :loading="syncButtonLoading" :disabled="!syncPossible" @click="onClickSync"
+						>Sync</VBtn
+					>
+				</VCol>
+				<VCol cols="12" md="8">
+					<VCheckbox
+						v-model="syncStore.autoSyncEnabled"
+						:disabled="!syncPossible || !hasSyncedBefore"
+						:label="
+							hasSyncedBefore
+								? 'Sync Automatically'
+								: 'Sync Automatically (Complete a manual sync first)'
+						"
+						:hide-details="true"
+					></VCheckbox>
+				</VCol>
+			</VRow>
+		</VContainer>
+	</VCard>
 	<SyncConfirm
 		:is-open="syncConfirmOpen"
 		@confirm-sync="onConfirmSync"

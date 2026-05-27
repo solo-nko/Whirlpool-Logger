@@ -42,13 +42,8 @@ async function ImportDatabase(importFile: Blob, overwriteMode: boolean): Promise
 	const existingWhirlpoolsBackup = await LoggerDatabase.whirlpools.toArray();
 	const existingCategoriesBackup = await LoggerDatabase.categories.toArray();
 
-	if (overwriteMode) {
-		await LoggerDatabase.whirlpools.clear();
-		await LoggerDatabase.categories.clear();
-	}
-
-	await LoggerDatabase.import(importFile, { clearTablesBeforeImport: true }).catch(
-		async (error) => {
+	await LoggerDatabase.import(importFile, { clearTablesBeforeImport: overwriteMode })
+		.catch(async (error) => {
 			console.error("Error: ", error);
 			// Attempt to restore old items in the event of an import failure
 			if (existingCategoriesBackup.length > 0) {
@@ -61,8 +56,15 @@ async function ImportDatabase(importFile: Blob, overwriteMode: boolean): Promise
 			}
 
 			return { result: "error", message: "An error occurred during import." };
-		}
-	);
+		})
+		.then(async () => {
+			await LoggerDatabase.categories
+				.toCollection()
+				.modify((category) => (category.unsyncedChanges = true));
+			await LoggerDatabase.whirlpools
+				.toCollection()
+				.modify((whirlpool) => (whirlpool.unsyncedChanges = true));
+		});
 
 	// Reset dashboards table
 	const settingsStore = useSettingsStore();

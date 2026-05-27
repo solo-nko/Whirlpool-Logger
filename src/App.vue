@@ -20,8 +20,7 @@ onMounted(() => {
 onMounted(async () => {
 	// sync stuff
 	if (syncStore.autoSyncEnabled === true && syncStore.syncCode) {
-		syncStore.syncInProgress = true;
-		await syncStore.AutoSync().finally(() => (syncStore.syncInProgress = false));
+		await syncStore.AutoSync();
 	}
 });
 </script>

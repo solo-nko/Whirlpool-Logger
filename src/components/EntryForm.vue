@@ -192,7 +192,8 @@ async function AddEntry() {
 			tags: DeepToRaw(entryModel.value.tags),
 			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toISO(),
 			updatedOn: now.toISO(),
-			createdOn: now.toISO()
+			createdOn: now.toISO(),
+			unsyncedChanges: true
 		})
 		.then(() => {
 			ResetFields();
@@ -225,8 +226,8 @@ async function UpdateEntry() {
 			ResetFields();
 			settingsStore.DisplayToast("Entry updated!");
 		});
-	await OnSaveEntry("update");
 	emits("close");
+	await OnSaveEntry("update");
 }
 
 const onClickSave = async () => {

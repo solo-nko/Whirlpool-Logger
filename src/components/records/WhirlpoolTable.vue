@@ -11,8 +11,10 @@ import type { IHeaderItem } from "@/utils/types/IHeaderItem.ts";
 import { SortWhirlpoolByUpdated } from "@/utils/MiscUtils.ts";
 import type { ISortItem } from "@/utils/types/ISortItem.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
+import useSyncStore from "@/stores/sync.ts";
 
 const settings = useSettingsStore();
+const syncStore = useSyncStore();
 
 type WhirlPoolTableProps = {
 	categoryId: string;
@@ -79,7 +81,7 @@ const tableCategory = computed(() => {
 const isEntryModalOpen = ref(false);
 const modalEntry = ref<WhirlpoolLog>();
 const preparedToDelete = ref<WhirlpoolLog | undefined>();
-const isConfirmModalOpen = ref(false);
+const isDeleteConfirmModalOpen = ref(false);
 const searchValue = ref<string | undefined>();
 
 const openModal = (item: WhirlpoolLog) => {
@@ -93,12 +95,12 @@ const closeModal = () => {
 
 const prepareToDelete = (item: WhirlpoolLog) => {
 	preparedToDelete.value = item;
-	isConfirmModalOpen.value = true;
+	isDeleteConfirmModalOpen.value = true;
 };
 
 const unprepareToDelete = () => {
 	preparedToDelete.value = undefined;
-	isConfirmModalOpen.value = false;
+	isDeleteConfirmModalOpen.value = false;
 };
 
 const deleteEntry = async () => {
@@ -107,8 +109,13 @@ const deleteEntry = async () => {
 			unsyncedChanges: true,
 			deletedOn: DateTime.now().toISO()
 		});
+		isDeleteConfirmModalOpen.value = false;
+		if (syncStore.autoSyncEnabled === true) {
+			await syncStore.AutoSync();
+		}
+	} else {
+		isDeleteConfirmModalOpen.value = false;
 	}
-	isConfirmModalOpen.value = false;
 };
 
 const getDate = (item: WhirlpoolLog, type: "updated" | "created") => {
@@ -182,7 +189,7 @@ const getDate = (item: WhirlpoolLog, type: "updated" | "created") => {
 	>
 		<EntryForm :existing-entry="modalEntry" :category-id="tableCategory.id" @close="closeModal" />
 	</VDialog>
-	<VDialog v-model="isConfirmModalOpen">
+	<VDialog v-model="isDeleteConfirmModalOpen">
 		<ConfirmCard
 			title="Delete Whirlpool"
 			message="Are you sure you want to delete this?"
