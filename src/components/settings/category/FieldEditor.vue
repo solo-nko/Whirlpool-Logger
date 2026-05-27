@@ -122,7 +122,7 @@ const reallyRemoveField = () => {
 						v-model="fieldModel.label"
 						density="compact"
 						label="Label"
-						:rules="[(value: string) => HasValue(value, 'Label')]"
+						:rules="[(value: string) => HasValue({ input: value, fieldName: 'Label' })]"
 					/>
 				</VCol>
 			</VRow>

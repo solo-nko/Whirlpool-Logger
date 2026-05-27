@@ -2,7 +2,7 @@
 import { ulid } from "ulid";
 import { DateTime } from "luxon";
 import type { IEditingStatus } from "@/utils/types/IStatus.ts";
-import { HasValue } from "@/utils/MiscUtils.ts";
+import { CheckMaxLength, HasValue } from "@/utils/MiscUtils.ts";
 import useSettingsStore from "@/stores/settings.ts";
 
 type StatusEditorProps = {
@@ -107,7 +107,11 @@ watch(
 							v-model="editingStatus.name"
 							class="mb-5"
 							label="Name"
-							:rules="[(value) => HasValue(value, 'Name')]"
+							:rules="[
+								(value) => HasValue({ input: value, fieldName: 'Name' }),
+								(value) => CheckMaxLength({ input: value, fieldName: 'Name', maxLength: 50 })
+							]"
+							counter
 						/>
 						<VTextarea
 							v-model="editingStatus.description"

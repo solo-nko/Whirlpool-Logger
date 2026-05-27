@@ -12,6 +12,7 @@ const onClickImport = async () => {
 	if (uploadedFile.value === undefined || uploadedFile.value === null) return;
 	const result = await ImportDatabase(uploadedFile.value, true);
 	if (result.message) settingsStore.DisplayToast(result.message);
+	// TODO: autosync should occur here
 };
 </script>
 

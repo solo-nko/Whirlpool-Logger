@@ -15,17 +15,31 @@ const tableDefault = ref<Category[]>([]);
 
 // Dashboard settings
 const tableHeaders = ref<IHeaderItem[]>([
-	{ title: "Display on Home", key: "displayed", sortable: false },
-	{ title: "Category", value: "categoryName", sortable: true },
+	{ title: "Display on Home", key: "displayed", sortable: false, align: "center" },
+	{
+		title: "Category",
+		value: "categoryName",
+		sortable: true,
+		align: "center",
+		cellProps: { class: "text-center" }
+	},
 	{
 		title: "First Display Status",
 		key: "selectedStatusOne",
-		sortable: false
+		sortable: false,
+		align: "center"
 	},
 	{
 		title: "Second Display Status",
 		key: "selectedStatusTwo",
-		sortable: false
+		sortable: false,
+		align: "center"
+	},
+	{
+		title: "Show Tags (3 Max)",
+		key: "showTags",
+		sortable: false,
+		align: "center"
 	}
 ]);
 
@@ -99,7 +113,8 @@ const sendToTableStoreFunction = (input: string | null) => {
 				<VCardTitle>Home Settings</VCardTitle>
 				<VContainer class="py-0">
 					<p>
-						Here you can set what appears on the home screen.
+						Here you can set what appears on the Home screen. Each category is represented as a
+						"dashboard," which can show up to two statuses.
 						<span v-if="display.mobile.value"
 							>Try using the "Reset Dashboards display" button if your dashboards stop displaying
 							correctly. You may also need to refresh the page.
@@ -150,6 +165,9 @@ const sendToTableStoreFunction = (input: string | null) => {
 							hide-details
 						/>
 					</template>
+					<template v-slot:item.showTags="{ item }">
+						<VCheckboxBtn v-model="item.showTags" />
+					</template>
 					<!--		 eslint-enable vue/valid-v-slot -->
 					<template v-slot:bottom>
 						<VRow>
@@ -179,4 +197,8 @@ const sendToTableStoreFunction = (input: string | null) => {
 	</VContainer>
 </template>
 
-<style scoped></style>
+<style scoped>
+.v-checkbox-btn {
+	justify-content: center;
+}
+</style>

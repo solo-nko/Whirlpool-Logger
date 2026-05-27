@@ -64,7 +64,8 @@ const useSettingsStore = defineStore("settings-store", () => {
 					selectedStatusOne: category.availableStatuses[0]
 						? { id: category.availableStatuses[0].id, name: category.availableStatuses[0].name }
 						: noneStatus,
-					selectedStatusTwo: noneStatus
+					selectedStatusTwo: noneStatus,
+					showTags: false
 				})
 			);
 		}

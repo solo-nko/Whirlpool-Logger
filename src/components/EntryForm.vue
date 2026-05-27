@@ -8,7 +8,7 @@ import type { ITag } from "@/utils/types/ITag.ts";
 import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import type { WhirlpoolFields } from "@/utils/DefaultFieldUtils.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
-import { DeepToRaw, HasValue } from "@/utils/MiscUtils.ts";
+import { CheckMaxLength, DeepToRaw, HasValue } from "@/utils/MiscUtils.ts";
 import useSettingsStore from "@/stores/settings";
 import useCategoriesStore from "@/stores/categories.ts";
 import useSyncStore from "@/stores/sync.ts";
@@ -63,11 +63,8 @@ const formValidationStatus = ref<boolean | null>(null);
 const formRef = ref();
 
 const titleRules = {
-	hasValue: (value: string) => HasValue(value, "Title"),
-	maxLength: (value: string) => {
-		if (value.length <= 100) return true;
-		return "Please enter a title with less than 100 characters.";
-	}
+	hasValue: (value: string) => HasValue({ input: value, fieldName: "Title" }),
+	maxLength: (value: string) => CheckMaxLength({ input: value, fieldName: "Title", maxLength: 100 })
 };
 
 const seriesRules = {
@@ -77,7 +74,7 @@ const seriesRules = {
 	}
 };
 
-const genericHasValue = (value: string) => HasValue(value, "This field");
+const genericHasValue = (value: string) => HasValue({ input: value, fieldName: "This field" });
 
 function GetModifiedField(input: WhirlpoolFields) {
 	if (entryCategory.value === undefined) return undefined;

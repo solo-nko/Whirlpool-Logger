@@ -101,8 +101,6 @@ The user may input notes on their progress. For a game, this could be the last c
 The user may input a rating of the media.
 
 <!-- prettier-ignore -->
-[//]: # (TODO:Consider allowing a few different rating schemes (inspired by Anilist)
-
 - **Name:** `rating`
 - **Type:** number
 

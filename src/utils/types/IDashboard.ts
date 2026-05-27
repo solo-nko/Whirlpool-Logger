@@ -9,4 +9,5 @@ export type IDashboard = {
 	statuses: SelectedStatus[];
 	selectedStatusOne: SelectedStatus;
 	selectedStatusTwo: SelectedStatus;
+	showTags: boolean;
 };

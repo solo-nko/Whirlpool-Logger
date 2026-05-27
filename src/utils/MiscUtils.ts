@@ -59,9 +59,16 @@ function SortWhirlpoolByUpdated(a: WhirlpoolLog, b: WhirlpoolLog) {
 	return a.updatedOn.toMillis() - b.updatedOn.toMillis();
 }
 
-function HasValue(value: string, fieldName: string) {
-	if (value && value.length > 0) return true;
+function HasValue(params: { input: string; fieldName: string }) {
+	const { input, fieldName } = params;
+	if (input && input.length > 0) return true;
 	return `${fieldName} is required.`;
+}
+
+function CheckMaxLength(params: { fieldName: string; maxLength: number; input: string }) {
+	const { fieldName, maxLength, input } = params;
+	if (input.length <= maxLength) return true;
+	return `${fieldName} must be ${maxLength} characters or fewer.`;
 }
 
 /** Generates an array of validation rules to feed to Vuetify inputs' `rules` prop, based on the information provided via the IField interface. Intended for use with generic fields. */
@@ -69,7 +76,7 @@ function GetFieldRules(fieldInfo: IField): ((value: string | undefined) => boole
 	const rules = [];
 	if (fieldInfo.required) {
 		const hasValue = (value: string | undefined) =>
-			HasValue(value || "", fieldInfo.label || "This field");
+			HasValue({ input: value ?? "", fieldName: fieldInfo.label ?? "This field" });
 		rules.push(hasValue);
 	}
 	if (fieldInfo.maxLength && fieldInfo.maxLength > 0 && fieldInfo.type === FieldType.TEXT) {
@@ -89,5 +96,6 @@ export {
 	DeepToRaw,
 	SortWhirlpoolByUpdated,
 	HasValue,
+	CheckMaxLength,
 	GetFieldRules
 };

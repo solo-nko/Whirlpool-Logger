@@ -150,8 +150,9 @@ const getDate = (item: WhirlpoolLog, type: "updated" | "created") => {
 					size="small"
 					density="compact"
 					variant="flat"
-					>{{ tag.label }}</VChip
 				>
+					{{ tag.label }}
+				</VChip>
 			</span>
 		</template>
 		<template v-slot:item.actions="{ item }">
