@@ -1,9 +1,9 @@
 import { DateTime } from "luxon";
 import { type ULID, ulid } from "ulid";
-import type { HTMLContent } from "@tiptap/vue-3";
 import type { ITag } from "@/utils/types/ITag.ts";
 import type { IStatus } from "@/utils/types/IStatus.ts";
 import type { IFieldValue } from "@/utils/types/IFieldValue.ts";
+import type Note from "@/utils/types/Note.ts";
 
 // Important: This class needs to line up with the DatabaseWhirlpool class. It should have all the same fields as the DatabaseWhirlpool, as well as the same types, except the DateTime properties, which are set to Dates instead.
 
@@ -26,7 +26,7 @@ export class WhirlpoolLog {
 	/** User rating. */
 	rating?: number;
 	/** Notes entered into the TipTap Editor. Should be saved in HTML. */
-	notes?: HTMLContent;
+	notes: Note[];
 	/** Sync Code, used for cloud sync. */
 	syncCode?: string;
 	/** Whether this log has changes that have not been sent to server yet. */
@@ -48,6 +48,7 @@ export class WhirlpoolLog {
 		this.id = ulid();
 		this.title = inputTitle;
 		this.categoryId = inputCategoryId;
+		this.notes = [];
 		this.unsyncedChanges = true;
 		this.extraFieldValues = [];
 		this.tags = [];

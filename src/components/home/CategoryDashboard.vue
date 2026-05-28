@@ -44,12 +44,28 @@ const onEditClick = (editingWhirlpool: WhirlpoolLog) => {
 
 <template>
 	<VCard class="min-w-50">
-		<VCardTitle>{{ dashboard.categoryName }}</VCardTitle>
+		<VCardTitle>{{ dashboard.categoryName }} Dashboard</VCardTitle>
 		<VCardSubtitle>{{ dashboard.selectedStatusOne.name }}</VCardSubtitle>
 		<VList>
 			<VListItem v-for="item in statusOneWhirlpools" :key="item.id">
 				<div class="flex flex-nowrap items-center justify-between">
-					<p class="m-0 font-bold">{{ item.title }}</p>
+					<div>
+						<p class="m-0 font-bold">{{ item.title }}</p>
+						<div v-if="dashboard.showTags">
+							<VChip
+								v-for="tag in item.tags.slice(0, 3)"
+								:key="tag.id"
+								:color="tag.color ?? undefined"
+								size="small"
+								density="compact"
+								variant="flat"
+								class="dashboard-chip"
+							>
+								{{ tag.label }}
+							</VChip>
+						</div>
+					</div>
+
 					<VBtn icon="$edit" variant="text" @click="onEditClick(item)" />
 				</div>
 			</VListItem>
@@ -69,4 +85,8 @@ const onEditClick = (editingWhirlpool: WhirlpoolLog) => {
 	</VCard>
 </template>
 
-<style scoped></style>
+<style scoped>
+.dashboard-chip {
+	font-size: 0.7rem;
+}
+</style>

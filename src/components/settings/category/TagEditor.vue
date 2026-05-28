@@ -2,7 +2,7 @@
 import { ulid } from "ulid";
 import type { IEditingTag } from "@/utils/types/ITag.ts";
 import useSettingsStore from "@/stores/settings.ts";
-import { HasValue } from "@/utils/MiscUtils.ts";
+import { CheckMaxLength, HasValue } from "@/utils/MiscUtils.ts";
 
 type TagEditorProps = {
 	tags: IEditingTag[];
@@ -110,7 +110,12 @@ watch(selectedTag, (newSelection) => {
 							v-model="editingTag.label"
 							class="mb-5"
 							label="Label"
-							:rules="[(value: string) => HasValue(value, 'Label')]"
+							:rules="[
+								(value: string) => HasValue({ input: value, fieldName: 'Label' }),
+								(value: string) =>
+									CheckMaxLength({ input: value, fieldName: 'Label', maxLength: 25 })
+							]"
+							counter
 						/>
 						<VTextField v-model="editingTag.description" label="Description (Optional)" />
 						<VExpansionPanels>

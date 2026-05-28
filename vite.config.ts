@@ -23,6 +23,12 @@ const dirname =
 // const isStorybookProcess = process.env.npm_lifecycle_event === "storybook";
 
 export default defineConfig({
+	server: {
+		port: 5175
+	},
+	preview: {
+		port: 4175
+	},
 	plugins: [
 		vueRouter(),
 		vue(),

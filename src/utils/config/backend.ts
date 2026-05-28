@@ -5,15 +5,19 @@ import type { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.
 /** Tweaked version of the DatabaseWhirlpool type which requires syncCode and omits unsyncedChanges. */
 export type ServerWhirlpool = Omit<
 	InstanceType<typeof DatabaseWhirlpool>,
-	"unsyncedChanges" | "syncCode"
+	"unsyncedChanges" | "syncCode" | "id"
 > & {
+	id?: string;
+	clientId: string;
 	syncCode: string;
 };
 
 export type ServerCategory = Omit<
 	InstanceType<typeof DatabaseCategory>,
-	"unsyncedChanges" | "syncCode"
+	"unsyncedChanges" | "syncCode" | "id"
 > & {
+	id?: string;
+	clientId: string;
 	syncCode: string;
 };
 

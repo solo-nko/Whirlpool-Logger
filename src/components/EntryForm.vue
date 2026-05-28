@@ -8,10 +8,12 @@ import type { ITag } from "@/utils/types/ITag.ts";
 import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import type { WhirlpoolFields } from "@/utils/DefaultFieldUtils.ts";
 import { DatabaseStatus } from "@/utils/database/models/DatabaseStatus.ts";
-import { DeepToRaw, HasValue } from "@/utils/MiscUtils.ts";
+import { CheckMaxLength, DeepToRaw, HasValue } from "@/utils/MiscUtils.ts";
 import useSettingsStore from "@/stores/settings";
 import useCategoriesStore from "@/stores/categories.ts";
 import useSyncStore from "@/stores/sync.ts";
+import DatabaseNote from "@/utils/database/models/DatabaseNote.ts";
+import Note from "@/utils/types/Note.ts";
 
 type EntryFormProps = {
 	/** Id of the category this whirlpool belongs to. */
@@ -34,6 +36,7 @@ function GenerateNewWhirlpool(categoryId: string): WhirlpoolLog {
 		id: ulid(),
 		title: "",
 		categoryId,
+		notes: [],
 		unsyncedChanges: true,
 		extraFieldValues: [],
 		tags: [],
@@ -60,11 +63,8 @@ const formValidationStatus = ref<boolean | null>(null);
 const formRef = ref();
 
 const titleRules = {
-	hasValue: (value: string) => HasValue(value, "Title"),
-	maxLength: (value: string) => {
-		if (value.length <= 100) return true;
-		return "Please enter a title with less than 100 characters.";
-	}
+	hasValue: (value: string) => HasValue({ input: value, fieldName: "Title" }),
+	maxLength: (value: string) => CheckMaxLength({ input: value, fieldName: "Title", maxLength: 100 })
 };
 
 const seriesRules = {
@@ -74,7 +74,7 @@ const seriesRules = {
 	}
 };
 
-const genericHasValue = (value: string) => HasValue(value, "This field");
+const genericHasValue = (value: string) => HasValue({ input: value, fieldName: "This field" });
 
 function GetModifiedField(input: WhirlpoolFields) {
 	if (entryCategory.value === undefined) return undefined;
@@ -134,6 +134,8 @@ const entryModel = ref<WhirlpoolLog>(
 	props.existingEntry ? { ...props.existingEntry } : GenerateNewWhirlpool(props.categoryId)
 );
 
+const editingNote = ref<Note>(new Note());
+
 const extraFields = computed(() => {
 	if (!entryCategory.value || entryCategory.value.extraFields.length === 0) return null;
 	return entryCategory.value.extraFields;
@@ -165,12 +167,14 @@ function ResetFields() {
 	entryModel.value = GenerateNewWhirlpool(props.categoryId);
 }
 
-function OnSaveEntry(whichType: "add" | "update") {
+async function OnSaveEntry(whichType: "add" | "update") {
 	emits("save", whichType);
+	if (syncStore.autoSyncEnabled) await syncStore.AutoSync();
 }
 
 async function AddEntry() {
 	const now = DateTime.now();
+	entryModel.value.notes = [editingNote.value];
 	await LoggerDatabase.whirlpools
 		.add({
 			...entryModel.value,
@@ -178,22 +182,26 @@ async function AddEntry() {
 			status: entryModel.value.status
 				? DatabaseStatus.ConvertStatusForDatabase(entryModel.value.status)
 				: undefined,
-			notes: toRaw(entryModel.value.notes),
+			notes: entryModel.value.notes
+				? entryModel.value.notes.map((entryNote) => DatabaseNote.ConvertNoteToDatabase(entryNote))
+				: [],
 			extraFieldValues: DeepToRaw(entryModel.value.extraFieldValues),
 			tags: DeepToRaw(entryModel.value.tags),
 			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toISO(),
 			updatedOn: now.toISO(),
-			createdOn: now.toISO()
+			createdOn: now.toISO(),
+			unsyncedChanges: true
 		})
 		.then(() => {
 			ResetFields();
 			settingsStore.DisplayToast("Entry added!");
 		});
-	OnSaveEntry("add");
+	await OnSaveEntry("add");
 }
 
 async function UpdateEntry() {
 	const now = DateTime.now();
+	entryModel.value.notes = [editingNote.value];
 	await LoggerDatabase.whirlpools
 		.update(entryModel.value.id, {
 			...entryModel.value,
@@ -201,19 +209,22 @@ async function UpdateEntry() {
 			status: entryModel.value.status
 				? DatabaseStatus.ConvertStatusForDatabase(entryModel.value.status)
 				: undefined,
-			notes: toRaw(entryModel.value.notes),
+			notes: entryModel.value.notes
+				? entryModel.value.notes.map((entryNote) => DatabaseNote.ConvertNoteToDatabase(entryNote))
+				: [],
 			extraFieldValues: DeepToRaw(entryModel.value.extraFieldValues),
 			tags: DeepToRaw(entryModel.value.tags),
 			deletedOn: entryModel.value.deletedOn === null ? null : entryModel.value.deletedOn.toISO(),
 			updatedOn: now.toISO(),
-			createdOn: entryModel.value.createdOn.toISO() ?? "unknown"
+			createdOn: entryModel.value.createdOn.toISO() ?? "unknown",
+			unsyncedChanges: true
 		})
 		.then(() => {
 			ResetFields();
 			settingsStore.DisplayToast("Entry updated!");
 		});
-	OnSaveEntry("update");
 	emits("close");
+	await OnSaveEntry("update");
 }
 
 const onClickSave = async () => {
@@ -241,6 +252,10 @@ onMounted(() => {
 		settingsStore.DisplayToast(
 			"There is a mismatch between the loaded whirlpool and the indicated whirlpool category. Upon saving, the whirlpool's category will be forcibly updated to correct this."
 		);
+	}
+	if (props.existingEntry !== undefined && props.existingEntry.notes.length > 0) {
+		const getFirstNote = props.existingEntry.notes[0];
+		if (getFirstNote) editingNote.value = getFirstNote;
 	}
 });
 </script>
@@ -313,6 +328,7 @@ onMounted(() => {
 						/>
 					</VCol>
 					<VCol v-if="seriesFieldMods?.hidden !== true">
+						<!--	TODO: Add soft autocomplete. Maintain filtered list of items that have a series defined -->
 						<VTextField
 							v-model="entryModel.series"
 							:label="seriesFieldMods?.rename || 'Series'"
@@ -323,7 +339,7 @@ onMounted(() => {
 				<VRow>
 					<TipTapEditor
 						v-if="notesFieldMods?.hidden !== true"
-						v-model="entryModel.notes"
+						v-model="editingNote.content"
 						content-type="html"
 					/>
 				</VRow>

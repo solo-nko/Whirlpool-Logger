@@ -10,6 +10,10 @@ const changeTheme = (inputTheme: string) => {
 	localStorage.setItem(LocalStorageKeys.Theme, inputTheme);
 };
 
+const currentTheme = computed(() =>
+	availableThemes.find((theme) => theme.themeVariable === themeInstance.name.value)
+);
+
 const availableThemes: {
 	primaryColor: string;
 	secondaryColor: string;
@@ -35,8 +39,9 @@ const availableThemes: {
 </script>
 
 <template>
+	<h2>Theme Settings</h2>
 	<div>Here you can change the app's visual theme. Select from one of the options below!</div>
-
+	<h3 v-if="currentTheme">Current Theme: {{ currentTheme.label }}</h3>
 	<PaletteCube
 		v-for="(theme, index) in availableThemes"
 		:key="index"

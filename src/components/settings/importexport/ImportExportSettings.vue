@@ -5,8 +5,17 @@ import CloudSync from "@/components/settings/importexport/CloudSync.vue";
 
 <template>
 	<VContainer>
-		<LocalExport />
-		<CloudSync />
+		<VRow>
+			<VCol>
+				<LocalExport />
+			</VCol>
+		</VRow>
+		<VRow> </VRow>
+		<VRow>
+			<VCol>
+				<CloudSync />
+			</VCol>
+		</VRow>
 	</VContainer>
 </template>
 

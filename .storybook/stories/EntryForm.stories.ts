@@ -10,7 +10,7 @@ const meta: Meta = {
 		setup() {
 			return { args };
 		},
-		template: "<EntryForm :category='args.category' :existing-entry='args.existingEntry' />"
+		template: "<EntryForm :category-id='args.category.id' :existing-entry='args.existingEntry' />"
 	}),
 	tags: ["autodocs"]
 } satisfies Meta<typeof EntryForm>;

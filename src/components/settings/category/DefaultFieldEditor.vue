@@ -27,7 +27,7 @@ const updateField = () => {
 				v-model="fieldModel.rename"
 				density="compact"
 				label="Label"
-				:rules="[(value: string) => HasValue(value, 'Label')]"
+				:rules="[(value: string) => HasValue({ input: value, fieldName: 'Label' })]"
 			/>
 			<VRow class="items-center">
 				<VSwitch v-model="fieldModel.hidden">

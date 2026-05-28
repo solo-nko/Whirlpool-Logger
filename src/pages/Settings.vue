@@ -19,27 +19,59 @@ const currentTab = ref<settingsRefs>("GeneralSettings");
 </script>
 
 <template>
-	<!--	TODO: highlight which icon/tab is currently selected -->
 	<VNavigationDrawer rail expand-on-hover permanent location="right">
 		<VList>
-			<VListItem prepend-icon="$cogs" link @click="currentTab = 'GeneralSettings'"
-				>General</VListItem
+			<VListItem
+				prepend-icon="$cogs"
+				link
+				:class="currentTab === 'GeneralSettings' ? 'active-tab' : ''"
+				@click="currentTab = 'GeneralSettings'"
 			>
-			<VListItem prepend-icon="$swap" link @click="currentTab = 'ImportExportSettings'"
-				>Export & Sync</VListItem
+				General
+			</VListItem>
+			<VListItem
+				prepend-icon="$swap"
+				link
+				:class="currentTab === 'ImportExportSettings' ? 'active-tab' : ''"
+				@click="currentTab = 'ImportExportSettings'"
 			>
-			<VListItem prepend-icon="$paletteSwatch" link @click="currentTab = 'ThemeSettings'"
-				>Theming</VListItem
+				Export & Sync
+			</VListItem>
+			<VListItem
+				prepend-icon="$paletteSwatch"
+				link
+				:class="currentTab === 'ThemeSettings' ? 'active-tab' : ''"
+				@click="currentTab = 'ThemeSettings'"
 			>
-			<VListItem prepend-icon="$clipboard" link @click="currentTab = 'CategorySettings'"
-				>Categories</VListItem
+				Theming
+			</VListItem>
+			<VListItem
+				prepend-icon="$clipboard"
+				link
+				:class="currentTab === 'CategorySettings' ? 'active-tab' : ''"
+				@click="currentTab = 'CategorySettings'"
 			>
-			<VListItem prepend-icon="$info" link @click="currentTab = 'AboutSettings'">About</VListItem>
+				Categories
+			</VListItem>
+			<VListItem
+				prepend-icon="$info"
+				link
+				:class="currentTab === 'AboutSettings' ? 'active-tab' : ''"
+				@click="currentTab = 'AboutSettings'"
+				>About
+			</VListItem>
 		</VList>
 	</VNavigationDrawer>
 	<VContainer>
-		<Component :is="settingsPages[currentTab]"></Component>
+		<KeepAlive>
+			<Component :is="settingsPages[currentTab]" />
+		</KeepAlive>
 	</VContainer>
 </template>
 
-<style scoped></style>
+<!--suppress CssUnresolvedCustomProperty -->
+<style scoped>
+.active-tab {
+	color: rgb(var(--v-theme-secondary));
+}
+</style>
