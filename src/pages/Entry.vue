@@ -22,7 +22,7 @@ watch(
 <template>
 	<VContainer>
 		<VRow justify="center">
-			<VTabs v-model="currentTab">
+			<VTabs v-model="currentTab" mandatory>
 				<VTab
 					v-for="category in categoriesStore.clientCategories"
 					:key="category.id"

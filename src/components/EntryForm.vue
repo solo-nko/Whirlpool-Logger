@@ -165,6 +165,7 @@ const setToToday = () => {
 function ResetFields() {
 	if (entryCategory.value === undefined) return;
 	entryModel.value = GenerateNewWhirlpool(props.categoryId);
+	editingNote.value = new Note();
 }
 
 async function OnSaveEntry(whichType: "add" | "update") {
@@ -355,6 +356,7 @@ onMounted(() => {
 							multiple
 							item-title="label"
 							return-object
+							no-data-text="No tags available. Create some in Category Settings."
 						>
 							<template v-slot:chip="{ props: chipProps, item }">
 								<VChip
