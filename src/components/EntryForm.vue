@@ -14,6 +14,7 @@ import useCategoriesStore from "@/stores/categories.ts";
 import useSyncStore from "@/stores/sync.ts";
 import DatabaseNote from "@/utils/database/models/DatabaseNote.ts";
 import Note from "@/utils/types/Note.ts";
+import useWhirlpoolStore from "@/stores/whirlpools.ts";
 
 type EntryFormProps = {
 	/** Id of the category this whirlpool belongs to. */
@@ -25,6 +26,7 @@ type EntryFormProps = {
 
 const settingsStore = useSettingsStore();
 const categoryStore = useCategoriesStore();
+const whirlpoolStore = useWhirlpoolStore();
 const syncStore = useSyncStore();
 
 const props = defineProps<EntryFormProps>();
@@ -56,6 +58,16 @@ const showCloseButton = computed(() => isEditMode.value);
 const statusDescription = computed(() => {
 	if (entryCategory.value === undefined) return undefined;
 	if (entryModel.value.status) return entryModel.value.status.description ?? undefined;
+});
+
+const seriesList = computed<string[]>(() => {
+	const finalList = new Set<string>();
+	const initialList = whirlpoolStore.clientWhirlpools
+		.filter((whirlpool) => whirlpool.categoryId === entryCategory.value?.id)
+		.filter((wp) => wp.series)
+		.map((wp) => wp.series ?? "");
+	initialList.forEach((listItem) => finalList.add(listItem));
+	return Array.from(finalList);
 });
 
 // Validation
@@ -329,12 +341,14 @@ onMounted(() => {
 						/>
 					</VCol>
 					<VCol v-if="seriesFieldMods?.hidden !== true">
-						<!--	TODO: Add soft autocomplete. Maintain filtered list of items that have a series defined -->
-						<VTextField
+						<VCombobox
 							v-model="entryModel.series"
+							variant="outlined"
 							:label="seriesFieldMods?.rename || 'Series'"
 							:rules="[seriesRules.maxLength]"
-						></VTextField>
+							:items="seriesList"
+							clearable
+						/>
 					</VCol>
 				</VRow>
 				<VRow>

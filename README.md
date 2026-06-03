@@ -40,14 +40,15 @@ These are items I'm actively working on.
 - [x] Set up toast messages
 - [ ] Test PWA functionality
 - [x] Records search
+- [ ] Additional themes
+- [ ] Tag and status descriptions
 
 #### Planned
 
 These are items I plan to include, but are not currently in development.
 
 - Recycle Bin
-- Additional themes
-- Tag and status descriptions
+- Allow multiple Notes fields per whirlpool
 
 #### Ideas
 
@@ -56,11 +57,10 @@ These are items I'm considering/investigating including in the future.
 - Recently Finished screen
 - Charts and/or statistics
 - Dashboard animations
-- Change app icon
 - Max chapter/volume setting, for tracking progress visually
+  - Alternatively, an ambient parser that adds a visual note when it picks up phrases like "30%"
 - End-to-end encryption
 - Ability to share lists
-- Allow multiple Notes fields per whirlpool
 - Add and delete categories
 - Change ratings scale
 - Modify date created

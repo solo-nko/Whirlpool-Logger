@@ -43,7 +43,8 @@ onMounted(async () => {
 		</VAppBar>
 		<VMain>
 			<RouterView v-slot="{ Component }">
-				<KeepAlive>
+				<!--	If using Script setting, the component names are inferred from their filenames -->
+				<KeepAlive include="Settings,Entry">
 					<Component :is="Component" />
 				</KeepAlive>
 			</RouterView>
