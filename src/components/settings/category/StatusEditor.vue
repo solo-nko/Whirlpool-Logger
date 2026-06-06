@@ -20,7 +20,10 @@ const newStatus: IEditingStatus = {
 	updated: false
 };
 
-const emits = defineEmits(["updateStatuses"]);
+const emits = defineEmits<{
+	updateStatuses: [updated: IEditingStatus[]];
+}>();
+
 const { statuses } = defineProps<StatusEditorProps>();
 /** The component's own copy of the prop, for editing purposes. */
 const displayedEditingStatuses = computed(() => statuses.filter((status) => !status.deleted));

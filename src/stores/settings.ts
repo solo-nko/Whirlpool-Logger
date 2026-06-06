@@ -37,10 +37,15 @@ const useSettingsStore = defineStore("settings-store", () => {
 	}
 
 	// Dashboard settings
-	// TODO: sort order according to category.displayOrder
 	const dashboards = ref<IDashboard[]>([]);
 	const displayedDashboards = computed(() =>
-		dashboards.value.filter((dash) => dash.displayed === true)
+		dashboards.value
+			.filter((dash) => dash.displayed === true)
+			.sort((dashOne, dashTwo) => {
+				const displayOrderOne = dashOne.displayOrder ?? 0;
+				const displayOrderTwo = dashTwo.displayOrder ?? 0;
+				return displayOrderOne - displayOrderTwo;
+			})
 	);
 	const noneStatus = { id: "none", name: "None" };
 
@@ -54,6 +59,7 @@ const useSettingsStore = defineStore("settings-store", () => {
 					categoryName: category.name,
 					categoryId: category.id,
 					displayed: false,
+					displayOrder: category.displayOrder,
 					statuses: [
 						...category.availableStatuses.map((status) => ({
 							id: status.id,

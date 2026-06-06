@@ -4,6 +4,7 @@ import useWhirlpoolStore from "@/stores/whirlpools.ts";
 import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import useCategoriesStore from "@/stores/categories.ts";
 import useSettingsStore from "@/stores/settings.ts";
+import type { Category } from "@/utils/types/Category.ts";
 
 type CategoryDashboardProps = {
 	dashboard: IDashboard;
@@ -13,7 +14,9 @@ const whirlpoolStore = useWhirlpoolStore();
 const categoriesStore = useCategoriesStore();
 const settingsStore = useSettingsStore();
 const { dashboard } = defineProps<CategoryDashboardProps>();
-const emits = defineEmits(["edit-whirlpool"]);
+const emits = defineEmits<{
+	editWhirlpool: [{ whirlpool: WhirlpoolLog; category: Category }];
+}>();
 
 const statusOneWhirlpools = computed(() =>
 	whirlpoolStore.clientWhirlpools.filter(
@@ -37,7 +40,7 @@ const onEditClick = (editingWhirlpool: WhirlpoolLog) => {
 	const getCategory = categoriesStore.clientCategories.find(
 		(category) => category.id === dashboard.categoryId
 	);
-	if (getCategory) emits("edit-whirlpool", { whirlpool: editingWhirlpool, category: getCategory });
+	if (getCategory) emits("editWhirlpool", { whirlpool: editingWhirlpool, category: getCategory });
 	else settingsStore.DisplayToast("There was an issue opening this whirlpool.");
 };
 </script>

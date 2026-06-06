@@ -296,6 +296,7 @@ onMounted(() => {
 							item-title="name"
 							:messages="statusDescription"
 							return-object
+							:no-data-text="'No statuses available. Create some in Settings.'"
 						/>
 					</VCol>
 					<VCol>
@@ -309,7 +310,6 @@ onMounted(() => {
 							:loading="entryModel.rating !== undefined"
 						>
 							<template v-slot:loader>
-								<!--				TODO: experiment with usability on this (easily clickable?)	-->
 								<VProgressLinear
 									v-if="entryModel.rating"
 									v-model="entryModel.rating"

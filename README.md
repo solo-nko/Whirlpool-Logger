@@ -56,7 +56,6 @@ These are items I'm considering/investigating including in the future.
 
 - Recently Finished screen
 - Charts and/or statistics
-- Dashboard animations
 - Max chapter/volume setting, for tracking progress visually
   - Alternatively, an ambient parser that adds a visual note when it picks up phrases like "30%"
 - End-to-end encryption
@@ -75,7 +74,7 @@ These are items I'm considering/investigating including in the future.
 ### Recommended IDE and Toolchain
 
 - I use Webstorm (and the Vue Devtools are set to open in Webstorm), but VS Code with the Vue Extension should work perfectly fine.
-- It doesn't hurt to have Vue Devtools installed in your browser, but the app has its own version of Devtools, and they do overlap.
+- It doesn't hurt to have Vue Devtools installed in your browser.
 
 ### Major Tech Stack
 
