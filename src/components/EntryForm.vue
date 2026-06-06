@@ -121,6 +121,11 @@ const ratingFieldMods = computed(() => {
 	return GetModifiedField("rating") || null;
 });
 
+const progressFieldMods = computed(() => {
+	if (!entryCategory.value) return null;
+	return GetModifiedField("progress") || null;
+});
+
 const notesFieldMods = computed(() => {
 	if (!entryCategory.value) return null;
 	return GetModifiedField("notes") || null;
@@ -317,7 +322,7 @@ onMounted(() => {
 									chunk-count="10"
 									height="10"
 									clickable
-								></VProgressLinear>
+								/>
 							</template>
 						</VNumberInput>
 					</VCol>
@@ -351,12 +356,16 @@ onMounted(() => {
 						/>
 					</VCol>
 				</VRow>
-				<VRow>
-					<TipTapEditor
-						v-if="notesFieldMods?.hidden !== true"
-						v-model="editingNote.content"
-						content-type="html"
-					/>
+				<VRow v-if="progressFieldMods?.hidden !== true">
+					<VCol>
+						<VTextField
+							v-model="entryModel.progress"
+							:label="progressFieldMods?.rename || 'Progress'"
+						/>
+					</VCol>
+				</VRow>
+				<VRow v-if="notesFieldMods?.hidden !== true">
+					<TipTapEditor v-model="editingNote.content" content-type="html" />
 				</VRow>
 				<VRow class="xs:max-md:flex-col">
 					<VCol v-if="tagsFieldMods?.hidden !== true">
