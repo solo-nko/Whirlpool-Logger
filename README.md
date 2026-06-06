@@ -19,7 +19,7 @@ These are items I'm actively working on.
 
 **Major**
 
-- [ ] Light/Dark Theme
+- [x] Light/Dark Theme
 - [ ] Cloud Sync
 - [x] Home Screen/Dashboard
 - [x] TipTap Editor
@@ -49,6 +49,7 @@ These are items I plan to include, but are not currently in development.
 
 - Recycle Bin
 - Allow multiple Notes fields per whirlpool
+- Customizable table headers
 
 #### Ideas
 

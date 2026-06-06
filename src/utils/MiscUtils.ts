@@ -1,5 +1,6 @@
 // import { deepToRaw } from "vuetify/lib/util/helpers.mjs";
 
+import { DateTime } from "luxon";
 import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import { FieldType, type IField } from "@/utils/types/IField.ts";
 
@@ -59,6 +60,12 @@ function SortWhirlpoolByUpdated(a: WhirlpoolLog, b: WhirlpoolLog) {
 	return a.updatedOn.toMillis() - b.updatedOn.toMillis();
 }
 
+function SortWhirlpoolByUserUpdated(a: WhirlpoolLog, b: WhirlpoolLog) {
+	const aValue = a.userUpdatedOn ? DateTime.fromISO(a.userUpdatedOn).toMillis() : 1;
+	const bValue = b.userUpdatedOn ? DateTime.fromISO(b.userUpdatedOn).toMillis() : 1;
+	return aValue - bValue;
+}
+
 function HasValue(params: { input: string; fieldName: string }) {
 	const { input, fieldName } = params;
 	if (input && input.length > 0) return true;
@@ -94,6 +101,7 @@ export {
 	TransformVariableName,
 	TransformWhirlpoolFieldName,
 	DeepToRaw,
+	SortWhirlpoolByUserUpdated,
 	SortWhirlpoolByUpdated,
 	HasValue,
 	CheckMaxLength,

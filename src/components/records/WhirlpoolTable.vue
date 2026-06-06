@@ -8,7 +8,7 @@ import EntryForm from "@/components/EntryForm.vue";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import ConfirmCard from "@/components/common/ConfirmCard.vue";
 import type { IHeaderItem } from "@/utils/types/IHeaderItem.ts";
-import { SortWhirlpoolByUpdated } from "@/utils/MiscUtils.ts";
+import { SortWhirlpoolByUserUpdated } from "@/utils/MiscUtils.ts";
 import type { ISortItem } from "@/utils/types/ISortItem.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import useSyncStore from "@/stores/sync.ts";
@@ -66,9 +66,9 @@ const tableHeaders = ref<IHeaderItem[]>([
 	{
 		...basicHeader,
 		title: "Last Updated",
-		value: "updatedOn",
+		value: "userUpdatedOn",
 		sortable: true,
-		sortRaw: SortWhirlpoolByUpdated
+		sortRaw: SortWhirlpoolByUserUpdated
 	},
 	{ ...basicHeader, title: "Actions", key: "actions", sortable: false }
 ]);
