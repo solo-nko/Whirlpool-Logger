@@ -169,9 +169,9 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-	<div class="border-2 border-gray-200/50 rounded-lg w-full">
+	<div class="border-2 rounded-lg w-full">
 		<!--		Toolbar wrapper -->
-		<div class="border-b-1 border-gray-200/50 flex justify-center">
+		<div class="border-b-1 flex justify-center">
 			<VBtnGroup multiple class="grid grid-cols-6 md:flex">
 				<!--	Undo -->
 				<VTooltip location="top">

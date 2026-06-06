@@ -2,6 +2,12 @@
 import { useTheme } from "vuetify";
 import PaletteCube from "@/components/settings/theme/PaletteCube.vue";
 import LocalStorageKeys from "@/utils/config/LocalStorageKeys.ts";
+import {
+	lizardMint,
+	midnightElectric,
+	royalCobalt,
+	wineSplash
+} from "@/utils/config/themes/darkThemes.ts";
 
 const themeInstance = useTheme();
 
@@ -24,16 +30,30 @@ const availableThemes: {
 	{
 		label: "Royal Cobalt",
 		themeVariable: "royalCobalt",
-		primaryColor: "#26427e",
-		secondaryColor: "#08275d",
-		tertiaryColor: "#eccb5b"
+		primaryColor: (royalCobalt.colors?.surface as string) ?? "",
+		secondaryColor: (royalCobalt.colors?.background as string) ?? "",
+		tertiaryColor: "#fbfcff"
 	},
 	{
 		label: "Wine Splash",
 		themeVariable: "wineSplash",
-		primaryColor: "#7e3737",
-		secondaryColor: "#680f14",
-		tertiaryColor: "#eccb5b"
+		primaryColor: (wineSplash.colors?.surface as string) ?? "",
+		secondaryColor: (wineSplash.colors?.background as string) ?? "",
+		tertiaryColor: "#fbfcff"
+	},
+	{
+		label: "Lizard Mint",
+		themeVariable: "lizardMint",
+		primaryColor: (lizardMint.colors?.surface as string) ?? "",
+		secondaryColor: (lizardMint.colors?.background as string) ?? "",
+		tertiaryColor: "#fbfcff"
+	},
+	{
+		label: "Midnight Electric",
+		themeVariable: "midnightElectric",
+		primaryColor: (midnightElectric.colors?.surface as string) ?? "",
+		secondaryColor: (midnightElectric.colors?.background as string) ?? "",
+		tertiaryColor: (midnightElectric.colors?.["on-background"] as string) ?? ""
 	}
 ];
 </script>

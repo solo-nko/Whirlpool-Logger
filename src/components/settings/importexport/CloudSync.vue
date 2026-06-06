@@ -150,9 +150,9 @@ watch(
 							<span v-bind="props"><VBtn :loading="syncButtonLoading" disabled>Sync</VBtn></span>
 						</template>
 					</VTooltip>
-					<VBtn v-else :loading="syncButtonLoading" :disabled="!syncPossible" @click="onClickSync"
-						>Sync</VBtn
-					>
+					<VBtn v-else :loading="syncButtonLoading" :disabled="!syncPossible" @click="onClickSync">
+						Sync
+					</VBtn>
 				</VCol>
 				<VCol cols="12" md="8">
 					<VCheckbox

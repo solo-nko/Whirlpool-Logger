@@ -81,7 +81,7 @@ const titleRules = {
 
 const seriesRules = {
 	maxLength: (value: string | undefined) => {
-		if (value === undefined || value.length <= 50) return true;
+		if (!value || value.length <= 50) return true;
 		return "This must be 50 characters or less.";
 	}
 };
