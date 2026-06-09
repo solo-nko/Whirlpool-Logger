@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { DateTime } from "luxon";
 import { ulid } from "ulid";
+import Fuse from "fuse.js";
 import TipTapEditor from "@/components/TipTapEditor.vue";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { FieldType } from "@/utils/types/IField.ts";
@@ -60,14 +61,34 @@ const statusDescription = computed(() => {
 	if (entryModel.value.status) return entryModel.value.status.description ?? undefined;
 });
 
-const seriesList = computed<string[]>(() => {
-	const finalList = new Set<string>();
-	const initialList = whirlpoolStore.clientWhirlpools
-		.filter((whirlpool) => whirlpool.categoryId === entryCategory.value?.id)
-		.filter((wp) => wp.series)
-		.map((wp) => wp.series ?? "");
-	initialList.forEach((listItem) => finalList.add(listItem));
-	return Array.from(finalList);
+// Suggest series from existing whirlpools to help with consistent data entry
+const seriesFuse = new Fuse(whirlpoolStore.clientWhirlpools, {
+	keys: ["series"],
+	includeMatches: true,
+	minMatchCharLength: 3
+});
+const seriesCandidates = computed(() => {
+	if (entryModel.value.series === undefined || entryModel.value.series.trim() === "") return [];
+	const initialList = seriesFuse
+		.search(entryModel.value.series)
+		// filter out data from other categories
+		.filter((result) => result.item.series && result.item.categoryId === entryCategory.value?.id)
+		.map((secondResult) => secondResult.item.series);
+	return Array.from(new Set(initialList));
+});
+
+// Suggest titles from existing whirlpools to remind the user if they've already created an entry for a given piece of media.
+const titleFuse = new Fuse(whirlpoolStore.clientWhirlpools, {
+	keys: ["title"],
+	includeMatches: true,
+	minMatchCharLength: 4
+});
+const titleCandidates = computed(() => {
+	if (entryModel.value.title.trim() === "") return [];
+	return titleFuse
+		.search(entryModel.value.title)
+		.filter((result) => result.item.categoryId === entryCategory.value?.id)
+		.map((secondResult) => secondResult.item.title);
 });
 
 // Validation
@@ -284,12 +305,15 @@ onMounted(() => {
 		<VForm ref="formRef" v-model="formValidationStatus">
 			<VContainer>
 				<VRow>
-					<VTextField
+					<VCombobox
 						v-model="entryModel.title"
 						label="Title"
 						:rules="[titleRules.hasValue, titleRules.maxLength]"
 						counter
-					></VTextField>
+						:items="titleCandidates"
+						clearable
+						variant="outlined"
+					/>
 				</VRow>
 				<VRow class="xs:max-sm:flex-col">
 					<VCol>
@@ -351,7 +375,7 @@ onMounted(() => {
 							variant="outlined"
 							:label="seriesFieldMods?.rename || 'Series'"
 							:rules="[seriesRules.maxLength]"
-							:items="seriesList"
+							:items="seriesCandidates"
 							clearable
 						/>
 					</VCol>
