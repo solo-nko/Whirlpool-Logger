@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ExportDatabase, ImportDatabase } from "@/utils/ImportExportUtils.ts";
 import useSettingsStore from "@/stores/settings.ts";
+import useSyncStore from "@/stores/sync.ts";
 
 const settingsStore = useSettingsStore();
+const syncStore = useSyncStore();
 const uploadedFile = ref<File | undefined>(undefined);
 
 const onClickExport = async () => {
@@ -12,7 +14,7 @@ const onClickImport = async () => {
 	if (uploadedFile.value === undefined || uploadedFile.value === null) return;
 	const result = await ImportDatabase(uploadedFile.value, true);
 	if (result.message) settingsStore.DisplayToast(result.message);
-	// TODO: autosync should occur here
+	if (syncStore.autoSyncEnabled) await syncStore.AutoSync();
 };
 </script>
 

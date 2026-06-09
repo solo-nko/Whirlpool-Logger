@@ -58,6 +58,7 @@ async function ImportDatabase(importFile: Blob, overwriteMode: boolean): Promise
 			return { result: "error", message: "An error occurred during import." };
 		})
 		.then(async () => {
+			// This should force the sync function to consider the client as the source of truth for the entire database on next backup.
 			await LoggerDatabase.categories
 				.toCollection()
 				.modify((category) => (category.unsyncedChanges = true));

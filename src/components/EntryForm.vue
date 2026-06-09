@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { DateTime } from "luxon";
 import { ulid } from "ulid";
+import Fuse from "fuse.js";
 import TipTapEditor from "@/components/TipTapEditor.vue";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { FieldType } from "@/utils/types/IField.ts";
@@ -14,6 +15,7 @@ import useCategoriesStore from "@/stores/categories.ts";
 import useSyncStore from "@/stores/sync.ts";
 import DatabaseNote from "@/utils/database/models/DatabaseNote.ts";
 import Note from "@/utils/types/Note.ts";
+import useWhirlpoolStore from "@/stores/whirlpools.ts";
 
 type EntryFormProps = {
 	/** Id of the category this whirlpool belongs to. */
@@ -25,6 +27,7 @@ type EntryFormProps = {
 
 const settingsStore = useSettingsStore();
 const categoryStore = useCategoriesStore();
+const whirlpoolStore = useWhirlpoolStore();
 const syncStore = useSyncStore();
 
 const props = defineProps<EntryFormProps>();
@@ -58,6 +61,36 @@ const statusDescription = computed(() => {
 	if (entryModel.value.status) return entryModel.value.status.description ?? undefined;
 });
 
+// Suggest series from existing whirlpools to help with consistent data entry
+const seriesFuse = new Fuse(whirlpoolStore.clientWhirlpools, {
+	keys: ["series"],
+	includeMatches: true,
+	minMatchCharLength: 3
+});
+const seriesCandidates = computed(() => {
+	if (entryModel.value.series === undefined || entryModel.value.series.trim() === "") return [];
+	const initialList = seriesFuse
+		.search(entryModel.value.series)
+		// filter out data from other categories
+		.filter((result) => result.item.series && result.item.categoryId === entryCategory.value?.id)
+		.map((secondResult) => secondResult.item.series);
+	return Array.from(new Set(initialList));
+});
+
+// Suggest titles from existing whirlpools to remind the user if they've already created an entry for a given piece of media.
+const titleFuse = new Fuse(whirlpoolStore.clientWhirlpools, {
+	keys: ["title"],
+	includeMatches: true,
+	minMatchCharLength: 4
+});
+const titleCandidates = computed(() => {
+	if (entryModel.value.title.trim() === "") return [];
+	return titleFuse
+		.search(entryModel.value.title)
+		.filter((result) => result.item.categoryId === entryCategory.value?.id)
+		.map((secondResult) => secondResult.item.title);
+});
+
 // Validation
 const formValidationStatus = ref<boolean | null>(null);
 const formRef = ref();
@@ -69,7 +102,7 @@ const titleRules = {
 
 const seriesRules = {
 	maxLength: (value: string | undefined) => {
-		if (value === undefined || value.length <= 50) return true;
+		if (!value || value.length <= 50) return true;
 		return "This must be 50 characters or less.";
 	}
 };
@@ -107,6 +140,11 @@ const seriesFieldMods = computed(() => {
 const ratingFieldMods = computed(() => {
 	if (!entryCategory.value) return null;
 	return GetModifiedField("rating") || null;
+});
+
+const progressFieldMods = computed(() => {
+	if (!entryCategory.value) return null;
+	return GetModifiedField("progress") || null;
 });
 
 const notesFieldMods = computed(() => {
@@ -165,6 +203,7 @@ const setToToday = () => {
 function ResetFields() {
 	if (entryCategory.value === undefined) return;
 	entryModel.value = GenerateNewWhirlpool(props.categoryId);
+	editingNote.value = new Note();
 }
 
 async function OnSaveEntry(whichType: "add" | "update") {
@@ -266,12 +305,15 @@ onMounted(() => {
 		<VForm ref="formRef" v-model="formValidationStatus">
 			<VContainer>
 				<VRow>
-					<VTextField
+					<VCombobox
 						v-model="entryModel.title"
 						label="Title"
 						:rules="[titleRules.hasValue, titleRules.maxLength]"
 						counter
-					></VTextField>
+						:items="titleCandidates"
+						clearable
+						variant="outlined"
+					/>
 				</VRow>
 				<VRow class="xs:max-sm:flex-col">
 					<VCol>
@@ -283,6 +325,7 @@ onMounted(() => {
 							item-title="name"
 							:messages="statusDescription"
 							return-object
+							:no-data-text="'No statuses available. Create some in Settings.'"
 						/>
 					</VCol>
 					<VCol>
@@ -296,7 +339,6 @@ onMounted(() => {
 							:loading="entryModel.rating !== undefined"
 						>
 							<template v-slot:loader>
-								<!--				TODO: experiment with usability on this (easily clickable?)	-->
 								<VProgressLinear
 									v-if="entryModel.rating"
 									v-model="entryModel.rating"
@@ -304,7 +346,7 @@ onMounted(() => {
 									chunk-count="10"
 									height="10"
 									clickable
-								></VProgressLinear>
+								/>
 							</template>
 						</VNumberInput>
 					</VCol>
@@ -328,20 +370,26 @@ onMounted(() => {
 						/>
 					</VCol>
 					<VCol v-if="seriesFieldMods?.hidden !== true">
-						<!--	TODO: Add soft autocomplete. Maintain filtered list of items that have a series defined -->
-						<VTextField
+						<VCombobox
 							v-model="entryModel.series"
+							variant="outlined"
 							:label="seriesFieldMods?.rename || 'Series'"
 							:rules="[seriesRules.maxLength]"
-						></VTextField>
+							:items="seriesCandidates"
+							clearable
+						/>
 					</VCol>
 				</VRow>
-				<VRow>
-					<TipTapEditor
-						v-if="notesFieldMods?.hidden !== true"
-						v-model="editingNote.content"
-						content-type="html"
-					/>
+				<VRow v-if="progressFieldMods?.hidden !== true">
+					<VCol>
+						<VTextField
+							v-model="entryModel.progress"
+							:label="progressFieldMods?.rename || 'Progress'"
+						/>
+					</VCol>
+				</VRow>
+				<VRow v-if="notesFieldMods?.hidden !== true">
+					<TipTapEditor v-model="editingNote.content" content-type="html" />
 				</VRow>
 				<VRow class="xs:max-md:flex-col">
 					<VCol v-if="tagsFieldMods?.hidden !== true">
@@ -355,6 +403,7 @@ onMounted(() => {
 							multiple
 							item-title="label"
 							return-object
+							no-data-text="No tags available. Create some in Category Settings."
 						>
 							<template v-slot:chip="{ props: chipProps, item }">
 								<VChip

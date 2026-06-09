@@ -34,7 +34,12 @@ import {
 	mdiPencil
 } from "@mdi/js";
 import SpiralIcon from "@/components/common/SpiralIcon.vue";
-import { lizardMint, royalCobalt, wineSplash } from "@/utils/config/themes/darkThemes.ts";
+import {
+	lizardMint,
+	royalCobalt,
+	wineSplash,
+	midnightElectric
+} from "@/utils/config/themes/darkThemes.ts";
 
 export default createVuetify({
 	defaults: {
@@ -55,6 +60,9 @@ export default createVuetify({
 		},
 		VFileInput: {
 			variant: "outlined"
+		},
+		VBtn: {
+			color: "surface-light"
 		}
 	},
 	date: {
@@ -66,7 +74,8 @@ export default createVuetify({
 		themes: {
 			royalCobalt,
 			wineSplash,
-			lizardMint
+			lizardMint,
+			midnightElectric
 		}
 	},
 	icons: {

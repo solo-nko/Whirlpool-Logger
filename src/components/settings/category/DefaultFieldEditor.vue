@@ -7,7 +7,7 @@ type FieldEditorProps = {
 };
 
 const { fieldData } = defineProps<FieldEditorProps>();
-const emits = defineEmits(["updateField"]);
+const emits = defineEmits<{ updateField: [updated: DefaultField] }>();
 const fieldModel = ref<DefaultField>(structuredClone(toRaw(fieldData)));
 const undoChanges = () => {
 	if (fieldData) fieldModel.value = structuredClone(toRaw(fieldData));

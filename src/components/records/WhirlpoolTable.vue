@@ -8,7 +8,7 @@ import EntryForm from "@/components/EntryForm.vue";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import ConfirmCard from "@/components/common/ConfirmCard.vue";
 import type { IHeaderItem } from "@/utils/types/IHeaderItem.ts";
-import { SortWhirlpoolByUpdated } from "@/utils/MiscUtils.ts";
+import { SortWhirlpoolByUserUpdated } from "@/utils/MiscUtils.ts";
 import type { ISortItem } from "@/utils/types/ISortItem.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
 import useSyncStore from "@/stores/sync.ts";
@@ -62,13 +62,14 @@ const tableHeaders = ref<IHeaderItem[]>([
 		cellProps: { class: "text-left" }
 	},
 	{ ...basicHeader, title: "Status", value: "status", sortable: true },
+	{ ...basicHeader, title: "Rating", value: "rating", sortable: true },
 	{ ...basicHeader, title: "Tags (3 Max)", value: "tags", sortable: false, filter: filterTags },
 	{
 		...basicHeader,
 		title: "Last Updated",
-		value: "updatedOn",
+		value: "userUpdatedOn",
 		sortable: true,
-		sortRaw: SortWhirlpoolByUpdated
+		sortRaw: SortWhirlpoolByUserUpdated
 	},
 	{ ...basicHeader, title: "Actions", key: "actions", sortable: false }
 ]);
@@ -136,9 +137,24 @@ const getDate = (item: WhirlpoolLog, type: "updated" | "created") => {
 		:filter-mode="'union'"
 	>
 		<!--	 eslint-disable vue/valid-v-slot -->
+		<template v-slot:item.title="{ item }">
+			<span>
+				<strong>
+					{{ item.title }}
+				</strong>
+			</span>
+		</template>
 		<template v-slot:item.status="{ item }">
 			<span v-if="item.status">{{ item.status.name }}</span>
-			<span v-else><em>No Status</em></span>
+			<span v-else>
+				<em>No Status</em>
+			</span>
+		</template>
+		<template v-slot:item.rating="{ item }">
+			<VProgressCircular v-if="item.rating" :model-value="item.rating * 10" rounded>
+				{{ item.rating }}
+			</VProgressCircular>
+			<span v-else><em>No Rating</em></span>
 		</template>
 		<template v-slot:item.tags="{ item }">
 			<span v-if="item.tags.length === 0"><em>No Tags</em></span>

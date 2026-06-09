@@ -169,14 +169,15 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-	<div class="border-2 border-gray-200/50 rounded-lg w-full">
+	<div class="border-2 rounded-lg w-full">
 		<!--		Toolbar wrapper -->
-		<div class="border-b-1 border-gray-200/50 flex justify-center">
+		<div class="border-b-1 flex justify-center">
 			<VBtnGroup multiple class="grid grid-cols-6 md:flex">
 				<!--	Undo -->
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
+							tabindex="-1"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							icon="$undo"
@@ -193,6 +194,7 @@ onBeforeUnmount(() => {
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
+							tabindex="-1"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							icon="$redo"
@@ -210,6 +212,7 @@ onBeforeUnmount(() => {
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
+							tabindex="-1"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							icon="$bold"
@@ -226,6 +229,7 @@ onBeforeUnmount(() => {
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
+							tabindex="-1"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							icon="$italic"
@@ -241,6 +245,7 @@ onBeforeUnmount(() => {
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
+							tabindex="-1"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							icon="$underline"
@@ -256,6 +261,7 @@ onBeforeUnmount(() => {
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
+							tabindex="-1"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							icon="$strike"
@@ -272,6 +278,7 @@ onBeforeUnmount(() => {
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
 							id="btn-text-color"
+							tabindex="-1"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							v-bind="activatorProps"
@@ -291,6 +298,7 @@ onBeforeUnmount(() => {
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
 							id="btn-text-highlight"
+							tabindex="-1"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							v-bind="activatorProps"
@@ -314,6 +322,7 @@ onBeforeUnmount(() => {
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
+							tabindex="-1"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							icon="$alignText"
@@ -327,6 +336,7 @@ onBeforeUnmount(() => {
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
+							tabindex="-1"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							icon="$bulletList"
@@ -341,6 +351,7 @@ onBeforeUnmount(() => {
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
+							tabindex="-1"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							icon="$numberList"
@@ -358,6 +369,7 @@ onBeforeUnmount(() => {
 						<VBtn
 							v-if="!hasLink"
 							id="link-button"
+							tabindex="-1"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							icon="$link"
@@ -369,6 +381,7 @@ onBeforeUnmount(() => {
 						<VBtn
 							v-else
 							id="link-button"
+							tabindex="-1"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							icon="$link"
@@ -385,6 +398,7 @@ onBeforeUnmount(() => {
 				<VTooltip location="top">
 					<template v-slot:activator="{ props: activatorProps }">
 						<VBtn
+							tabindex="-1"
 							:density="buttonFormatting.density"
 							:size="buttonFormatting.size"
 							icon="$removeFormatting"
