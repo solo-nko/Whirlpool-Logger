@@ -74,7 +74,7 @@ const tableHeaders = ref<IHeaderItem[]>([
 	{ ...basicHeader, title: "Actions", key: "actions", sortable: false }
 ]);
 
-const defaultSortOrder: ISortItem[] = [{ key: "updatedOn", order: "desc" }];
+const defaultSortOrder: ISortItem[] = [{ key: "userUpdatedOn", order: "desc" }];
 
 const tableCategory = computed(() => {
 	return categoryStore.clientCategories.find((category) => category.id === categoryId);
