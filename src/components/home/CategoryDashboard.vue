@@ -80,7 +80,23 @@ const onEditClick = (editingWhirlpool: WhirlpoolLog) => {
 		<VList v-if="statusTwoWhirlpools.length > 0">
 			<VListItem v-for="item in statusTwoWhirlpools" :key="item.id">
 				<div class="flex flex-nowrap items-center justify-between">
-					<p class="m-0 font-bold">{{ item.title }}</p>
+					<div>
+						<p class="m-0 font-bold">{{ item.title }}</p>
+						<div v-if="dashboard.showTags">
+							<VChip
+								v-for="tag in item.tags.slice(0, 3)"
+								:key="tag.id"
+								:color="tag.color ?? undefined"
+								size="small"
+								density="compact"
+								variant="flat"
+								class="dashboard-chip"
+							>
+								{{ tag.label }}
+							</VChip>
+						</div>
+					</div>
+
 					<VBtn icon="$edit" variant="text" @click="onEditClick(item)" />
 				</div>
 			</VListItem>
