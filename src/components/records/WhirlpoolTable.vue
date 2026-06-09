@@ -62,6 +62,7 @@ const tableHeaders = ref<IHeaderItem[]>([
 		cellProps: { class: "text-left" }
 	},
 	{ ...basicHeader, title: "Status", value: "status", sortable: true },
+	{ ...basicHeader, title: "Rating", value: "rating", sortable: true },
 	{ ...basicHeader, title: "Tags (3 Max)", value: "tags", sortable: false, filter: filterTags },
 	{
 		...basicHeader,
@@ -136,9 +137,24 @@ const getDate = (item: WhirlpoolLog, type: "updated" | "created") => {
 		:filter-mode="'union'"
 	>
 		<!--	 eslint-disable vue/valid-v-slot -->
+		<template v-slot:item.title="{ item }">
+			<span>
+				<strong>
+					{{ item.title }}
+				</strong>
+			</span>
+		</template>
 		<template v-slot:item.status="{ item }">
 			<span v-if="item.status">{{ item.status.name }}</span>
-			<span v-else><em>No Status</em></span>
+			<span v-else>
+				<em>No Status</em>
+			</span>
+		</template>
+		<template v-slot:item.rating="{ item }">
+			<VProgressCircular v-if="item.rating" :model-value="item.rating * 10" rounded>
+				{{ item.rating }}
+			</VProgressCircular>
+			<span v-else><em>No Rating</em></span>
 		</template>
 		<template v-slot:item.tags="{ item }">
 			<span v-if="item.tags.length === 0"><em>No Tags</em></span>

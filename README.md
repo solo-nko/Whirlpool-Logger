@@ -49,7 +49,8 @@ These are items I plan to include, but are not currently in development.
 
 - Recycle Bin
 - Allow multiple Notes fields per whirlpool
-- Customizable table headers
+- Enhanced records table
+  - Customizable filters and headers
 
 #### Ideas
 
