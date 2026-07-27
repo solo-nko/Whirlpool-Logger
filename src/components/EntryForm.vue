@@ -389,7 +389,16 @@ onMounted(() => {
 					</VCol>
 				</VRow>
 				<VRow v-if="notesFieldMods?.hidden !== true">
-					<TipTapEditor v-model="editingNote.content" content-type="html" />
+					<VExpansionPanels>
+						<VExpansionPanel v-for="note in entryModel.notes" :key="note.id">
+							<VExpansionPanelTitle>
+								{{ note.title ?? note.updatedOn.toLocaleString() }}
+							</VExpansionPanelTitle>
+							<VExpansionPanelText>
+								<TipTapEditor v-model="editingNote.content" content-type="html" />
+							</VExpansionPanelText>
+						</VExpansionPanel>
+					</VExpansionPanels>
 				</VRow>
 				<VRow class="xs:max-md:flex-col">
 					<VCol v-if="tagsFieldMods?.hidden !== true">
