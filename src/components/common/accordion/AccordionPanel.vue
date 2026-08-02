@@ -1,12 +1,24 @@
 <script setup lang="ts">
 import { injectionKey } from "@/components/common/accordion/CollapseItemListUtils.ts";
 
-type CollapseListItemProps = {
+type AccordionPanelProps = {
 	title?: string;
 	value: string | number;
+	action?: {
+		showAction: boolean;
+		onClickAction: () => void;
+	};
+	/** Justify-contents property value to apply to contents */
+	justify?:
+		| "flex-start"
+		| "flex-end"
+		| "space-between"
+		| "space-around"
+		| "space-evenly"
+		| "center";
 };
 const parentData = inject(injectionKey);
-const { title, value } = defineProps<CollapseListItemProps>();
+const { title, value, justify, action } = defineProps<AccordionPanelProps>();
 const isOpen = computed(() => parentData?.openPanel.value === value);
 </script>
 
@@ -18,8 +30,8 @@ const isOpen = computed(() => parentData?.openPanel.value === value);
 			<div>{{ title }}</div>
 			<div class="flex items-center gap-1">
 				<!-- Action -->
-				<div>
-					<button>Action</button>
+				<div v-if="action?.showAction">
+					<button @click="action.onClickAction()">Action</button>
 				</div>
 				<!-- Collapse/Open-->
 				<div>
@@ -39,6 +51,8 @@ const isOpen = computed(() => parentData?.openPanel.value === value);
 <style scoped>
 .panel-body {
 	overflow: hidden;
+	display: flex;
+	justify-content: v-bind('justify ?? "center"');
 }
 
 .v-enter-from,
