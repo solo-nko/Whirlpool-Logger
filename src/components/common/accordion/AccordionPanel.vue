@@ -6,6 +6,7 @@ type AccordionPanelProps = {
 	value: string | number;
 	action?: {
 		showAction: boolean;
+		actionText: string;
 		onClickAction: () => void;
 	};
 	/** Justify-contents property value to apply to contents */
@@ -19,23 +20,58 @@ type AccordionPanelProps = {
 };
 const parentData = inject(injectionKey);
 const { title, value, justify, action } = defineProps<AccordionPanelProps>();
+
 const isOpen = computed(() => parentData?.openPanel.value === value);
+const titleEditing = ref(false);
+const titleModel = ref<string>(title ?? "");
+const emits = defineEmits<{
+	updateTitle: [newTitle: string];
+}>();
+
+const onCancel = () => {
+	titleModel.value = title ?? "";
+	titleEditing.value = false;
+};
+
+const onSave = () => {
+	emits("updateTitle", titleModel.value);
+	titleEditing.value = false;
+};
 </script>
 
 <template>
-	<div>
+	<div class="panel-container">
 		<!-- Title area-->
-		<div class="flex justify-between items-center">
+		<div class="flex justify-between items-center mb-3">
 			<!-- Title -->
-			<div>{{ title }}</div>
+			<div class="title">
+				<VTextField
+					v-model="titleModel"
+					:readonly="titleEditing === false"
+					hide-details
+					density="compact"
+				>
+					<template v-slot:append-inner>
+						<VIcon v-if="!titleEditing" icon="$edit" @click="() => (titleEditing = true)" />
+						<VIcon v-else icon="$editOff" @click="onCancel()" />
+					</template>
+					<template v-slot:append>
+						<VIcon v-if="titleEditing" icon="$save" @click="onSave()" />
+					</template>
+				</VTextField>
+			</div>
 			<div class="flex items-center gap-1">
 				<!-- Action -->
 				<div v-if="action?.showAction">
-					<button @click="action.onClickAction()">Action</button>
+					<button @click.prevent="action.onClickAction()">
+						{{ action.actionText ?? "Action" }}
+					</button>
 				</div>
 				<!-- Collapse/Open-->
 				<div>
-					<button @click="parentData?.TogglePanel(value)">Open</button>
+					<button @click.prevent="parentData?.TogglePanel(value)">
+						{{ isOpen ? "Close" : "Open" }}
+					</button>
 				</div>
 			</div>
 		</div>
@@ -49,6 +85,27 @@ const isOpen = computed(() => parentData?.openPanel.value === value);
 </template>
 
 <style scoped>
+.panel-container {
+	flex: 1;
+}
+
+.title {
+	width: 35%;
+}
+
+@media screen and (max-width: 600px) {
+	.title {
+		width: 50%;
+	}
+}
+
+@media screen and (max-width: 400px) {
+	.title {
+		width: unset;
+		flex: 1;
+	}
+}
+
 .panel-body {
 	overflow: hidden;
 	display: flex;

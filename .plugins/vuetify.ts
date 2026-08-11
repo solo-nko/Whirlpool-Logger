@@ -31,7 +31,9 @@ import {
 	mdiInformation,
 	mdiArrowULeftTop,
 	mdiDelete,
-	mdiPencil
+	mdiPencil,
+	mdiPencilOff,
+	mdiContentSave
 } from "@mdi/js";
 import SpiralIcon from "@/components/common/SpiralIcon.vue";
 import {
@@ -110,7 +112,9 @@ export default createVuetify({
 			revert: mdiArrowULeftTop,
 			trash: mdiDelete,
 			edit: mdiPencil,
-			spiral: SpiralIcon
+			editOff: mdiPencilOff,
+			spiral: SpiralIcon,
+			save: mdiContentSave
 		},
 		sets: {
 			mdi

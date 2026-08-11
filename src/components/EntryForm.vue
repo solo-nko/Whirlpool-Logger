@@ -16,6 +16,8 @@ import useSyncStore from "@/stores/sync.ts";
 import DatabaseNote from "@/utils/database/models/DatabaseNote.ts";
 import Note from "@/utils/types/Note.ts";
 import useWhirlpoolStore from "@/stores/whirlpools.ts";
+import AccordionContainer from "@/components/common/accordion/AccordionContainer.vue";
+import AccordionPanel from "@/components/common/accordion/AccordionPanel.vue";
 
 type EntryFormProps = {
 	/** Id of the category this whirlpool belongs to. */
@@ -278,6 +280,13 @@ const onClickSave = async () => {
 	if (syncStore.autoSyncEnabled) await syncStore.AutoSync();
 };
 
+const onSaveNoteTitle = (noteId: number, newTitle: string) => {
+	const editedIndex = entryModel.value.notes.findIndex((note) => note.id === noteId);
+	if (entryModel.value.notes[editedIndex]) {
+		entryModel.value.notes[editedIndex].title = newTitle;
+	}
+};
+
 // when manually deleting the value from this input box, the NumberInput component sets it to null. We intercept that and change it to undefined instead, to prevent any unexpected behavior later (rating is only supposed to be a number or undefined)
 watch(
 	() => entryModel.value.rating,
@@ -389,16 +398,18 @@ onMounted(() => {
 					</VCol>
 				</VRow>
 				<VRow v-if="notesFieldMods?.hidden !== true">
-					<VExpansionPanels>
-						<VExpansionPanel v-for="note in entryModel.notes" :key="note.id">
-							<VExpansionPanelTitle>
-								{{ note.title ?? note.updatedOn.toLocaleString() }}
-							</VExpansionPanelTitle>
-							<VExpansionPanelText>
-								<TipTapEditor v-model="editingNote.content" content-type="html" />
-							</VExpansionPanelText>
-						</VExpansionPanel>
-					</VExpansionPanels>
+					<TipTapEditor v-if="!existingEntry" v-model="editingNote.content" content-type="html" />
+					<AccordionContainer v-else>
+						<AccordionPanel
+							v-for="note in entryModel.notes"
+							:key="note.id"
+							:title="note.title ?? note.updatedOn.toLocaleString()"
+							:value="note.id"
+							@update-title="(newTitle: string) => onSaveNoteTitle(note.id, newTitle)"
+						>
+							<TipTapEditor v-model="editingNote.content" content-type="html" />
+						</AccordionPanel>
+					</AccordionContainer>
 				</VRow>
 				<VRow class="xs:max-md:flex-col">
 					<VCol v-if="tagsFieldMods?.hidden !== true">
