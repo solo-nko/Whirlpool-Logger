@@ -53,7 +53,8 @@ routerAdd("GET", "/api/webhooks/clear-expired-data", ClearOldData);
 /** Searches for and deletes users and their categories and whirlpools that are old past a specified date. */
 function ClearOldData() {
 	let expiry = new Date();
-	expiry.setHours(expiry.getHours() - 1);
+	// expiry.setHours(expiry.getHours() - 1);
+	expiry.setDate(expiry.getDate() - 10);
 	const expiryString = expiry.toISOString().replace("T", " ");
 
 	let usersDeleted = 0;
