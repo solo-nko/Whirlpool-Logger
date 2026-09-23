@@ -1,19 +1,20 @@
 import { Meta, StoryObj } from "@storybook/vue3-vite";
 import AccordionContainer from "../../src/components/common/accordion/AccordionContainer.vue";
 import AccordionPanel from "../../src/components/common/accordion/AccordionPanel.vue";
+import TipTapEditor from "../../src/components/TipTapEditor.vue";
 
 const meta: Meta = {
 	title: "AccordionPanels",
 	component: AccordionContainer,
 	render: (args) => ({
-		components: { AccordionContainer, AccordionPanel },
+		components: { AccordionContainer, AccordionPanel, TipTapEditor },
 		setup() {
 			return { args };
 		},
 		template: `
-			<AccordionContainer>
+			<AccordionContainer :default-open-panels="[1]">
 				<AccordionPanel :value='0' title='Test Title'
-				                :action="{showAction: true, onClickAction: () => console.log('button clicked')}">
+												:actions="[{showAction: true, onClickAction: () => console.log('button clicked')}]">
 					<table>
 						<thead>
 						<tr>
@@ -29,7 +30,21 @@ const meta: Meta = {
 						</tbody>
 					</table>
 				</AccordionPanel>
-				<AccordionPanel :value="1" title="Test Title 2">Test Content 2</AccordionPanel>
+				<AccordionPanel :value="1" title="Test Title 2"
+												:actions="[
+													{
+														showAction: true, 
+														onClickAction: () => console.log('delete button clicked'), 
+														actionText: 'Delete'
+													},
+													{
+														showAction: true, 
+														onClickAction: () => console.log('edit button clicked'), 
+														actionText: 'Add Below'
+													}
+													]">
+					<TipTapEditor />
+				</AccordionPanel>
 			</AccordionContainer>`
 	}),
 	tags: ["autodocs"]

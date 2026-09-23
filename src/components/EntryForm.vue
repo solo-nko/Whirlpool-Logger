@@ -17,7 +17,7 @@ import DatabaseNote from "@/utils/database/models/DatabaseNote.ts";
 import Note from "@/utils/types/Note.ts";
 import useWhirlpoolStore from "@/stores/whirlpools.ts";
 import AccordionContainer from "@/components/common/accordion/AccordionContainer.vue";
-import AccordionPanel from "@/components/common/accordion/AccordionPanel.vue";
+import AccordionPanel, { type Action } from "@/components/common/accordion/AccordionPanel.vue";
 
 type EntryFormProps = {
 	/** Id of the category this whirlpool belongs to. */
@@ -287,6 +287,20 @@ const onSaveNoteTitle = (noteId: number, newTitle: string) => {
 	}
 };
 
+const getLatestUpdatedNote = (): Note => {
+	return entryModel.value.notes.reduce((note1, note2) => {
+		return note1.updatedOn > note2.updatedOn ? note1 : note2;
+	});
+};
+
+const onAddNewNote = (noteIndex: number) => {
+	entryModel.value.notes = entryModel.value.notes.toSpliced(noteIndex + 1, 0, new Note());
+};
+
+const onDeleteSelectedNote = (noteIndex: number) => {
+	entryModel.value.notes = entryModel.value.notes.toSpliced(noteIndex, 1);
+};
+
 // when manually deleting the value from this input box, the NumberInput component sets it to null. We intercept that and change it to undefined instead, to prevent any unexpected behavior later (rating is only supposed to be a number or undefined)
 watch(
 	() => entryModel.value.rating,
@@ -399,17 +413,36 @@ onMounted(() => {
 				</VRow>
 				<VRow v-if="notesFieldMods?.hidden !== true">
 					<TipTapEditor v-if="!existingEntry" v-model="editingNote.content" content-type="html" />
-					<AccordionContainer v-else>
-						<AccordionPanel
-							v-for="note in entryModel.notes"
-							:key="note.id"
-							:title="note.title ?? note.updatedOn.toLocaleString()"
-							:value="note.id"
-							@update-title="(newTitle: string) => onSaveNoteTitle(note.id, newTitle)"
+					<div v-else class="w-full">
+						<VLabel>Notes</VLabel>
+						<AccordionContainer
+							:multi-open="false"
+							:default-open-panels="[getLatestUpdatedNote().id]"
 						>
-							<TipTapEditor v-model="editingNote.content" content-type="html" />
-						</AccordionPanel>
-					</AccordionContainer>
+							<AccordionPanel
+								v-for="(note, index) in entryModel.notes"
+								:key="note.id"
+								:title="note.title ?? note.updatedOn.toLocaleString()"
+								:value="note.id"
+								:actions="[
+									{
+										showAction: true,
+										actionText: 'Add Below',
+										onClickAction: () => onAddNewNote(index)
+									},
+									{
+										showAction: entryModel.notes.length > 1,
+										actionText: 'Delete',
+										onClickAction: () => onDeleteSelectedNote(index),
+										confirmText: 'Really?'
+									}
+								]"
+								@update-title="(newTitle: string) => onSaveNoteTitle(note.id, newTitle)"
+							>
+								<TipTapEditor v-model="note.content" content-type="html" />
+							</AccordionPanel>
+						</AccordionContainer>
+					</div>
 				</VRow>
 				<VRow class="xs:max-md:flex-col">
 					<VCol v-if="tagsFieldMods?.hidden !== true">

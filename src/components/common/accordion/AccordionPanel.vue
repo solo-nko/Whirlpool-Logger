@@ -1,14 +1,18 @@
 <script setup lang="ts">
 import { injectionKey } from "@/components/common/accordion/CollapseItemListUtils.ts";
+import ActionButton from "@/components/common/accordion/ActionButton.vue";
+
+export type Action = {
+	showAction: boolean;
+	actionText: string;
+	onClickAction: (...params: never[]) => void;
+	confirmText?: string;
+};
 
 type AccordionPanelProps = {
 	title?: string;
 	value: string | number;
-	action?: {
-		showAction: boolean;
-		actionText: string;
-		onClickAction: () => void;
-	};
+	actions: Action[];
 	/** Justify-contents property value to apply to contents */
 	justify?:
 		| "flex-start"
@@ -19,9 +23,9 @@ type AccordionPanelProps = {
 		| "center";
 };
 const parentData = inject(injectionKey);
-const { title, value, justify, action } = defineProps<AccordionPanelProps>();
+const { title, value, justify, actions } = defineProps<AccordionPanelProps>();
 
-const isOpen = computed(() => parentData?.openPanel.value === value);
+const isOpen = computed(() => parentData?.openPanels.value.includes(value));
 const titleEditing = ref(false);
 const titleModel = ref<string>(title ?? "");
 const emits = defineEmits<{
@@ -37,23 +41,32 @@ const onSave = () => {
 	emits("updateTitle", titleModel.value);
 	titleEditing.value = false;
 };
+
+const displayedActions = computed(() => actions.filter((action) => action.showAction));
 </script>
 
 <template>
-	<div class="panel-container">
+	<div class="panel-container border border-current/50 rounded-lg">
 		<!-- Title area-->
-		<div class="flex justify-between items-center mb-3">
+		<div class="flex justify-between items-center">
 			<!-- Title -->
 			<div class="title">
 				<VTextField
 					v-model="titleModel"
+					tabindex="-1"
 					:readonly="titleEditing === false"
 					hide-details
 					density="compact"
+					:variant="titleEditing ? 'outlined' : 'plain'"
 				>
 					<template v-slot:append-inner>
-						<VIcon v-if="!titleEditing" icon="$edit" @click="() => (titleEditing = true)" />
-						<VIcon v-else icon="$editOff" @click="onCancel()" />
+						<VIcon
+							v-if="!titleEditing"
+							icon="$edit"
+							tabindex="-1"
+							@click="() => (titleEditing = true)"
+						/>
+						<VIcon v-else icon="$editOff" tabindex="-1" @click="onCancel()" />
 					</template>
 					<template v-slot:append>
 						<VIcon v-if="titleEditing" icon="$save" @click="onSave()" />
@@ -61,23 +74,25 @@ const onSave = () => {
 				</VTextField>
 			</div>
 			<div class="flex items-center gap-1">
-				<!-- Action -->
-				<div v-if="action?.showAction">
-					<button @click.prevent="action.onClickAction()">
-						{{ action.actionText ?? "Action" }}
-					</button>
-				</div>
+				<!-- Actions -->
+				<ActionButton
+					v-for="(action, index) in displayedActions"
+					:key="index"
+					:default-text="action.actionText"
+					:on-click="action.onClickAction"
+					:confirm-text="action.confirmText"
+				/>
 				<!-- Collapse/Open-->
 				<div>
-					<button @click.prevent="parentData?.TogglePanel(value)">
+					<VBtn variant="tonal" tabindex="-1" @click.prevent="parentData?.TogglePanel(value)">
 						{{ isOpen ? "Close" : "Open" }}
-					</button>
+					</VBtn>
 				</div>
 			</div>
 		</div>
 		<!-- Content area -->
 		<Transition>
-			<div v-if="isOpen" class="panel-body">
+			<div v-if="isOpen" class="panel-body mt-3">
 				<slot></slot>
 			</div>
 		</Transition>
@@ -87,10 +102,21 @@ const onSave = () => {
 <style scoped>
 .panel-container {
 	flex: 1;
+	padding: 0.5rem;
 }
 
 .title {
-	width: 35%;
+	width: fit-content;
+	max-width: 50%;
+	display: inline-flex;
+}
+
+.title :deep(.v-input),
+.title :deep(.v-field),
+.title :deep(.v-field__input) {
+	width: fit-content;
+	field-sizing: content;
+	min-width: 4rem;
 }
 
 @media screen and (max-width: 600px) {
