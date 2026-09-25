@@ -16,6 +16,7 @@ export type IField = {
 	displayOrder?: number;
 	required?: boolean;
 	maxLength?: number;
+	hideInTable: boolean;
 };
 
 export type IEditingField = IField & {

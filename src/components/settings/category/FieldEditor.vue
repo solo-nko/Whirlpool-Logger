@@ -15,7 +15,8 @@ const blankField: IEditingField = {
 	hidden: false,
 	maxLength: undefined,
 	deleted: false,
-	updated: true
+	updated: true,
+	hideInTable: true
 };
 
 const settingsStore = useSettingsStore();
@@ -38,7 +39,8 @@ const fieldModel = ref<IEditingField>(
 				hidden: props.fieldData.hidden,
 				maxLength: props.fieldData.maxLength,
 				deleted: false,
-				updated: false
+				updated: false,
+				hideInTable: true
 			}
 		: blankField
 );
@@ -77,7 +79,8 @@ const undoChanges = () => {
 			hidden: props.fieldData.hidden,
 			maxLength: props.fieldData.maxLength,
 			deleted: false,
-			updated: false
+			updated: false,
+			hideInTable: true
 		};
 	deleteButtonStatus.value = "normal";
 };
@@ -149,7 +152,7 @@ const reallyRemoveField = () => {
 			</VRow>
 
 			<VRow class="items-center">
-				<VCol cols="8">
+				<VCol cols="6">
 					<VRadioGroup v-model="fieldModel.type" inline>
 						<template v-slot:label>
 							<div>Field Type</div>
@@ -162,15 +165,16 @@ const reallyRemoveField = () => {
 						/>
 					</VRadioGroup>
 				</VCol>
-				<VCol cols="2">
-					<VSwitch v-model="fieldModel.required">
+				<VCol cols="6">
+					<VSwitch v-model="fieldModel.required" hide-details>
 						<template v-slot:label>Required</template>
 					</VSwitch>
-				</VCol>
-				<VCol cols="2">
-					<VSwitch v-model="fieldModel.hidden">
+					<VSwitch v-model="fieldModel.hidden" hide-details>
 						<!-- TODO: mess with the orientation of this to work better on mobile -->
-						<template v-slot:label><div>Hidden</div></template>
+						<template v-slot:label><div>Hide from Entry Form</div></template>
+					</VSwitch>
+					<VSwitch v-model="fieldModel.hideInTable" hide-details>
+						<template v-slot:label><div>Hide from Records</div></template>
 					</VSwitch>
 				</VCol>
 			</VRow>

@@ -39,4 +39,5 @@ export type DefaultField = {
 	rename?: string;
 	placeholder?: string;
 	hidden: boolean;
+	hideInTable?: boolean;
 };

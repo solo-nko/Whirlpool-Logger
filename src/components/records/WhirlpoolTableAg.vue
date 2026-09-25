@@ -12,6 +12,7 @@ import useCategoriesStore from "@/stores/categories.ts";
 import useWhirlpoolStore from "@/stores/whirlpools.ts";
 import type { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
 import ActionCell from "@/components/records/ActionCell.vue";
+import { FieldType } from "@/utils/types/IField.ts";
 
 const appTheme = useTheme();
 const display = useDisplay();
@@ -28,10 +29,15 @@ const { categoryId } = defineProps<WhirlPoolTableProps>();
 
 const categoryStore = useCategoriesStore();
 const whirlpoolStore = useWhirlpoolStore();
+
 const validTableItems = computed(() => {
 	return whirlpoolStore.clientWhirlpools.filter(
 		(whirlpool) => whirlpool.categoryId === categoryId && whirlpool.deletedOn === null
 	);
+});
+
+const tableCategory = computed(() => {
+	return categoryStore.clientCategories.find((category) => category.id === categoryId);
 });
 
 function OnClickEdit(rowData: WhirlpoolLog) {
@@ -41,6 +47,36 @@ function OnClickEdit(rowData: WhirlpoolLog) {
 function OnClickDelete(rowData: WhirlpoolLog) {
 	console.log(rowData);
 }
+
+function GetFilterType(fieldType: FieldType) {
+	switch (fieldType) {
+		case FieldType.TEXT:
+			return "agTextColumnFilter";
+		case FieldType.NUMBER:
+			return "agNumberColumnFilter";
+		case FieldType.DATE:
+			return "agDateColumnFilter";
+		default:
+			return undefined;
+	}
+}
+
+// Generate columns for custom fields
+const extraFieldColumns = computed(() => {
+	return tableCategory.value?.extraFields.map((extraField): ColDef<WhirlpoolLog> => {
+		return {
+			headerName: extraField.label,
+			valueGetter: (params) => {
+				return (
+					params.data?.extraFieldValues.find((value) => value.fieldId === extraField.id)?.value ??
+					"No data"
+				);
+			},
+			hide: extraField.hideInTable,
+			filter: extraField.type === FieldType.BOOL ? undefined : GetFilterType(extraField.type)
+		};
+	});
+});
 
 const columnDefinitions = ref<ColDef<WhirlpoolLog>[]>([
 	{ field: "title", flex: 1, filter: "agTextColumnFilter" },
@@ -56,6 +92,7 @@ const columnDefinitions = ref<ColDef<WhirlpoolLog>[]>([
 		filter: "agNumberColumnFilter",
 		width: 100
 	},
+	...(extraFieldColumns.value ?? []),
 	{
 		headerName: "Actions",
 		sortable: false,
