@@ -25,6 +25,7 @@ import useSyncStore from "@/stores/sync.ts";
 import useSettingsStore from "@/stores/settings.ts";
 import { SortWhirlpoolByUserUpdated, TransformVariableName } from "@/utils/MiscUtils.ts";
 import type { WhirlpoolFields } from "@/utils/DefaultFieldUtils.ts";
+import { IsDefaultFieldHiddenInTable } from "@/utils/database/DatabaseUtils.ts";
 
 const appTheme = useTheme();
 const categoryStore = useCategoriesStore();
@@ -90,7 +91,7 @@ const extraFieldColumns = computed(() => {
 function DetermineIfDefaultHidden(fieldName: WhirlpoolFields) {
 	if (tableCategory.value === undefined) return false;
 	const field = tableCategory.value.modifiedFields.find((item) => item.field === fieldName);
-	if (field === undefined) return false;
+	if (field === undefined) return IsDefaultFieldHiddenInTable(fieldName);
 	return field.hideInTable;
 }
 
