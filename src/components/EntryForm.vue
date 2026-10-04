@@ -2,7 +2,7 @@
 import { DateTime } from "luxon";
 import { ulid } from "ulid";
 import Fuse from "fuse.js";
-import TipTapEditor from "@/components/TipTapEditor.vue";
+import TipTapEditor from "@/components/TipTapEditor/TipTapEditor.vue";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import { FieldType } from "@/utils/types/IField.ts";
 import type { ITag } from "@/utils/types/ITag.ts";
