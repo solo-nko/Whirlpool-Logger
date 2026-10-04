@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import useCategoriesStore from "@/stores/categories.ts";
 import useSettingsStore from "@/stores/settings.ts";
-import WhirlpoolTable from "@/components/records/WhirlpoolTable.vue";
 import type { Category } from "@/utils/types/Category.ts";
 import WhirlpoolTableAg from "@/components/records/WhirlpoolTableAg.vue";
 

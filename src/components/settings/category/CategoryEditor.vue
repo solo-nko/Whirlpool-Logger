@@ -91,6 +91,7 @@ const updateDefaultField = (input: DefaultField) => {
 	if (fieldIndexToUpdate >= 0 && editingModel.value.modifiedFields[fieldIndexToUpdate])
 		editingModel.value.modifiedFields.splice(fieldIndexToUpdate, 1, input);
 	else editingModel.value.modifiedFields.push(input);
+	settingsStore.DisplayToast("Default fields updated. Save the category to save your changes.");
 };
 
 const updateEditingStatuses = (newStatuses: IEditingStatus[]) => {

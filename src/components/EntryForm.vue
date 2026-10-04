@@ -318,7 +318,7 @@ onMounted(() => {
 				<VRow class="xs:max-sm:flex-col">
 					<VCol>
 						<VAutocomplete
-							v-if="statusFieldMods?.hidden !== true"
+							v-if="statusFieldMods?.hideInEntryForm !== true"
 							v-model="entryModel.status"
 							:label="statusFieldMods?.rename || 'Status'"
 							:items="entryCategory?.availableStatuses ?? []"
@@ -330,7 +330,7 @@ onMounted(() => {
 					</VCol>
 					<VCol>
 						<VNumberInput
-							v-if="ratingFieldMods?.hidden !== true"
+							v-if="ratingFieldMods?.hideInEntryForm !== true"
 							v-model="entryModel.rating"
 							:label="ratingFieldMods?.rename || 'Rating'"
 							control-variant="split"
@@ -352,7 +352,7 @@ onMounted(() => {
 					</VCol>
 				</VRow>
 				<VRow class="xs:max-sm:flex-col">
-					<VCol v-if="chapterFieldMods?.hidden !== true">
+					<VCol v-if="chapterFieldMods?.hideInEntryForm !== true">
 						<VNumberInput
 							v-model="entryModel.chapter"
 							:label="chapterFieldMods?.rename || 'Chapter'"
@@ -361,7 +361,7 @@ onMounted(() => {
 						>
 						</VNumberInput>
 					</VCol>
-					<VCol v-if="volumeFieldMods?.hidden !== true">
+					<VCol v-if="volumeFieldMods?.hideInEntryForm !== true">
 						<VNumberInput
 							v-model="entryModel.volume"
 							:label="volumeFieldMods?.rename || 'Volume'"
@@ -369,7 +369,7 @@ onMounted(() => {
 							:min="0"
 						/>
 					</VCol>
-					<VCol v-if="seriesFieldMods?.hidden !== true">
+					<VCol v-if="seriesFieldMods?.hideInEntryForm !== true">
 						<VCombobox
 							v-model="entryModel.series"
 							variant="outlined"
@@ -380,7 +380,7 @@ onMounted(() => {
 						/>
 					</VCol>
 				</VRow>
-				<VRow v-if="progressFieldMods?.hidden !== true">
+				<VRow v-if="progressFieldMods?.hideInEntryForm !== true">
 					<VCol>
 						<VTextField
 							v-model="entryModel.progress"
@@ -388,11 +388,11 @@ onMounted(() => {
 						/>
 					</VCol>
 				</VRow>
-				<VRow v-if="notesFieldMods?.hidden !== true">
+				<VRow v-if="notesFieldMods?.hideInEntryForm !== true">
 					<TipTapEditor v-model="editingNote.content" content-type="html" />
 				</VRow>
 				<VRow class="xs:max-md:flex-col">
-					<VCol v-if="tagsFieldMods?.hidden !== true">
+					<VCol v-if="tagsFieldMods?.hideInEntryForm !== true">
 						<VAutocomplete
 							v-model="entryModel.tags"
 							:items="availableTags"
@@ -414,7 +414,7 @@ onMounted(() => {
 							</template>
 						</VAutocomplete>
 					</VCol>
-					<VCol v-if="userUpdatedFieldMods?.hidden !== true">
+					<VCol v-if="userUpdatedFieldMods?.hideInEntryForm !== true">
 						<VTextField
 							v-model="entryModel.userUpdatedOn"
 							:label="userUpdatedFieldMods?.rename || 'Last Updated'"
@@ -437,6 +437,7 @@ onMounted(() => {
 									:title="extraField.label"
 								>
 									<!-- eslint-disable		vue/v-on-event-hyphenation-->
+									<!-- the @update:model-value event only works with camelCase -->
 									<VTextField
 										v-if="extraField.type === FieldType.TEXT"
 										:label="extraField.label"

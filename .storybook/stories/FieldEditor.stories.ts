@@ -29,7 +29,7 @@ const dummyExisting: IField = {
 	id: ulid(),
 	label: "Purchase Date",
 	type: FieldType.DATE,
-	hidden: false
+	hideInEntryForm: false
 };
 
 export const EditExisting: Story = {

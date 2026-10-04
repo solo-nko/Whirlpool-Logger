@@ -12,7 +12,7 @@ const blankField: IEditingField = {
 	label: "",
 	type: FieldType.TEXT,
 	placeholder: undefined,
-	hidden: false,
+	hideInEntryForm: false,
 	maxLength: undefined,
 	deleted: false,
 	updated: true,
@@ -36,7 +36,7 @@ const fieldModel = ref<IEditingField>(
 				label: props.fieldData.label,
 				type: props.fieldData.type,
 				placeholder: props.fieldData.placeholder,
-				hidden: props.fieldData.hidden,
+				hideInEntryForm: props.fieldData.hideInEntryForm,
 				maxLength: props.fieldData.maxLength,
 				deleted: false,
 				updated: false,
@@ -76,7 +76,7 @@ const undoChanges = () => {
 			label: props.fieldData.label,
 			type: props.fieldData.type,
 			placeholder: props.fieldData.placeholder,
-			hidden: props.fieldData.hidden,
+			hideInEntryForm: props.fieldData.hideInEntryForm,
 			maxLength: props.fieldData.maxLength,
 			deleted: false,
 			updated: false,
@@ -169,12 +169,12 @@ const reallyRemoveField = () => {
 					<VSwitch v-model="fieldModel.required" hide-details>
 						<template v-slot:label>Required</template>
 					</VSwitch>
-					<VSwitch v-model="fieldModel.hidden" hide-details>
+					<VSwitch v-model="fieldModel.hideInEntryForm" hide-details>
 						<!-- TODO: mess with the orientation of this to work better on mobile -->
-						<template v-slot:label><div>Hide from Entry Form</div></template>
+						<template v-slot:label><div>Hide from Entry view</div></template>
 					</VSwitch>
 					<VSwitch v-model="fieldModel.hideInTable" hide-details>
-						<template v-slot:label><div>Hide from Records</div></template>
+						<template v-slot:label><div>Hide from Records view</div></template>
 					</VSwitch>
 				</VCol>
 			</VRow>

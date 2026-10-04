@@ -3,7 +3,9 @@ import { AgGridVue } from "ag-grid-vue3";
 import {
 	AllCommunityModule,
 	type ColDef,
+	type GridApi,
 	type GridOptions,
+	type GridReadyEvent,
 	ModuleRegistry,
 	themeQuartz
 } from "ag-grid-community";
@@ -21,8 +23,8 @@ import ConfirmCard from "@/components/common/ConfirmCard.vue";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
 import useSyncStore from "@/stores/sync.ts";
 import useSettingsStore from "@/stores/settings.ts";
-import whirlpools from "@/stores/whirlpools.ts";
-import { SortWhirlpoolByUserUpdated } from "@/utils/MiscUtils.ts";
+import { SortWhirlpoolByUserUpdated, TransformVariableName } from "@/utils/MiscUtils.ts";
+import type { WhirlpoolFields } from "@/utils/DefaultFieldUtils.ts";
 
 const appTheme = useTheme();
 const categoryStore = useCategoriesStore();
@@ -49,6 +51,11 @@ const validTableItems = computed(() => {
 const tableCategory = computed(() => {
 	return categoryStore.clientCategories.find((category) => category.id === categoryId);
 });
+
+const gridApi = shallowRef<GridApi | null>(null);
+const onGridReady = (params: GridReadyEvent) => {
+	gridApi.value = params.api;
+};
 
 function GetFilterType(fieldType: FieldType) {
 	switch (fieldType) {
@@ -80,64 +87,111 @@ const extraFieldColumns = computed(() => {
 	});
 });
 
-const columnDefinitions = ref<ColDef<WhirlpoolLog>[]>([
-	{
-		field: "title",
-		flex: 1,
-		filter: "agTextColumnFilter",
-		cellClass: "title-cell",
-		sort: "asc",
-		initialSortIndex: 1
-	},
-	{
-		field: "status",
-		valueGetter: (params) => params.data?.status?.name ?? "No status",
-		filter: "agTextColumnFilter",
-		width: 200
-	},
-	{
-		headerName: "Tags (3 max)",
-		cellRenderer: TagsCell,
-		wrapText: true,
-		autoHeight: true,
-		sortable: false
-	},
-	{
-		headerName: "Rating",
-		valueGetter: (params) => params.data?.rating ?? "No rating",
-		cellRenderer: RatingCell,
-		filter: "agNumberColumnFilter",
-		width: 100
-	},
-	{
-		headerName: "Last Updated",
-		valueGetter: (params) => {
-			if (params.data) {
-				return params.data.userUpdatedOn;
-			}
+function DetermineIfDefaultHidden(fieldName: WhirlpoolFields) {
+	if (tableCategory.value === undefined) return false;
+	const field = tableCategory.value.modifiedFields.find((item) => item.field === fieldName);
+	if (field === undefined) return false;
+	return field.hideInTable;
+}
+
+function GetHeaderName(fieldName: WhirlpoolFields) {
+	const defaultName = TransformVariableName(fieldName as string);
+	if (tableCategory.value === undefined) return defaultName;
+	const field = tableCategory.value.modifiedFields.find((item) => item.field === fieldName);
+	if (field === undefined) return defaultName;
+	return field.rename ?? defaultName;
+}
+const columnDefinitions = computed<ColDef<WhirlpoolLog>[]>(() => {
+	return [
+		{
+			field: "title",
+			headerName: "Title",
+			flex: 1,
+			minWidth: 200,
+			filter: "agTextColumnFilter",
+			cellClass: "title-cell",
+			sort: "asc",
+			initialSortIndex: 1
 		},
-		comparator: (_value1, _value2, row1, row2) => {
-			if (row1.data && row2.data) {
-				return SortWhirlpoolByUserUpdated(row1.data, row2.data);
-			} else return 0;
+		{
+			headerName: GetHeaderName("status"),
+			valueGetter: (params) => params.data?.status?.name ?? "No status",
+			filter: "agTextColumnFilter",
+			width: 200,
+			hide: DetermineIfDefaultHidden("status")
 		},
-		sort: "desc",
-		initialSortIndex: 0
-	},
-	...(extraFieldColumns.value ?? []),
-	{
-		headerName: "Actions",
-		sortable: false,
-		resizable: false,
-		cellRenderer: ActionCell,
-		valueGetter: (params) => params.data,
-		cellRendererParams: {
-			onEdit: OpenModal,
-			onDelete: PrepareToDelete
+		{
+			field: "chapter",
+			headerName: GetHeaderName("chapter"),
+			filter: "agNumberColumnFilter",
+			hide: DetermineIfDefaultHidden("chapter")
 		},
-		width: 150
-	}
-]);
+		{
+			field: "volume",
+			headerName: GetHeaderName("volume"),
+			filter: "agNumberColumnFilter",
+			hide: DetermineIfDefaultHidden("volume")
+		},
+		// TODO: implement custom tag filter
+		{
+			headerName: `${GetHeaderName("tags")} (3 max)`,
+			cellRenderer: TagsCell,
+			wrapText: true,
+			autoHeight: true,
+			sortable: false,
+			hide: DetermineIfDefaultHidden("tags")
+		},
+		{
+			headerName: GetHeaderName("rating"),
+			valueGetter: (params) => params.data?.rating ?? "No rating",
+			cellRenderer: RatingCell,
+			filter: "agNumberColumnFilter",
+			width: 100,
+			hide: DetermineIfDefaultHidden("rating")
+		},
+		{
+			field: "series",
+			headerName: GetHeaderName("series"),
+			filter: "agTextColumnFilter",
+			hide: DetermineIfDefaultHidden("series")
+		},
+		{
+			headerName: GetHeaderName("userUpdatedOn"),
+			valueGetter: (params) => {
+				if (params.data) {
+					return params.data.userUpdatedOn;
+				}
+			},
+			comparator: (_value1, _value2, row1, row2) => {
+				if (row1.data && row2.data) {
+					return SortWhirlpoolByUserUpdated(row1.data, row2.data);
+				} else return 0;
+			},
+			sort: "desc",
+			initialSortIndex: 0
+		},
+		...(extraFieldColumns.value ?? []),
+		{
+			field: "progress",
+			headerName: GetHeaderName("progress"),
+			filter: "agTextColumnFilter",
+			hide: DetermineIfDefaultHidden("progress")
+		},
+		// TODO: consider how to add notes column
+		{
+			headerName: "Actions",
+			sortable: false,
+			resizable: false,
+			cellRenderer: ActionCell,
+			valueGetter: (params) => params.data,
+			cellRendererParams: {
+				onEdit: OpenModal,
+				onDelete: PrepareToDelete
+			},
+			width: 150
+		}
+	];
+});
 
 const gridTheme = themeQuartz.withParams({
 	backgroundColor: appTheme.current.value.colors.surface as string,
@@ -160,6 +214,7 @@ const gridOptions: GridOptions<WhirlpoolLog> = {
 	columnDefs: columnDefinitions.value,
 	theme: gridTheme,
 	rowHeight: settingsStore.display.mobile ? 80 : 50,
+	domLayout: "autoHeight",
 	rowClass: "TEST"
 };
 
@@ -205,7 +260,26 @@ const deleteEntry = async () => {
 };
 </script>
 <template>
-	<AgGridVue :grid-options="gridOptions" :row-data="validTableItems" style="height: 70vh" />
+	<!--	eslint-disable vue/v-on-event-hyphenation -->
+	<VTextField
+		density="compact"
+		label="Quick Search"
+		clearable
+		hide-details
+		class="mt-2"
+		@update:modelValue="
+			(text: unknown) => {
+				if (gridApi === null) return;
+				gridApi.setGridOption('quickFilterText', text as string);
+			}
+		"
+	>
+		<template v-slot:prepend-inner>
+			<VIcon icon="$search" />
+		</template>
+	</VTextField>
+	<!-- eslint-enable		vue/v-on-event-hyphenation-->
+	<AgGridVue :grid-options="gridOptions" :row-data="validTableItems" @grid-ready="onGridReady" />
 	<VDialog
 		v-if="tableCategory && modalEntry"
 		v-model="isEntryModalOpen"

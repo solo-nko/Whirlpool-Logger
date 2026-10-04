@@ -30,7 +30,8 @@ export const DefaultFields: DefaultField[] = Object.keys(new WhirlpoolLog("place
 	.map((key) => {
 		return {
 			field: key as WhirlpoolFields,
-			hidden: false
+			hideInEntryForm: false,
+			hideInTable: true
 		};
 	});
 
@@ -38,6 +39,8 @@ export type DefaultField = {
 	field: WhirlpoolFields;
 	rename?: string;
 	placeholder?: string;
-	hidden: boolean;
-	hideInTable?: boolean;
+	hideInEntryForm: boolean;
+	// TODO: add db transformer/upgrader function for these two, as well as for "hidden" renamed to "hideInEntryForm"
+	hideInTable: boolean;
+	headerOrder?: number;
 };
