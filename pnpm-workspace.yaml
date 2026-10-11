@@ -3,5 +3,3 @@ allowBuilds:
   esbuild: true
   sharp: true
   unrs-resolver: true
-minimumReleaseAgeExclude:
-  - sharp@0.35.0

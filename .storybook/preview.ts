@@ -20,12 +20,14 @@ const preview: Preview = {
 				date: /Date$/i
 			}
 		},
-
 		a11y: {
 			// 'error' - fail CI on a11y violations
 			// 'off' - skip a11y checks entirely
 			test: "todo"
 		}
+	},
+	initialGlobals: {
+		backgrounds: { value: "dark" }
 	}
 };
 

@@ -88,6 +88,7 @@ const updateDefaultField = (input: DefaultField) => {
 	const fieldIndexToUpdate = editingModel.value.modifiedFields.findIndex(
 		(field) => field.field === input.field
 	);
+	// TODO: use ToSpliced instead
 	if (fieldIndexToUpdate >= 0 && editingModel.value.modifiedFields[fieldIndexToUpdate])
 		editingModel.value.modifiedFields.splice(fieldIndexToUpdate, 1, input);
 	else editingModel.value.modifiedFields.push(input);
