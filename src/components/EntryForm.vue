@@ -41,7 +41,7 @@ function GenerateNewWhirlpool(categoryId: string): WhirlpoolLog {
 		id: ulid(),
 		title: "",
 		categoryId,
-		notes: [],
+		notes: [new Note()],
 		unsyncedChanges: true,
 		extraFieldValues: [],
 		tags: [],
@@ -64,14 +64,17 @@ const statusDescription = computed(() => {
 });
 
 // Suggest series from existing whirlpools to help with consistent data entry
-const seriesFuse = new Fuse(whirlpoolStore.clientWhirlpools, {
-	keys: ["series"],
-	includeMatches: true,
-	minMatchCharLength: 3
-});
+const seriesFuse = computed(
+	() =>
+		new Fuse(whirlpoolStore.clientWhirlpools, {
+			keys: ["series"],
+			includeMatches: true,
+			minMatchCharLength: 3
+		})
+);
 const seriesCandidates = computed(() => {
-	if (entryModel.value.series === undefined || entryModel.value.series.trim() === "") return [];
-	const initialList = seriesFuse
+	if (!entryModel.value.series || entryModel.value.series.trim() === "") return [];
+	const initialList = seriesFuse.value
 		.search(entryModel.value.series)
 		// filter out data from other categories
 		.filter((result) => result.item.series && result.item.categoryId === entryCategory.value?.id)
@@ -80,33 +83,39 @@ const seriesCandidates = computed(() => {
 });
 
 // Suggest titles from existing whirlpools to remind the user if they've already created an entry for a given piece of media.
-const titleFuse = new Fuse(whirlpoolStore.clientWhirlpools, {
-	keys: ["title"],
-	includeMatches: true,
-	minMatchCharLength: 4
-});
+const titleFuse = computed(
+	() =>
+		new Fuse(whirlpoolStore.clientWhirlpools, {
+			keys: ["title"],
+			includeMatches: true,
+			minMatchCharLength: 3
+		})
+);
 const titleCandidates = computed(() => {
-	if (entryModel.value.title.trim() === "") return [];
-	return titleFuse
+	if (!entryModel.value.title || entryModel.value.title.trim() === "") return [];
+	return titleFuse.value
 		.search(entryModel.value.title)
 		.filter((result) => result.item.categoryId === entryCategory.value?.id)
 		.map((secondResult) => secondResult.item.title);
 });
 
 // Validation
-const formValidationStatus = ref<boolean | null>(null);
 const formRef = ref();
 
 const titleRules = {
-	hasValue: (value: string) => HasValue({ input: value, fieldName: "Title" }),
-	maxLength: (value: string) => CheckMaxLength({ input: value, fieldName: "Title", maxLength: 100 })
+	hasValue: (value: string | null | undefined) =>
+		HasValue({ input: value ?? "", fieldName: "Title" }),
+	checkLength: (value: string | null | undefined) =>
+		CheckMaxLength({ input: value ?? "", fieldName: "Title", maxLength: titleRules.maxLength }),
+	maxLength: 100
 };
 
 const seriesRules = {
-	maxLength: (value: string | undefined) => {
-		if (!value || value.length <= 50) return true;
+	checkLength: (value: string | null | undefined) => {
+		if (!value || value.length <= seriesRules.maxLength) return true;
 		return "This must be 50 characters or less.";
-	}
+	},
+	maxLength: 50
 };
 
 const genericHasValue = (value: string) => HasValue({ input: value, fieldName: "This field" });
@@ -229,6 +238,10 @@ async function AddEntry() {
 			createdOn: now.toISO(),
 			unsyncedChanges: true
 		})
+		.catch((error) => {
+			console.log(error);
+			settingsStore.DisplayToast("An error occurred while saving the entry.");
+		})
 		.then(() => {
 			ResetFields();
 			settingsStore.DisplayToast("Entry added!");
@@ -255,6 +268,10 @@ async function UpdateEntry() {
 			createdOn: entryModel.value.createdOn.toISO() ?? "unknown",
 			unsyncedChanges: true
 		})
+		.catch((error) => {
+			console.log(error);
+			settingsStore.DisplayToast("An error occurred while saving the entry.");
+		})
 		.then(() => {
 			ResetFields();
 			settingsStore.DisplayToast("Entry updated!");
@@ -265,14 +282,13 @@ async function UpdateEntry() {
 
 const onClickSave = async () => {
 	if (props.demoOnly) return;
-	if (!formValidationStatus.value) {
+	const { valid } = await formRef.value?.validate();
+	if (!valid) {
 		settingsStore.DisplayToast("A required field is missing, or a field has invalid input.");
-		if (formRef.value) await formRef.value.validate();
 		return;
 	}
 	if (isEditMode.value) await UpdateEntry();
 	else await AddEntry();
-	if (syncStore.autoSyncEnabled) await syncStore.AutoSync();
 };
 
 const onSaveNoteTitle = (noteId: number, newTitle: string) => {
@@ -321,18 +337,20 @@ onMounted(() => {
 <template>
 	<VCard>
 		<VCardTitle>{{ isEditMode ? "Edit Entry" : "Add Entry" }}</VCardTitle>
-		<VForm ref="formRef" v-model="formValidationStatus">
+		<VForm ref="formRef">
 			<VContainer>
 				<VRow>
-					<VCombobox
-						v-model="entryModel.title"
-						label="Title"
-						:rules="[titleRules.hasValue, titleRules.maxLength]"
-						counter
-						:items="titleCandidates"
-						clearable
-						variant="outlined"
-					/>
+					<VCol>
+						<VCombobox
+							v-model="entryModel.title"
+							label="Title"
+							:rules="[titleRules.hasValue, titleRules.checkLength]"
+							:counter="titleRules.maxLength"
+							:items="titleCandidates"
+							clearable
+							variant="outlined"
+						/>
+					</VCol>
 				</VRow>
 				<VRow class="xs:max-sm:flex-col">
 					<VCol>
@@ -365,6 +383,7 @@ onMounted(() => {
 									chunk-count="10"
 									height="10"
 									clickable
+									role="menu"
 								/>
 							</template>
 						</VNumberInput>
@@ -393,7 +412,8 @@ onMounted(() => {
 							v-model="entryModel.series"
 							variant="outlined"
 							:label="seriesFieldMods?.rename || 'Series'"
-							:rules="[seriesRules.maxLength]"
+							:rules="[seriesRules.checkLength]"
+							:counter="seriesRules.maxLength"
 							:items="seriesCandidates"
 							clearable
 						/>
@@ -408,7 +428,7 @@ onMounted(() => {
 					</VCol>
 				</VRow>
 				<VRow v-if="notesFieldMods?.hideInEntryForm !== true">
-					<div class="w-full">
+					<VCol class="w-full">
 						<VLabel>Notes</VLabel>
 						<AccordionContainer
 							:multi-open="false"
@@ -441,7 +461,7 @@ onMounted(() => {
 								/>
 							</AccordionPanel>
 						</AccordionContainer>
-					</div>
+					</VCol>
 				</VRow>
 				<VRow class="xs:max-md:flex-col">
 					<VCol v-if="tagsFieldMods?.hideInEntryForm !== true">
