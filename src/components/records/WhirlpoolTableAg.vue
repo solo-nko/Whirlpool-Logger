@@ -7,7 +7,8 @@ import {
 	type GridOptions,
 	type GridReadyEvent,
 	ModuleRegistry,
-	themeQuartz
+	themeQuartz,
+	type DoesFilterPassParams
 } from "ag-grid-community";
 import { useTheme } from "vuetify";
 import { DateTime } from "luxon";
@@ -18,6 +19,7 @@ import ActionCell from "@/components/records/ActionCell.vue";
 import { FieldType } from "@/utils/types/IField.ts";
 import RatingCell from "@/components/records/RatingCell.vue";
 import TagsCell from "@/components/records/TagsCell.vue";
+import TagsFilter from "@/components/records/TagsFilter.vue";
 import EntryForm from "@/components/EntryForm.vue";
 import ConfirmCard from "@/components/common/ConfirmCard.vue";
 import LoggerDatabase from "@/utils/database/LoggerDatabase.ts";
@@ -26,6 +28,7 @@ import useSettingsStore from "@/stores/settings.ts";
 import { SortWhirlpoolByUserUpdated, TransformVariableName } from "@/utils/MiscUtils.ts";
 import type { WhirlpoolFields } from "@/utils/DefaultFieldUtils.ts";
 import { IsDefaultFieldHiddenInTable } from "@/utils/database/DatabaseUtils.ts";
+import type { TagFilterModel, WhirlPoolTableProps } from "@/components/records/GridUtils.ts";
 
 const appTheme = useTheme();
 const categoryStore = useCategoriesStore();
@@ -34,10 +37,6 @@ const syncStore = useSyncStore();
 const settingsStore = useSettingsStore();
 
 const fontSize = computed(() => (settingsStore.display.mobile ? "1.5rem" : "1rem"));
-
-type WhirlPoolTableProps = {
-	categoryId: string;
-};
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -102,6 +101,27 @@ function GetHeaderName(fieldName: WhirlpoolFields) {
 	if (field === undefined) return defaultName;
 	return field.rename ?? defaultName;
 }
+
+function DoesTagsFilterPass(params: DoesFilterPassParams<WhirlpoolLog, unknown, TagFilterModel>) {
+	const { model, node } = params;
+	if (model === null) return false;
+	const rowTagLabels = node.data?.tags.map((tag) => tag.id);
+	if (
+		model.and &&
+		model.filterTagLabels.every((filterTagLabel) => rowTagLabels?.includes(filterTagLabel))
+	) {
+		return true;
+	}
+	if (
+		!model.and &&
+		model.filterTagLabels.some((filterTagLabel) => rowTagLabels?.includes(filterTagLabel))
+	) {
+		return true;
+	}
+
+	return false;
+}
+
 const columnDefinitions = computed<ColDef<WhirlpoolLog>[]>(() => {
 	return [
 		{
@@ -133,12 +153,15 @@ const columnDefinitions = computed<ColDef<WhirlpoolLog>[]>(() => {
 			filter: "agNumberColumnFilter",
 			hide: DetermineIfDefaultHidden("volume")
 		},
-		// TODO: implement custom tag filter
 		{
 			headerName: `${GetHeaderName("tags")} (3 max)`,
 			cellRenderer: TagsCell,
 			wrapText: true,
 			autoHeight: true,
+			filter: { component: TagsFilter, doesFilterPass: DoesTagsFilterPass },
+			filterParams: {
+				category: tableCategory.value
+			},
 			sortable: false,
 			hide: DetermineIfDefaultHidden("tags")
 		},
@@ -216,7 +239,7 @@ const gridOptions: GridOptions<WhirlpoolLog> = {
 	theme: gridTheme,
 	rowHeight: settingsStore.display.mobile ? 80 : 50,
 	domLayout: "autoHeight",
-	rowClass: "TEST"
+	enableFilterHandlers: true
 };
 
 // dialog operations
@@ -319,5 +342,9 @@ const deleteEntry = async () => {
 ::v-deep(.title-cell) {
 	justify-content: flex-start;
 	text-align: left;
+}
+
+::v-deep(.ag-sort-order) {
+	text-decoration: underline;
 }
 </style>

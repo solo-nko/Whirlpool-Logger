@@ -406,11 +406,7 @@ onMounted(() => {
 							no-data-text="No tags available. Create some in Category Settings."
 						>
 							<template v-slot:chip="{ props: chipProps, item }">
-								<VChip
-									v-bind="chipProps"
-									:color="item.color ? item.color : undefined"
-									variant="flat"
-								></VChip>
+								<VChip v-bind="chipProps" :color="item.color ?? undefined" variant="flat" />
 							</template>
 						</VAutocomplete>
 					</VCol>
