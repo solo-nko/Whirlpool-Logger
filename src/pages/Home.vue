@@ -37,6 +37,7 @@ const closeEditModal = () => {
 		persistent
 		scrollable
 		:fullscreen="settingsStore.display.mobile"
+		no-click-animation
 	>
 		<EntryForm
 			:category-id="modalCategory.id"

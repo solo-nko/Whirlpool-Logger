@@ -53,11 +53,13 @@ const displayedActions = computed(() => actions.filter((action) => action.showAc
 			<div class="title">
 				<VTextField
 					v-model="titleModel"
-					tabindex="-1"
-					:readonly="titleEditing === false"
+					:tabindex="titleEditing ? 0 : -1"
+					:readonly="!titleEditing"
 					hide-details
 					density="compact"
 					:variant="titleEditing ? 'outlined' : 'plain'"
+					@keydown.enter.prevent="onSave()"
+					@keydown.esc.prevent="onCancel()"
 				>
 					<template v-slot:append-inner>
 						<VIcon

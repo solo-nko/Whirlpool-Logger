@@ -17,7 +17,7 @@ import DatabaseNote from "@/utils/database/models/DatabaseNote.ts";
 import Note from "@/utils/types/Note.ts";
 import useWhirlpoolStore from "@/stores/whirlpools.ts";
 import AccordionContainer from "@/components/common/accordion/AccordionContainer.vue";
-import AccordionPanel, { type Action } from "@/components/common/accordion/AccordionPanel.vue";
+import AccordionPanel from "@/components/common/accordion/AccordionPanel.vue";
 
 type EntryFormProps = {
 	/** Id of the category this whirlpool belongs to. */
@@ -174,8 +174,6 @@ const entryModel = ref<WhirlpoolLog>(
 	props.existingEntry ? { ...props.existingEntry } : GenerateNewWhirlpool(props.categoryId)
 );
 
-const editingNote = ref<Note>(new Note());
-
 const extraFields = computed(() => {
 	if (!entryCategory.value || entryCategory.value.extraFields.length === 0) return null;
 	return entryCategory.value.extraFields;
@@ -205,7 +203,6 @@ const setToToday = () => {
 function ResetFields() {
 	if (entryCategory.value === undefined) return;
 	entryModel.value = GenerateNewWhirlpool(props.categoryId);
-	editingNote.value = new Note();
 }
 
 async function OnSaveEntry(whichType: "add" | "update") {
@@ -215,7 +212,6 @@ async function OnSaveEntry(whichType: "add" | "update") {
 
 async function AddEntry() {
 	const now = DateTime.now();
-	entryModel.value.notes = [editingNote.value];
 	await LoggerDatabase.whirlpools
 		.add({
 			...entryModel.value,
@@ -242,7 +238,6 @@ async function AddEntry() {
 
 async function UpdateEntry() {
 	const now = DateTime.now();
-	entryModel.value.notes = [editingNote.value];
 	await LoggerDatabase.whirlpools
 		.update(entryModel.value.id, {
 			...entryModel.value,
@@ -287,11 +282,16 @@ const onSaveNoteTitle = (noteId: number, newTitle: string) => {
 	}
 };
 
-const getLatestUpdatedNote = (): Note => {
+const getLatestUpdatedNote = computed((): Note | undefined => {
+	const notes = entryModel.value.notes;
+	if (notes === undefined || notes.length === 0) {
+		return undefined;
+	}
+
 	return entryModel.value.notes.reduce((note1, note2) => {
 		return note1.updatedOn > note2.updatedOn ? note1 : note2;
 	});
-};
+});
 
 const onAddNewNote = (noteIndex: number) => {
 	entryModel.value.notes = entryModel.value.notes.toSpliced(noteIndex + 1, 0, new Note());
@@ -314,10 +314,6 @@ onMounted(() => {
 		settingsStore.DisplayToast(
 			"There is a mismatch between the loaded whirlpool and the indicated whirlpool category. Upon saving, the whirlpool's category will be forcibly updated to correct this."
 		);
-	}
-	if (props.existingEntry !== undefined && props.existingEntry.notes.length > 0) {
-		const getFirstNote = props.existingEntry.notes[0];
-		if (getFirstNote) editingNote.value = getFirstNote;
 	}
 });
 </script>
@@ -412,12 +408,11 @@ onMounted(() => {
 					</VCol>
 				</VRow>
 				<VRow v-if="notesFieldMods?.hidden !== true">
-					<TipTapEditor v-if="!existingEntry" v-model="editingNote.content" content-type="html" />
-					<div v-else class="w-full">
+					<div class="w-full">
 						<VLabel>Notes</VLabel>
 						<AccordionContainer
 							:multi-open="false"
-							:default-open-panels="[getLatestUpdatedNote().id]"
+							:default-open-panels="getLatestUpdatedNote ? [getLatestUpdatedNote.id] : []"
 						>
 							<AccordionPanel
 								v-for="(note, index) in entryModel.notes"
@@ -439,7 +434,11 @@ onMounted(() => {
 								]"
 								@update-title="(newTitle: string) => onSaveNoteTitle(note.id, newTitle)"
 							>
-								<TipTapEditor v-model="note.content" content-type="html" />
+								<TipTapEditor
+									v-model="note.content"
+									content-type="html"
+									@update:model-value="() => (note.updatedOn = DateTime.now())"
+								/>
 							</AccordionPanel>
 						</AccordionContainer>
 					</div>
