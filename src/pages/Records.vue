@@ -2,7 +2,10 @@
 import useCategoriesStore from "@/stores/categories.ts";
 import useSettingsStore from "@/stores/settings.ts";
 import type { Category } from "@/utils/types/Category.ts";
-import WhirlpoolTableAg from "@/components/records/WhirlpoolTableAg.vue";
+
+const AsyncWhirlpoolTableAg = defineAsyncComponent(
+	() => import("@/components/records/WhirlpoolTableAg.vue")
+);
 
 const categoriesStore = useCategoriesStore();
 const settingsStore = useSettingsStore();
@@ -53,7 +56,7 @@ watch(
 							:key="category.id"
 							:value="category"
 						>
-							<WhirlpoolTableAg :category-id="category.id" />
+							<AsyncWhirlpoolTableAg :category-id="category.id" />
 						</VTabsWindowItem>
 					</VTabsWindow>
 				</VCard>

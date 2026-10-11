@@ -1,7 +1,7 @@
 import { StarterKit } from "@tiptap/starter-kit";
 import { Color, TextStyle } from "@tiptap/extension-text-style";
 import { Highlight } from "@tiptap/extension-highlight";
-import { Placeholder } from "@tiptap/extensions";
+import { Placeholder } from "@tiptap/extension-placeholder";
 
 export const editorExtensions = [
 	StarterKit.configure({

@@ -239,7 +239,7 @@ async function AddEntry() {
 			unsyncedChanges: true
 		})
 		.catch((error) => {
-			console.log(error);
+			settingsStore.OutputToConsole(error);
 			settingsStore.DisplayToast("An error occurred while saving the entry.");
 		})
 		.then(() => {
@@ -269,7 +269,7 @@ async function UpdateEntry() {
 			unsyncedChanges: true
 		})
 		.catch((error) => {
-			console.log(error);
+			settingsStore.OutputToConsole(error);
 			settingsStore.DisplayToast("An error occurred while saving the entry.");
 		})
 		.then(() => {
@@ -315,6 +315,10 @@ const onAddNewNote = (noteIndex: number) => {
 
 const onDeleteSelectedNote = (noteIndex: number) => {
 	entryModel.value.notes = entryModel.value.notes.toSpliced(noteIndex, 1);
+};
+
+const onUpdateNoteContent = (note: Note) => {
+	note.updatedOn = DateTime.now();
 };
 
 // when manually deleting the value from this input box, the NumberInput component sets it to null. We intercept that and change it to undefined instead, to prevent any unexpected behavior later (rating is only supposed to be a number or undefined)
@@ -457,7 +461,7 @@ onMounted(() => {
 								<TipTapEditor
 									v-model="note.content"
 									content-type="html"
-									@update:model-value="() => (note.updatedOn = DateTime.now())"
+									@update:model-value="onUpdateNoteContent(note)"
 								/>
 							</AccordionPanel>
 						</AccordionContainer>
