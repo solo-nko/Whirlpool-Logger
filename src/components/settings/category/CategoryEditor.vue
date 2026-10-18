@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { DateTime } from "luxon";
+import type { UpdateSpec } from "dexie";
 import type { Category } from "@/utils/types/Category.ts";
 import FieldEditor from "@/components/settings/category/FieldEditor.vue";
 import DefaultFieldEditor from "@/components/settings/category/DefaultFieldEditor.vue";
@@ -14,17 +15,25 @@ import type { IEditingStatus, IStatus } from "@/utils/types/IStatus.ts";
 import { type DefaultField, DefaultFields } from "@/utils/DefaultFieldUtils.ts";
 import useSettingsStore from "@/stores/settings.ts";
 import useWhirlpoolStore from "@/stores/whirlpools.ts";
+import type { DatabaseWhirlpool } from "@/utils/database/models/DatabaseWhirlpool.ts";
+import useSyncStore from "@/stores/sync.ts";
 
 type CategoryEditorProps = {
 	category: Category;
 };
 const settingsStore = useSettingsStore();
 const whirlpoolStore = useWhirlpoolStore();
+const syncStore = useSyncStore();
 
 interface EditingCategory extends Category {
 	availableStatuses: IEditingStatus[];
 	tags: IEditingTag[];
 	extraFields: IEditingField[];
+}
+
+interface BulkUpdateInterface {
+	key: string;
+	changes: UpdateSpec<DatabaseWhirlpool>;
 }
 
 /** Create a version of the category data just for editing within the component. */
@@ -107,56 +116,57 @@ const updateEditingTags = (newTags: IEditingTag[]) => {
 
 /** Uses the `updated` and `deleted` flags to find existing Whirlpools in the database which have those tags attached. It then either removes the tags if they've been deleted, or modifies them if they've been updated. */
 async function UpdateWhirlpoolTags() {
-	const deletedTags: IEditingTag[] = editingModel.value.tags.filter((tag) => tag.deleted === true);
-	const updatedTags: IEditingTag[] = editingModel.value.tags.filter((tag) => tag.updated === true);
+	const deletedTags = new Map(
+		editingModel.value.tags.filter((tag) => tag.deleted).map((t) => [t.id, t])
+	);
+	const updatedTags = new Map(
+		editingModel.value.tags.filter((tag) => tag.updated).map((t) => [t.id, t])
+	);
+	if (deletedTags.size === 0 && updatedTags.size === 0) return;
+
 	// get whirlpools under this category
 	const getClientWhirlpools = whirlpoolStore.clientWhirlpools.filter(
 		(whirlpool) => whirlpool.categoryId === editingModel.value.id
 	);
 	// find whirlpools with at least one tag that has either been deleted or modified
 	const whirlpoolsWithStaleTags = getClientWhirlpools.filter((whirlpool) =>
-		whirlpool.tags.some(
-			(tag) =>
-				deletedTags.some((deletedTag) => deletedTag.id === tag.id) ||
-				updatedTags.some((updatedTag) => updatedTag.id === tag.id)
-		)
+		whirlpool.tags.some((tag) => deletedTags.has(tag.id) || updatedTags.has(tag.id))
 	);
 
 	// If no whirlpools exist with outdated tags, there's no point proceeding past this point.
 	if (whirlpoolsWithStaleTags.length === 0) return;
 
-	const postTagUpdateWhirlpools = whirlpoolsWithStaleTags.map((whirlpool) => {
-		return {
-			...whirlpool,
-			tags: whirlpool.tags
-				// filter out deleted tags
-				.filter((tag) => !deletedTags.some((deletedTag) => deletedTag.id === tag.id))
-				// modify updated tags
-				.map((oldTag) => {
-					const newTag = updatedTags.find((updatedTag) => updatedTag.id === oldTag.id);
-					// return the new version if there is one, else return the existing version
-					return newTag ? { ...newTag, updated: null } : oldTag;
-				})
-		};
-	});
-
-	await LoggerDatabase.whirlpools.bulkUpdate(
-		postTagUpdateWhirlpools.map((whirlpool) => ({
+	const tagUpdates: BulkUpdateInterface[] = whirlpoolsWithStaleTags.map(
+		(whirlpool): BulkUpdateInterface => ({
 			key: whirlpool.id,
 			changes: {
-				tags: DeepToRaw(whirlpool.tags)
+				tags: DeepToRaw(
+					whirlpool.tags
+						.filter((tag) => !deletedTags.has(tag.id))
+						.map((oldTag) => {
+							const updatedTag = updatedTags.get(oldTag.id);
+							return updatedTag ? { ...updatedTag, updated: null } : oldTag;
+						})
+				)
 			}
-		}))
+		})
 	);
+
+	await LoggerDatabase.whirlpools.bulkUpdate(tagUpdates);
 }
 
 /** Combs through whirlpools to remove statuses that have been deleted ('deleted' flag in IEditingStatus set to true) or updated ('updated' flag in IEditingStatus set to true). */
 async function UpdateWhirlpoolStatuses() {
-	const deletedStatuses: IEditingStatus[] = editingModel.value.availableStatuses.filter(
-		(status) => status.deleted === true
+	const deletedStatuses = new Map<string, IEditingStatus>(
+		editingModel.value.availableStatuses
+			.filter((status) => status.deleted)
+			.map((status) => [status.id, status])
 	);
-	const updatedStatuses: IEditingStatus[] = editingModel.value.availableStatuses.filter(
-		(status) => status.updated === true
+
+	const updatedStatuses = new Map<string, IEditingStatus>(
+		editingModel.value.availableStatuses
+			.filter((status) => status.updated)
+			.map((status) => [status.id, status])
 	);
 
 	const getClientWhirlpools = whirlpoolStore.clientWhirlpools.filter(
@@ -165,8 +175,8 @@ async function UpdateWhirlpoolStatuses() {
 
 	const whirlpoolsWithStaleStatuses = getClientWhirlpools.filter(
 		(whirlpool) =>
-			deletedStatuses.some((status) => whirlpool.status?.id === status.id) ||
-			updatedStatuses.some((status) => whirlpool.status?.id === status.id)
+			whirlpool.status &&
+			(deletedStatuses.has(whirlpool.status.id) || updatedStatuses.has(whirlpool.status.id))
 	);
 
 	// skip the rest of the function if there are no whirlpools with outdated statuses
@@ -174,39 +184,41 @@ async function UpdateWhirlpoolStatuses() {
 
 	const getNewStatus = (existingStatus: IStatus | undefined) => {
 		if (existingStatus === undefined) return existingStatus;
-		const findDeleted = deletedStatuses.find(
-			(deletedStatus) => deletedStatus.id === existingStatus.id
-		);
+		const findDeleted = deletedStatuses.get(existingStatus.id);
 		if (findDeleted) return { ...existingStatus, deletedOn: DateTime.now() };
-		const findUpdated = updatedStatuses.find(
-			(updatedStatus) => updatedStatus.id === existingStatus.id
-		);
+
+		const findUpdated = updatedStatuses.get(existingStatus.id);
 		if (findUpdated) return findUpdated;
+
 		return existingStatus;
 	};
 
-	const postStatusUpdateWhirlpools = whirlpoolsWithStaleStatuses.map((whirlpool) => {
-		return {
-			...whirlpool,
-			status: getNewStatus(whirlpool.status)
-		};
-	});
-
-	await LoggerDatabase.whirlpools.bulkUpdate(
-		postStatusUpdateWhirlpools.map((whirlpool) => ({
-			key: whirlpool.id,
-			changes: {
-				status: whirlpool.status
-					? DatabaseStatus.ConvertStatusForDatabase(whirlpool.status)
-					: undefined
-			}
-		}))
+	const statusUpdates: BulkUpdateInterface[] = whirlpoolsWithStaleStatuses.map(
+		(whirlpool): BulkUpdateInterface => {
+			const newStatus = getNewStatus(whirlpool.status);
+			return {
+				key: whirlpool.id,
+				changes: {
+					status: newStatus ? DatabaseStatus.ConvertStatusForDatabase(newStatus) : undefined
+				}
+			};
+		}
 	);
+
+	await LoggerDatabase.whirlpools.bulkUpdate(statusUpdates);
 }
 
 async function UpdateWhirlpoolExtraFields() {
-	const deletedFields: IEditingField[] = editingModel.value.extraFields.filter(
-		(field) => field.deleted === true
+	const deletedFields = new Map<string, IEditingField>(
+		editingModel.value.extraFields
+			.filter((field) => field.deleted)
+			.map((field) => [field.id, field])
+	);
+
+	const updatedFields = new Map<string, IEditingField>(
+		editingModel.value.extraFields
+			.filter((field) => field.updated)
+			.map((field) => [field.id, field])
 	);
 
 	const getClientWhirlpools = whirlpoolStore.clientWhirlpools.filter(
@@ -214,84 +226,86 @@ async function UpdateWhirlpoolExtraFields() {
 	);
 
 	const whirlpoolsWithStaleFields = getClientWhirlpools.filter((whirlpool) =>
-		whirlpool.extraFieldValues.some((field) =>
-			deletedFields.some((deletedField) => deletedField.id === field.fieldId)
+		whirlpool.extraFieldValues.some(
+			(field) => deletedFields.has(field.fieldId) || updatedFields.has(field.fieldId)
 		)
 	);
 
 	if (whirlpoolsWithStaleFields.length === 0) return;
 
-	const postFieldUpdateWhirlpools = whirlpoolsWithStaleFields.map((whirlpool) => {
-		return {
-			...whirlpool,
-			extraFieldValues: whirlpool.extraFieldValues.filter(
-				(field) => !deletedFields.some((deletedField) => deletedField.id === field.fieldId)
-			)
-		};
-	});
-
-	await LoggerDatabase.whirlpools.bulkUpdate(
-		postFieldUpdateWhirlpools.map((whirlpool) => ({
+	const fieldUpdates: BulkUpdateInterface[] = whirlpoolsWithStaleFields.map(
+		(whirlpool): BulkUpdateInterface => ({
 			key: whirlpool.id,
 			changes: {
-				extraFieldValues: DeepToRaw(whirlpool.extraFieldValues)
+				extraFieldValues: DeepToRaw(
+					whirlpool.extraFieldValues.filter((field) => !deletedFields.has(field.fieldId))
+				)
 			}
-		}))
+		})
 	);
+
+	await LoggerDatabase.whirlpools.bulkUpdate(fieldUpdates);
 }
 
 const updateCategory = async () => {
 	try {
-		// I'd actually prefer to update the whirlpools AFTER updating the category itself, but I found that in between the category update occurring and the whirlpool updates beginning, the category prop had already been refreshed. This meant the watcher below had already been triggered, and consequently the "updated/deleted" flags had already been wiped clean.
-		await UpdateWhirlpoolTags();
-		await UpdateWhirlpoolStatuses();
-		await UpdateWhirlpoolExtraFields();
-		await LoggerDatabase.categories.update(editingModel.value.id, {
-			// Dexie internally uses structuredClone for its put and add operations. structuredClone can't be used on Proxies, and Vue creates Proxies of object refs to maintain reactivity. Thus, when using a ref (or reactive) that refers to an object, it is likely necessary to use DeepRaw, or Vue's provided toRaw function to pull the object out from the reactive Proxy. Otherwise, Dexie won't be able to operate on it. This should not be an issue for refs based on primitive values such as strings and numbers, which is why name and displayOrder do not need this treatment.
-			// TODO: actual change detection
-			name: editingModel.value.name,
-			displayOrder: editingModel.value.displayOrder,
-			modifiedFields: DeepToRaw(editingModel.value.modifiedFields),
-			extraFields: editingModel.value.extraFields
-				.filter((extraField) => extraField.deleted === false)
-				.map((extraField): IField => {
-					// eslint-disable-next-line @typescript-eslint/no-unused-vars
-					const { deleted, updated, ...normalField } = extraField;
-					return normalField;
-				}),
-			availableStatuses: editingModel.value.availableStatuses
-				.filter((status) => status.deleted === false)
-				.map((status): DatabaseStatus => {
-					// eslint-disable-next-line @typescript-eslint/no-unused-vars
-					const { deleted, updated, ...normalStatus } = status;
-					return DatabaseStatus.ConvertStatusForDatabase(normalStatus);
-				}),
-			tags: editingModel.value.tags
-				.filter((tag) => tag.deleted === false)
-				.map((tag): ITag => {
-					// eslint-disable-next-line @typescript-eslint/no-unused-vars
-					const { deleted, updated, ...normalTag } = tag;
-					return normalTag;
-				}),
-			deletedOn: editingModel.value.deletedOn ? editingModel.value.deletedOn.toISO() : null,
-			updatedOn: DateTime.now().toISO(),
-			createdOn: editingModel.value.createdOn.toISO() ?? "unknown",
-			unsyncedChanges: true
-		});
+		await LoggerDatabase.transaction(
+			"rw",
+			[LoggerDatabase.whirlpools, LoggerDatabase.categories],
+			async () => {
+				// I'd actually prefer to update the whirlpools AFTER updating the category itself, but I found that in between the category update occurring and the whirlpool updates beginning, the category prop had already been refreshed. This meant the watcher below had already been triggered, and consequently the "updated/deleted" flags had already been wiped clean.
+				await UpdateWhirlpoolTags();
+				await UpdateWhirlpoolStatuses();
+				await UpdateWhirlpoolExtraFields();
+				await LoggerDatabase.categories.update(editingModel.value.id, {
+					// Dexie internally uses structuredClone for its put and add operations. structuredClone can't be used on Proxies, and Vue creates Proxies of object refs to maintain reactivity. Thus, when using a ref (or reactive) that refers to an object, it is likely necessary to use DeepRaw, or Vue's provided toRaw function to pull the object out from the reactive Proxy. Otherwise, Dexie won't be able to operate on it. This should not be an issue for refs based on primitive values such as strings and numbers, which is why name and displayOrder do not need this treatment.
+					// TODO: actual change detection
+					name: editingModel.value.name,
+					displayOrder: editingModel.value.displayOrder,
+					modifiedFields: DeepToRaw(editingModel.value.modifiedFields),
+					extraFields: editingModel.value.extraFields
+						.filter((extraField) => extraField.deleted === false)
+						.map((extraField): IField => {
+							// eslint-disable-next-line @typescript-eslint/no-unused-vars
+							const { deleted, updated, ...normalField } = extraField;
+							return normalField;
+						}),
+					availableStatuses: editingModel.value.availableStatuses
+						.filter((status) => status.deleted === false)
+						.map((status): DatabaseStatus => {
+							// eslint-disable-next-line @typescript-eslint/no-unused-vars
+							const { deleted, updated, ...normalStatus } = status;
+							return DatabaseStatus.ConvertStatusForDatabase(normalStatus);
+						}),
+					tags: editingModel.value.tags
+						.filter((tag) => tag.deleted === false)
+						.map((tag): ITag => {
+							// eslint-disable-next-line @typescript-eslint/no-unused-vars
+							const { deleted, updated, ...normalTag } = tag;
+							return normalTag;
+						}),
+					deletedOn: editingModel.value.deletedOn ? editingModel.value.deletedOn.toISO() : null,
+					updatedOn: DateTime.now().toISO(),
+					createdOn: editingModel.value.createdOn.toISO() ?? "unknown",
+					unsyncedChanges: true
+				});
+			}
+		);
+
 		settingsStore.UpdateDashboardsTable(editingModel.value);
+		if (syncStore.autoSyncEnabled) await syncStore.AutoSync();
 		settingsStore.DisplayToast("Category saved.");
 	} catch (error) {
-		// eslint-disable-next-line no-console
-		console.log(error);
+		settingsStore.OutputToConsole(error, true);
 		settingsStore.DisplayToast("An error has occurred. Please check the console.");
 	}
 };
 
 watch(
-	() => category,
-	(newValue) => {
-		if (newValue) {
-			editingModel.value = ConvertToEditingCategory(newValue);
+	() => category.id,
+	(newId, oldId) => {
+		if (newId && newId !== oldId) {
+			editingModel.value = ConvertToEditingCategory(category);
 		}
 	}
 );
@@ -319,8 +333,8 @@ watch(
 						</VCardSubtitle>
 						<VExpansionPanels v-model="openPanel" variant="inset">
 							<VExpansionPanel
-								v-for="(defaultField, index) in DefaultFields"
-								:key="index"
+								v-for="defaultField in DefaultFields"
+								:key="defaultField.field"
 								:value="`default-${defaultField.field}`"
 							>
 								<VExpansionPanelTitle>
@@ -342,7 +356,7 @@ watch(
 							<VExpansionPanel
 								v-for="customField in editingModel.extraFields"
 								:key="customField.id"
-								:value="`custom-${customField.label}`"
+								:value="`custom-${customField.id}`"
 							>
 								<VExpansionPanelTitle>
 									<s v-if="customField.deleted">{{ customField.label }}</s>
@@ -403,7 +417,7 @@ watch(
 </template>
 
 <style scoped>
-::v-deep(.v-card-subtitle) {
+:deep(.v-card-subtitle) {
 	white-space: wrap;
 }
 </style>

@@ -324,27 +324,27 @@ const deleteEntry = async () => {
 </template>
 
 <style scoped>
-::v-deep(.ag-cell) {
+:deep(.ag-cell) {
 	display: flex;
 	align-items: center;
 	font-size: v-bind(fontSize);
 }
 
-::v-deep(.ag-header-cell-label) {
+:deep(.ag-header-cell-label) {
 	justify-content: center;
 }
 
-::v-deep(.centered-cell) {
+:deep(.centered-cell) {
 	justify-content: center;
 	text-align: center;
 }
 
-::v-deep(.title-cell) {
+:deep(.title-cell) {
 	justify-content: flex-start;
 	text-align: left;
 }
 
-::v-deep(.ag-sort-order) {
+:deep(.ag-sort-order) {
 	text-decoration: underline;
 }
 </style>

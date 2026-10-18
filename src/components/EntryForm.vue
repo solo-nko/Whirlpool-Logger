@@ -566,11 +566,11 @@ onMounted(() => {
 </template>
 
 <style scoped>
-::v-deep(.v-progress-linear) {
+:deep(.v-progress-linear) {
 	cursor: pointer;
 }
 
-::v-deep(.v-number-input--split) {
+:deep(.v-number-input--split) {
 	font-weight: bold;
 }
 </style>

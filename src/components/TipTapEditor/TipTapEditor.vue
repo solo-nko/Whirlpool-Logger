@@ -432,11 +432,11 @@ onBeforeUnmount(() => {
 
 <style scoped>
 /* https://github.com/ueberdosis/tiptap/issues/526#issuecomment-1146048772 */
-::v-deep(.ProseMirror:focus-visible) {
+:deep(.ProseMirror:focus-visible) {
 	outline: none;
 }
 
-::v-deep(.tiptap p.is-editor-empty:first-child::before) {
+:deep(.tiptap p.is-editor-empty:first-child::before) {
 	color: #adb5bd;
 	content: attr(data-placeholder);
 	float: left;
@@ -444,15 +444,15 @@ onBeforeUnmount(() => {
 	pointer-events: none;
 }
 
-::v-deep(.tiptap p, li) {
+:deep(.tiptap p, li) {
 	font-size: 0.8rem;
 }
 
-::v-deep(.tiptap ::marker) {
+:deep(.tiptap ::marker) {
 	font-size: 0.8rem;
 }
 
-::v-deep(.mdi-format-color-fill) {
+:deep(.mdi-format-color-fill) {
 	top: 2px;
 }
 
