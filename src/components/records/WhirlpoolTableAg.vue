@@ -308,9 +308,17 @@ const deleteEntry = async () => {
 	<VDialog
 		v-if="tableCategory && modalEntry"
 		v-model="isEntryModalOpen"
-		persistent
+		:persistent="!settingsStore.display.mobile"
 		scrollable
 		:fullscreen="settingsStore.display.mobile"
+		no-click-animation
+		@keydown="
+			(key: KeyboardEvent) => {
+				if (key.key === 'Escape') {
+					closeModal();
+				}
+			}
+		"
 	>
 		<EntryForm :existing-entry="modalEntry" :category-id="tableCategory.id" @close="closeModal" />
 	</VDialog>

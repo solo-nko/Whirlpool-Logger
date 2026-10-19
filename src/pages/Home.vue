@@ -34,10 +34,17 @@ const closeEditModal = () => {
 	<VDialog
 		v-if="modalCategory"
 		v-model="isEditModalOpen"
-		persistent
+		:persistent="!settingsStore.display.mobile"
 		scrollable
-		:fullscreen="settingsStore.display.mobile"
 		no-click-animation
+		:fullscreen="settingsStore.display.mobile"
+		@keydown="
+			(key: KeyboardEvent) => {
+				if (key.key === 'Escape') {
+					closeEditModal();
+				}
+			}
+		"
 	>
 		<EntryForm
 			:category-id="modalCategory.id"
