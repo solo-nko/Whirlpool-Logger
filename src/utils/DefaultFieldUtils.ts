@@ -41,7 +41,6 @@ export type DefaultField = {
 	rename?: string;
 	placeholder?: string;
 	hideInEntryForm: boolean;
-	// TODO: add db transformer/upgrader function for these two, as well as for "hidden" renamed to "hideInEntryForm"
 	hideInTable: boolean;
 	headerOrder?: number;
 };

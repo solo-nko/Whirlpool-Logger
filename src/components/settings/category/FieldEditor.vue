@@ -130,15 +130,14 @@ const reallyRemoveField = () => {
 				</VCol>
 			</VRow>
 			<VRow>
-				<!--			TODO: WIP -->
-				<!--			<VCol>-->
-				<!--				<VTextField-->
-				<!--					v-model="fieldModel.placeholder"-->
-				<!--					density="compact"-->
-				<!--					label="Placeholder (Optional)"-->
-				<!--					messages="Default value to use."-->
-				<!--				/>-->
-				<!--			</VCol>-->
+				<VCol>
+					<VTextField
+						v-model="fieldModel.placeholder"
+						density="compact"
+						label="Placeholder (Optional)"
+						messages="Placeholder text to use."
+					/>
+				</VCol>
 				<VCol>
 					<VNumberInput
 						v-if="maxLengthApplicable"

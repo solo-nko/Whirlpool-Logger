@@ -2,7 +2,6 @@ import PocketBase, { type RecordService } from "pocketbase";
 import type { DatabaseWhirlpool } from "@/utils/database/models/DatabaseWhirlpool.ts";
 import type { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.ts";
 
-// TODO: update sync with new type changes (plainContent for whirlpools, and hidden fields for categories)
 /** Tweaked version of the DatabaseWhirlpool type which requires syncCode and omits unsyncedChanges. */
 export type ServerWhirlpool = Omit<
 	InstanceType<typeof DatabaseWhirlpool>,

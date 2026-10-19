@@ -163,7 +163,8 @@ const columnDefinitions = computed<ColDef<WhirlpoolLog>[]>(() => {
 				category: tableCategory.value
 			},
 			sortable: false,
-			hide: DetermineIfDefaultHidden("tags")
+			hide: DetermineIfDefaultHidden("tags"),
+			valueGetter: (params) => params.data?.tags.map((tag) => tag.label).join(", ")
 		},
 		{
 			headerName: GetHeaderName("rating"),

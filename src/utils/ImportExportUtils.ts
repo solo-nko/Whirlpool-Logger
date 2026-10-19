@@ -21,7 +21,6 @@ import type { DatabaseCategory } from "@/utils/database/models/DatabaseCategory.
  */
 function progressCallback({ totalRows, completedRows }: ImportProgress): boolean {
 	try {
-		// TODO: consider implementing progress bar here
 		console.log(`Progress: ${completedRows} / ${totalRows} rows completed`);
 		return true;
 	} catch (error) {

@@ -9,6 +9,7 @@ export default class DatabaseNote {
 	createdOn: string;
 	content: HTMLContent;
 	plainContent: string;
+	sortOrder?: number;
 
 	constructor(inputContent: string, inputPlain: string, inputId: number) {
 		const now = DateTime.now();

@@ -163,7 +163,7 @@ const useSyncStore = defineStore("sync-store", () => {
 			const createBatches: ServerCategory[][] = [];
 			let currentCreateBatch: ServerCategory[] = [];
 			clientCategories.forEach((clientCategory) => {
-				// check if current batch ahs reached limit. If so, add it to the batch array, then start a new one
+				// check if the current batch has reached the limit. If so, add it to the batch array, then start a new one
 				if (currentCreateBatch.length === MAX_BATCH_LENGTH) {
 					createBatches.push(currentCreateBatch);
 					currentCreateBatch = [];
