@@ -30,8 +30,11 @@ const updateField = () => {
 				:rules="[(value: string) => HasValue({ input: value, fieldName: 'Label' })]"
 			/>
 			<VRow class="items-center">
-				<VSwitch v-model="fieldModel.hidden">
-					<template v-slot:label><div>Hidden</div></template>
+				<VSwitch v-model="fieldModel.hideInEntryForm">
+					<template v-slot:label><div>Hide from Entry view</div></template>
+				</VSwitch>
+				<VSwitch v-model="fieldModel.hideInTable">
+					<template v-slot:label><div>Hide from Records view</div></template>
 				</VSwitch>
 			</VRow>
 			<div class="flex justify-end">

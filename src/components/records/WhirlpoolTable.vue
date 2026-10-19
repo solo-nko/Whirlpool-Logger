@@ -203,6 +203,7 @@ const getDate = (item: WhirlpoolLog, type: "updated" | "created") => {
 		persistent
 		scrollable
 		:fullscreen="settings.display.mobile"
+		no-click-animation
 	>
 		<EntryForm :existing-entry="modalEntry" :category-id="tableCategory.id" @close="closeModal" />
 	</VDialog>

@@ -36,6 +36,13 @@ const useSettingsStore = defineStore("settings-store", () => {
 		isToastDisplayed.value = true;
 	}
 
+	function OutputToConsole(content: unknown, asError: boolean = false) {
+		/* eslint-disable no-console */
+		if (asError) console.error(content);
+		else console.log(content);
+		/* eslint-enable no-console */
+	}
+
 	// Dashboard settings
 	const dashboards = ref<IDashboard[]>([]);
 	const displayedDashboards = computed(() =>
@@ -134,6 +141,7 @@ const useSettingsStore = defineStore("settings-store", () => {
 		isToastDisplayed,
 		toastMessage,
 		DisplayToast,
+		OutputToConsole,
 		display,
 		itemsPerPage,
 		dashboards,

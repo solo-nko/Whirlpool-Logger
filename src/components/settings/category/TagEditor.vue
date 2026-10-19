@@ -89,13 +89,14 @@ watch(selectedTag, (newSelection) => {
 						No Tags Currently
 					</div>
 					<div v-else>
-						<VChipGroup v-model="selectedTag" column>
+						<VChipGroup v-model="selectedTag" column filter>
 							<VChip
 								v-for="tag in displayedEditingTags"
 								:key="tag.id"
 								:value="tag"
-								:color="tag.color ? tag.color : undefined"
-								variant="flat"
+								:base-color="tag.color ?? undefined"
+								:variant="selectedTag?.id === tag.id ? 'elevated' : 'flat'"
+								size="small"
 							>
 								{{ tag.label }}
 							</VChip>

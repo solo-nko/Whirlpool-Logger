@@ -12,10 +12,12 @@ export type IField = {
 	label: string;
 	type: FieldType;
 	placeholder?: string;
-	hidden: boolean;
+	hideInEntryForm: boolean;
 	displayOrder?: number;
+	headerOrder?: number;
 	required?: boolean;
 	maxLength?: number;
+	hideInTable: boolean;
 };
 
 export type IEditingField = IField & {

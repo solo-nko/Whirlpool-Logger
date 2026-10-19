@@ -8,13 +8,16 @@ export default class DatabaseNote {
 	updatedOn: string;
 	createdOn: string;
 	content: HTMLContent;
+	plainContent: string;
+	sortOrder?: number;
 
-	constructor(inputContent: string, inputId: number) {
+	constructor(inputContent: string, inputPlain: string, inputId: number) {
 		const now = DateTime.now();
 		this.id = inputId ? inputId : Math.floor(now.toSeconds());
 		this.updatedOn = now.toISO();
 		this.createdOn = now.toISO();
 		this.content = inputContent;
+		this.plainContent = inputPlain;
 	}
 
 	static ConvertNoteFromDatabase(input: DatabaseNote): Note {

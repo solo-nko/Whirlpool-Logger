@@ -18,7 +18,6 @@ export class DatabaseStatus {
 		this.deletedOn = null;
 	}
 
-	// TODO: the conversion methods/functions may not be necessary anymore due to the switch to string-based dates.
 	/** Takes an array of IStatus objects and coverts their date properties for storage in the IndexedDB. This is necessary because IndexedDB cannot store DateTime objects. */
 	static ConvertStatusForDatabase(input: IStatus): DatabaseStatus {
 		return {

@@ -1,4 +1,5 @@
 import { WhirlpoolLog } from "@/utils/types/WhirlpoolLog.ts";
+import { IsDefaultFieldHiddenInTable } from "@/utils/database/DatabaseUtils.ts";
 
 export type WhirlpoolFields = keyof Omit<
 	WhirlpoolLog,
@@ -30,7 +31,8 @@ export const DefaultFields: DefaultField[] = Object.keys(new WhirlpoolLog("place
 	.map((key) => {
 		return {
 			field: key as WhirlpoolFields,
-			hidden: false
+			hideInEntryForm: false,
+			hideInTable: IsDefaultFieldHiddenInTable(key as WhirlpoolFields)
 		};
 	});
 
@@ -38,5 +40,7 @@ export type DefaultField = {
 	field: WhirlpoolFields;
 	rename?: string;
 	placeholder?: string;
-	hidden: boolean;
+	hideInEntryForm: boolean;
+	hideInTable: boolean;
+	headerOrder?: number;
 };

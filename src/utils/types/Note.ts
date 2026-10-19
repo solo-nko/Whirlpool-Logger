@@ -9,9 +9,12 @@ export default class Note {
 	createdOn: DateTime;
 	/** Actual notes content. Should be formatted in HTML. */
 	content: HTMLContent;
+	plainContent: string;
+	sortOrder?: number;
 
 	constructor(inputContent?: string, inputTitle?: string) {
 		this.content = inputContent || "";
+		this.plainContent = "";
 		const now = DateTime.now();
 		this.id = Math.floor(now.toSeconds());
 		this.createdOn = now;

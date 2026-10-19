@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import { EditorContent, type HTMLContent, type JSONContent, useEditor } from "@tiptap/vue-3";
-import { StarterKit } from "@tiptap/starter-kit";
 import type { VBtn } from "vuetify/components";
-import { Placeholder } from "@tiptap/extensions";
-import { Color, TextStyle } from "@tiptap/extension-text-style";
-import { Highlight } from "@tiptap/extension-highlight";
 import useSettingsStore from "@/stores/settings.ts";
+import { editorExtensions } from "@/components/TipTapEditor/EditorUtils.ts";
 
 type TipTapEditorProps = {
 	modelValue?: JSONContent | HTMLContent;
@@ -40,33 +37,7 @@ const linkText = ref<string>("");
 // TODO: overwrite tab shortcut for lists: https://tiptap.dev/docs/editor/core-concepts/keyboard-shortcuts#overwrite-keyboard-shortcuts
 // Editor instance
 const editor = useEditor({
-	extensions: [
-		StarterKit.configure({
-			paragraph: {
-				HTMLAttributes: {
-					class: "my-0"
-				}
-			},
-			orderedList: {
-				HTMLAttributes: {
-					class: "my-0"
-				}
-			},
-			bulletList: {
-				HTMLAttributes: {
-					class: "my-0"
-				}
-			}
-		}),
-		Placeholder.configure({
-			placeholder: "Write down your thoughts..."
-		}),
-		TextStyle,
-		Color,
-		Highlight.configure({
-			multicolor: true
-		})
-	],
+	extensions: editorExtensions,
 	content: modelValue,
 	onUpdate({ editor }) {
 		if (contentType === "json") emits("update:modelValue", editor.getJSON());
@@ -461,11 +432,11 @@ onBeforeUnmount(() => {
 
 <style scoped>
 /* https://github.com/ueberdosis/tiptap/issues/526#issuecomment-1146048772 */
-::v-deep(.ProseMirror:focus-visible) {
+:deep(.ProseMirror:focus-visible) {
 	outline: none;
 }
 
-::v-deep(.tiptap p.is-editor-empty:first-child::before) {
+:deep(.tiptap p.is-editor-empty:first-child::before) {
 	color: #adb5bd;
 	content: attr(data-placeholder);
 	float: left;
@@ -473,15 +444,15 @@ onBeforeUnmount(() => {
 	pointer-events: none;
 }
 
-::v-deep(.tiptap p, li) {
+:deep(.tiptap p, li) {
 	font-size: 0.8rem;
 }
 
-::v-deep(.tiptap ::marker) {
+:deep(.tiptap ::marker) {
 	font-size: 0.8rem;
 }
 
-::v-deep(.mdi-format-color-fill) {
+:deep(.mdi-format-color-fill) {
 	top: 2px;
 }
 
