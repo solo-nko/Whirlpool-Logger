@@ -129,18 +129,9 @@ const reallyRemoveField = () => {
 					/>
 				</VCol>
 			</VRow>
-			<VRow>
-				<VCol>
-					<VTextField
-						v-model="fieldModel.placeholder"
-						density="compact"
-						label="Placeholder (Optional)"
-						messages="Placeholder text to use."
-					/>
-				</VCol>
+			<VRow v-if="maxLengthApplicable">
 				<VCol>
 					<VNumberInput
-						v-if="maxLengthApplicable"
 						v-model="fieldModel.maxLength"
 						density="compact"
 						label="Max Characters (Optional)"
@@ -149,8 +140,19 @@ const reallyRemoveField = () => {
 					/>
 				</VCol>
 			</VRow>
+			<VRow>
+				<VCol>
+					<VTextField
+						v-model="fieldModel.placeholder"
+						density="compact"
+						label="Details (Optional)"
+						messages="Add explanatory details."
+					/>
+				</VCol>
+			</VRow>
 
-			<VRow class="items-center">
+			<!--		Desktop layout -->
+			<VRow v-if="!settingsStore.display.mobile" class="items-center">
 				<VCol cols="6">
 					<VRadioGroup v-model="fieldModel.type" inline>
 						<template v-slot:label>
@@ -177,29 +179,66 @@ const reallyRemoveField = () => {
 					</VSwitch>
 				</VCol>
 			</VRow>
+			<template v-else>
+				<VRow>
+					<VCol>
+						<VRadioGroup v-model="fieldModel.type" inline>
+							<template v-slot:label>
+								<div>Field Type</div>
+							</template>
+							<VRadio
+								v-for="label in translatedLabels"
+								:key="label.type"
+								:value="label.type"
+								:label="label.label"
+							/>
+						</VRadioGroup>
+					</VCol>
+				</VRow>
+				<VRow class="mt-0 mb-3">
+					<VCol>
+						<VSwitch v-model="fieldModel.required" hide-details>
+							<template v-slot:label>Required</template>
+						</VSwitch>
+						<VSwitch v-model="fieldModel.hideInEntryForm" hide-details>
+							<template v-slot:label><div>Hide from Entry view</div></template>
+						</VSwitch>
+						<VSwitch v-model="fieldModel.hideInTable" hide-details>
+							<template v-slot:label><div>Hide from Records view</div></template>
+						</VSwitch>
+					</VCol>
+				</VRow>
+			</template>
 		</VForm>
 		<div>Preview</div>
 		<VTextField
 			v-if="fieldModel.type === FieldType.TEXT"
 			:label="fieldModel.label"
-			:placeholder="fieldModel.placeholder"
+			:messages="fieldModel.placeholder"
 			:counter="fieldModel.maxLength && fieldModel.maxLength > 0"
 			:rules="GetFieldRules(fieldModel)"
 		/>
 		<VNumberInput
 			v-else-if="fieldModel.type === FieldType.NUMBER"
 			:label="fieldModel.label"
+			:messages="fieldModel.placeholder"
 			:rules="GetFieldRules(fieldModel)"
 		/>
 		<VTextField
 			v-else-if="fieldModel.type === FieldType.DATE"
 			:label="fieldModel.label"
+			:messages="fieldModel.placeholder"
 			type="date"
 			:rules="GetFieldRules(fieldModel)"
 		/>
-		<VCheckbox v-else-if="fieldModel.type === FieldType.BOOL" :label="fieldModel.label" />
+		<VCheckbox
+			v-else-if="fieldModel.type === FieldType.BOOL"
+			:label="fieldModel.label"
+			:messages="fieldModel.placeholder"
+		/>
 
-		<div class="flex justify-end">
+		<!--		Desktop Layout -->
+		<div v-if="!settingsStore.display.mobile" class="flex justify-end">
 			<div v-if="!isNewField">
 				<VBtn v-if="deleteButtonStatus === 'normal'" @click="removeField">
 					<template v-slot:prepend> <VIcon icon="$close" /></template>
@@ -218,6 +257,36 @@ const reallyRemoveField = () => {
 				Revert
 			</VBtn>
 			<VBtn class="ml-3" @click="isNewField ? addField() : updateField()">
+				<template v-slot:prepend>
+					<VIcon v-if="isNewField" icon="$plus" />
+					<VIcon v-else icon="$check" />
+				</template>
+				<template #default>
+					{{ isNewField ? "Add" : "Save" }}
+				</template>
+			</VBtn>
+		</div>
+
+		<!--		Mobile Layout -->
+		<div v-else class="flex flex-col items-center gap-2">
+			<div v-if="!isNewField" class="w-full">
+				<VBtn v-if="deleteButtonStatus === 'normal'" class="w-full" @click="removeField">
+					<template v-slot:prepend> <VIcon icon="$close" /></template>
+					Delete
+				</VBtn>
+				<VBtn v-else class="w-full" @click="reallyRemoveField()">
+					<template v-slot:prepend> <VIcon icon="$close" /></template>
+					Are you sure?
+				</VBtn>
+			</div>
+
+			<VBtn v-if="!isNewField" class="w-full" @click="undoChanges">
+				<template v-slot:prepend>
+					<VIcon icon="$revert" />
+				</template>
+				Revert
+			</VBtn>
+			<VBtn class="w-full" @click="isNewField ? addField() : updateField()">
 				<template v-slot:prepend>
 					<VIcon v-if="isNewField" icon="$plus" />
 					<VIcon v-else icon="$check" />

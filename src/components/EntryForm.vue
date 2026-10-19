@@ -513,7 +513,7 @@ onMounted(() => {
 									<VTextField
 										v-if="extraField.type === FieldType.TEXT"
 										:label="extraField.label"
-										:placeholder="extraField.placeholder"
+										:messages="extraField.placeholder"
 										:rules="extraField.required ? [genericHasValue] : []"
 										:model-value="(getExtraFieldValue(extraField.id)?.value as string) || undefined"
 										@update:modelValue="
@@ -523,6 +523,7 @@ onMounted(() => {
 									<VNumberInput
 										v-else-if="extraField.type === FieldType.NUMBER"
 										:label="extraField.label"
+										:messages="extraField.placeholder"
 										:rules="extraField.required ? [genericHasValue] : []"
 										control-variant="stacked"
 										:model-value="(getExtraFieldValue(extraField.id)?.value as number) || undefined"
@@ -533,6 +534,7 @@ onMounted(() => {
 									<VTextField
 										v-else-if="extraField.type === FieldType.DATE"
 										:label="extraField.label"
+										:messages="extraField.placeholder"
 										:rules="extraField.required ? [genericHasValue] : []"
 										type="date"
 										:model-value="(getExtraFieldValue(extraField.id)?.value as string) || undefined"
@@ -543,6 +545,7 @@ onMounted(() => {
 									<VCheckbox
 										v-else-if="extraField.type === FieldType.BOOL"
 										:label="extraField.label"
+										:messages="extraField.placeholder"
 										:model-value="
 											(getExtraFieldValue(extraField.id)?.value as boolean) || undefined
 										"
